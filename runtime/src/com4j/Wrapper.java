@@ -202,7 +202,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
             this.args = args;
 
             try {
-                return execute();
+                return execute(thread);
             } finally {
                 invCache = this;
             }

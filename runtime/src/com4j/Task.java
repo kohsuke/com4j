@@ -23,6 +23,15 @@ abstract class Task<T> implements Callable<T> {
             return ComThread.get().execute(this);
     }
 
+    public final T execute(ComThread t) {
+        if(Thread.currentThread()==t)
+            // if invoked from within ComThread, execute it at once
+            return call();
+        else
+            // otherwise schedule the execution and block
+            return t.execute(this);
+    }
+
     /**
      * Called from {@link ComThread} to run the task.
      */
