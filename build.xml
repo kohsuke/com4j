@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<project name="com4j" default="dist">
+  
+  <target name="clean">
+    <antcall target="-exec-target">
+      <param name="target" value="clean"/>
+    </antcall>
+  </target>
+  
+  <target name="jar">
+    <antcall target="-exec-target">
+      <param name="target" value="jar"/>
+    </antcall>
+  </target>
+  
+  <target name="javadoc"
+          description="creates javadoc from the publicly visible runtime classes">
+    <javadoc destdir="build/javadoc"
+      locale="en_US"
+      windowtitle="com4j"
+      public="true">
+      
+      <fileset dir="runtime/src" includes="**/*.java"/>
+      <link href="http://java.sun.com/j2se/1.5.0/docs/api/" />
+    </javadoc>
+  </target>
+  
+  <target name="dist" depends="clean,jar,javadoc">
+    <delete dir="dist"/>
+    <mkdir dir="dist"/>
+    <copy todir="dist" file="../www/LICENSE.txt"/>
+    <copy todir="dist" file="runtime/build/com4j.jar"/>
+    <copy todir="dist" file="runtime/build/com4j-src.zip"/>
+    <copy todir="dist" file="tlbimp/build/tlbimp.jar"/>
+    <copy todir="dist" file="tlbimp/build/tlbimp-src.zip"/>
+    <copy todir="dist">
+      <fileset dir="tlbimp/lib" includes="*.jar, *.zip"/>
+    </copy>
+    <copy todir="dist/javadoc">
+      <fileset dir="build/javadoc"/>
+    </copy>
+  </target>
+  
+  
+  <target name="-exec-target">
+    <ant dir="runtime" target="${target}"/>
+    <ant dir="tlbimp" target="${target}"/>
+  </target>
+</project>
