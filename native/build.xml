@@ -5,6 +5,10 @@
       failonerror="yes">
       <arg line="com4j.vcproj /rebuild Release"/>
     </exec>
+    <exec dir="." executable="devenv" 
+      failonerror="yes">
+      <arg line="com4j.vcproj /rebuild Debug"/>
+    </exec>
   </target>
   
   <target name="clean">

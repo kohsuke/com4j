@@ -800,7 +800,6 @@ public final class Generator {
         ITypeDecl declt = t.queryInterface(ITypeDecl.class);
         if(declt!=null) {
             // TODO: not clear how we should handle this
-            String name = declt.getName();
             throw new BindingException(Messages.UNSUPPORTED_TYPE.format(getTypeString(t)));
         }
 
