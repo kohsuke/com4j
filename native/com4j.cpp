@@ -79,8 +79,10 @@ JNIEXPORT jint JNICALL Java_com4j_Native_createInstance(
 
 	hr = CLSIDFromProgID(progId,&clsid);
 	if(FAILED(hr)) {
-		error(env,hr,"Unrecognized CLSID");
-		return 0;
+		if(FAILED(CLSIDFromString( const_cast<LPOLESTR>(LPCOLESTR(progId)),&clsid))) {
+			error(env,hr,"Unrecognized CLSID");
+			return 0;
+		}
 	}
 
 	void* p;
