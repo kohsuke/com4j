@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<project name="tlbimp" default="compile">
+  <target name="compile">
+    <javac srcdir="src" destdir="build/classes"
+           debug="on">
+      <classpath>
+        <fileset dir="lib" includes="*.jar"/>
+        <pathelement path="../build/classes"/>
+      </classpath>
+    </javac>
+  </target>
+</project>
