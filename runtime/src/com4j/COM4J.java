@@ -108,7 +108,16 @@ public abstract class COM4J {
     }
 
     static Wrapper unwrap( Com4jObject obj ) {
-        return (Wrapper)Proxy.getInvocationHandler(obj);
+        if( obj instanceof Wrapper )
+            return (Wrapper)obj;
+        else
+            return (Wrapper)Proxy.getInvocationHandler(obj);
+    }
+
+    // called by the native side to get the raw pointer value of Com4jObject.
+    static int getPtr( Com4jObject obj ) {
+        if(obj==null)   return 0;
+        return unwrap(obj).getPtr();
     }
 
     static {

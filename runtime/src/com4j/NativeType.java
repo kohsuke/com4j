@@ -32,7 +32,7 @@ public enum NativeType {
 
 
     /**
-     * String will be marshalled as "wchar_t*".
+     * <tt>LPWSTR</tt>.
      *
      * More concretely, it becomes a L'\0'-terminated
      * UTF-16LE format.
@@ -214,7 +214,44 @@ public enum NativeType {
      * <p>
      * Expected Java type:
      *      {@link Variant}
-     *      {@link Object} // TODO: explain the semantics better
+     *      {@link Object}
+     *
+     * <p>
+     * When the Java type is {@link Object}, the type of the created
+     * <tt>VARIANT</tt> is determined at run-time from the actual type
+     * of the Java object being passed in. The following table describes
+     * this inferene process:
+     *
+     * <table border=1>
+     * <tr>
+     *  <td>Java type
+     *  <td>COM VARIANT type
+     * <tr>
+     *  <td>{@link Boolean} / boolean
+     *  <td>VT_BOOL
+     * <tr>
+     *  <td>{@link String}
+     *  <td>VT_BSTR
+     * <tr>
+     *  <td>{@link Float} / float
+     *  <td>VT_R4
+     * <tr>
+     *  <td>{@link Double} / double
+     *  <td>VT_R8
+     * <tr>
+     *  <td>{@link Short} / short
+     *  <td>VT_I2
+     * <tr>
+     *  <td>{@link Integer} / int
+     *  <td>VT_I4
+     * <tr>
+     *  <td>{@link Long} / long
+     *  <td>VT_I8
+     * <tr>
+     *  <td>{@link Com4jObject} or its derived types
+     *  <td>VT_UNKNOWN
+     * </table>
+     * TODO: expand the list
      */
     VARIANT_ByRef(302|BYREF),
 
@@ -280,6 +317,33 @@ public enum NativeType {
             return d;
         }
     },
+
+
+    /**
+     * <tt>SAFEARRAY</tt>.
+     *
+     * <p>
+     * The given java type is converted into a SAFEARRAY before
+     * passed to the native method.
+     *
+     * When the Java type is an array, the component type of the SAFEARRAY
+     * is automatically derived from the component type of the Java array.
+     * This inference is defined as follows:
+     * <ul>
+     *  <li>boolean[] -> SAFEARRAY(VT_BOOL)
+     *  <li>byte[] -> SAFEARRAY(VT_UI1)
+     *  <li>char[] -> SAFEARRAY(VT_UI2)  (??? is this right?)
+     *  <li>short[] -> SAFEARRAY(VT_I2)
+     *  <li>int[] -> SAFEARRAY(VT_I4)
+     *  <li>long[] -> SAFEARRAY(VT_I8)
+     *  <li>float[] -> SAFEARRAY(VT_R4)
+     *  <li>double[] -> SAFEARRAY(VT_R8)
+     *
+     *  <li>Object[] -> SAFEARRAY(VT_VARIANT)
+     *  <li>String[] -> SAFEARRAY(VT_BSTR)
+     * </ul>
+     */
+    SafeArray(500),
 
     ;
 
