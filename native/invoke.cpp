@@ -51,6 +51,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 		INT16	int16;
 		INT32	int32;
 		void*	pv;
+		VARIANT_BOOL vbool;
 //	};
 
 	HRESULT hr;
@@ -126,6 +127,24 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				_asm push pv;
 				break;
 
+			case cvBool:
+				if(env->CallBooleanMethod( arg, javaLangBoolean_booleanValue )) {
+					int32 = TRUE;
+				} else {
+					int32 = FALSE;
+				}
+				_asm push int32;
+				break;
+
+			case cvVariantBool:
+				if(env->CallBooleanMethod( arg, javaLangBoolean_booleanValue )) {
+					vbool = VARIANT_TRUE;
+				} else {
+					vbool = VARIANT_FALSE;
+				}
+				_asm push vbool;
+				break;
+
 			case cvGUID:
 				_ASSERT( sizeof(GUID)==sizeof(jlong)*2 );
 				pv = env->GetLongArrayElements( (jlongArray)arg, NULL );
@@ -166,6 +185,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 					break;
 
 				case cvBool:
+				case cvVariantBool:
 					retUnm = new BoolUnmarshaller(env,NULL);
 					break;
 

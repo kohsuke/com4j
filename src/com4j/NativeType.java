@@ -93,8 +93,24 @@ public enum NativeType {
     /**
      * The native type is 'BOOL' (defined as 'int')
      * where <tt>true</tt> maps to -1 and <tt>false</tt> maps to 0.
+     *
+     * <p>
+     * Expected Java type:
+     *      boolean
+     *      {@link Boolean}
      */
     Bool(103),
+
+    /**
+     * The native type is 'VARIANT_BOOL' where TRUE=1 and FALSE=0.
+     * Note that <tt>sizeof(VARIANT_BOOL)==2</tt>.
+     *
+     * <p>
+     * Expected Java type:
+     *      boolean
+     *      {@link Boolean}
+     */
+    VariantBool(104),
 
     /**
      * Used only with {@link ReturnValue} for returning

@@ -23,16 +23,24 @@ public class COM4J {
     }
 
     /**
-     * Gets the interface VTID associated with the given interface.
+     * Gets the interface GUID associated with the given interface.
      */
     public static GUID getIID( Class<? extends Com4jObject> _interface ) {
         IID iid = _interface.getAnnotation(IID.class);
         return new GUID(iid.value());
     }
 
+    /**
+     * Loads a type library from a given file and returns its IUnknown.
+     */
     public static Com4jObject loadTypeLibrary( File typeLibraryFile ) {
         return wrap(Com4jObject.class, Native.loadTypeLibrary(typeLibraryFile.getAbsolutePath()));
     }
+
+    /**
+     * GUID of IUnknown.
+     */
+    public static final GUID IID_IUnknown = new GUID("{00000000-0000-0000-C000-000000000046}");
 
 
     static <T>

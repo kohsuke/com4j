@@ -18,7 +18,17 @@ public interface Com4jObject {
     boolean equals(Object o);
 
     /**
-     * Hash code consistent with {@link #equals(java.lang.Object)} }
+     * Hash code consistent with {@link #equals(java.lang.Object)} }.
+     *
+     * <p>
+     * This method queries the <tt>IUnknown*</tt> value to the wrapped
+     * COM object and returns its pointer bit image as integer.
+     *
+     * <p>
+     * The net result is that the identity of {@link Com4jObject} is based
+     * on the identity of the underlying COM objects. Two {@link Com4jObject}
+     * that are holding different interfaces of the same COM object is
+     * considered "equal".
      */
     int hashCode();
 
@@ -37,6 +47,20 @@ public interface Com4jObject {
      * the COM objects deterministically.
      */
     void release();
+
+    /**
+     * Checks if this COM object implements a given interface.
+     *
+     * <p>
+     * This is just a convenience method that behaves as follows:
+     * <pre>
+     * return queryInterface(comInterface)!=null;
+     * </pre>
+     *
+     * @return
+     *      true if the wrapped COM object implements a given interface.
+     */
+    <T extends Com4jObject> boolean is( Class<T> comInterface );
 
     /**
      * Invokes the queryInterface of the wrapped COM object and attempts

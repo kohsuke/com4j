@@ -23,6 +23,11 @@ final class Wrapper implements InvocationHandler, Com4jObject {
     private int ptr;
 
     /**
+     * Cached hash code. The value of IUnknown*
+     */
+    private int hashCode=0;
+
+    /**
      * Cached of {@link MethodInfo} keyed by the method decl.
      *
      * TODO: revisit the cache design
@@ -80,6 +85,16 @@ final class Wrapper implements InvocationHandler, Com4jObject {
         ptr=0;
     }
 
+    public <T extends Com4jObject> boolean is( Class<T> comInterface ) {
+        try {
+            GUID iid = COM4J.getIID(comInterface);
+            int nptr = Native.queryInterface(ptr, iid.v[0], iid.v[1] );
+            Native.release(nptr);
+            return true;
+        } catch( ComException e ) {
+            return false;
+        }
+    }
 
     public <T extends Com4jObject> T queryInterface( Class<T> comInterface ) {
         try {
@@ -95,15 +110,21 @@ final class Wrapper implements InvocationHandler, Com4jObject {
         return "ComObject:"+Integer.toHexString(ptr);
     }
 
-    public int hashCode() {
-        // TODO: return the ptr of IUnknown
-        return ptr;
+    public final int hashCode() {
+        if(ptr==0)
+            throw new IllegalStateException("COM object is already disposed");
+
+        if(hashCode==0) {
+            long[] v = COM4J.IID_IUnknown.v;
+            hashCode = Native.queryInterface( ptr, v[0], v[1] );
+            Native.release(hashCode);
+        }
+        return hashCode;
     }
 
-    public boolean equals( Object rhs ) {
-        // TODO: return the ptr of IUnknown
-        if(!(rhs instanceof Wrapper))   return false;
-        return ptr==((Wrapper)rhs).ptr;
+    public final boolean equals( Object rhs ) {
+        if(!(rhs instanceof Com4jObject))   return false;
+        return hashCode()==rhs.hashCode();
     }
 
 
@@ -208,7 +229,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
             if(String.class==t)
                 return NativeType.BSTR;
             if(Boolean.TYPE==t)
-                return NativeType.Bool;
+                return NativeType.VariantBool;
         }
 
         if( t instanceof ParameterizedType ) {
