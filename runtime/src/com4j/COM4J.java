@@ -15,13 +15,51 @@ import java.net.URL;
 public abstract class COM4J {
     private COM4J() {} // no instanciation allowed
 
+    /**
+     * Creates a new COM object of the given CLSID and returns
+     * it in a wrapped interface.
+     *
+     * @param primaryInterface
+     *      The created COM object is returned as this interface.
+     *      Must be non-null. Passing in {@link Com4jObject} allows
+     *      the caller to create a new instance without knowing
+     *      its primary interface.
+     * @param clsid
+     *      The CLSID of the COM object to be created. Must be non-null.
+     *
+     * @return
+     *      non-null valid object.
+     *
+     * @throws ComException
+     *      if the instanciation fails.
+     */
     public static<T extends Com4jObject>
-    T createInstance( Class<T> primaryInterface, GUID guid ) {
-        return createInstance(primaryInterface,guid.toString());
+    T createInstance( Class<T> primaryInterface, GUID clsid ) throws ComException {
+        return createInstance(primaryInterface,clsid.toString());
     }
 
+    /**
+     * Creates a new COM object of the given CLSID and returns
+     * it in a wrapped interface.
+     *
+     * @param primaryInterface
+     *      The created COM object is returned as this interface.
+     *      Must be non-null. Passing in {@link Com4jObject} allows
+     *      the caller to create a new instance without knowing
+     *      its primary interface.
+     * @param clsid
+     *      The CLSID of the COM object in the
+     *      "<tt>{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}</tt>" format,
+     *      or the ProgID of the object (like "Microsoft.XMLParser.1.0")
+     *
+     * @return
+     *      non-null valid object.
+     *
+     * @throws ComException
+     *      if the instanciation fails.
+     */
     public static<T extends Com4jObject>
-    T createInstance( Class<T> primaryInterface, String clsid ) {
+    T createInstance( Class<T> primaryInterface, String clsid ) throws ComException {
 
         GUID iid = getIID(primaryInterface);
 
@@ -34,6 +72,8 @@ public abstract class COM4J {
      */
     public static GUID getIID( Class<? extends Com4jObject> _interface ) {
         IID iid = _interface.getAnnotation(IID.class);
+        if(iid==null)
+            throw new IllegalArgumentException(_interface.getName()+" doesn't have @IID annotation");
         return new GUID(iid.value());
     }
 

@@ -10,6 +10,7 @@ package com4j;
  *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
+@IID("{00000000-0000-0000-C000-000000000046}")
 public interface Com4jObject {
     /**
      * Tests the identity of two COM objects.
