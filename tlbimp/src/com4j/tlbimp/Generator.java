@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.nio.Buffer;
 
 /**
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
@@ -47,19 +48,21 @@ public final class Generator {
 
     private final Map<ITypeDecl,String> aliases
         = new HashMap<ITypeDecl,String>();
+    private final ErrorListener el;
 
     /**
      *
      * @param packageName
      *      Package to produce the output. Can be empty, but never be null.
      */
-    public static void generate( IWTypeLib lib, CodeWriter writer, String packageName ) throws IOException, BindingException {
-        new Generator(lib,writer,packageName)._generate();
+    public static void generate( IWTypeLib lib, CodeWriter writer, String packageName, ErrorListener el ) throws IOException {
+        new Generator(lib,writer,packageName,el)._generate();
     }
 
 
-    private Generator( IWTypeLib lib, CodeWriter writer, String packageName ) {
+    private Generator( IWTypeLib lib, CodeWriter writer, String packageName, ErrorListener el ) {
         this.lib = lib;
+        this.el = el;
         this.writer = writer;
         this.packageName = packageName;
 
@@ -89,7 +92,7 @@ public final class Generator {
                     aliases.put( def, typedef.getName() );
                 }
             }
-            t.release();
+            t.dispose();
         }
     }
 
@@ -113,7 +116,7 @@ public final class Generator {
             return new File(packageName.replace('.',File.separatorChar));
     }
 
-    private void _generate() throws IOException, BindingException {
+    private void _generate() throws IOException {
         generatePackageHtml(lib);
 
         boolean hasCoClass = false;
@@ -144,7 +147,7 @@ public final class Generator {
                     hasCoClass = true;
                 break;
             }
-            t.release();
+            t.dispose();
         }
 
         if(hasCoClass) {
@@ -165,7 +168,7 @@ public final class Generator {
                 if(!t.isCreatable())    continue;
 
                 declareFactoryMethod(o, t);
-                t.release();
+                t.dispose();
             }
 
             o.out();
@@ -236,7 +239,7 @@ public final class Generator {
 //                impl.isDefault(),
 //                impl.isSource(),
 //                impl.isRestricted());
-//            impl.release();
+//            impl.dispose();
 //        }
     }
 
@@ -249,18 +252,17 @@ public final class Generator {
         o.close();
     }
 
-    private void generate( IDispInterfaceDecl t ) throws IOException, BindingException {
-        try {
-            if(t.isDual())
-                generate( t.getVtblInterface() );
-            else {
-                // TODO: how should we handle this?
-            }
-        } catch( BindingException e ) {
-            throw new BindingException(
-                Messages.FAILED_TO_BIND.format(t.getName()),
-                e );
+    private void generate( IDispInterfaceDecl t ) throws IOException {
+        if(t.isDual())
+            generate( t.getVtblInterface() );
+        else {
+            // TODO: how should we handle this?
         }
+//        } catch( BindingException e ) {
+//            throw new BindingException(
+//                Messages.FAILED_TO_BIND.format(t.getName()),
+//                e );
+//        }
     }
 
     private void generate( IEnumDecl t ) throws IOException {
@@ -321,52 +323,54 @@ public final class Generator {
 
         // clean up
         for( IConstant con : cons)
-            con.release();
+            con.dispose();
 
         o.close();
     }
 
-    private void generate( IInterfaceDecl t ) throws IOException, BindingException {
-        try {
-            String typeName = getTypeName(t);
-            IndentingWriter o = writer.create( new File(getPackageDir(),typeName+".java" ) );
-            generateHeader(o);
+    private void generate( IInterfaceDecl t ) throws IOException {
+        String typeName = getTypeName(t);
+        IndentingWriter o = writer.create( new File(getPackageDir(),typeName+".java" ) );
+        generateHeader(o);
 
-            printJavadoc(t.getHelpString(), o);
+        printJavadoc(t.getHelpString(), o);
 
-            o.printf("@IID(\"%1s\")",t.getGUID());
-            o.println();
-            o.printf("public interface %1s",typeName);
-            if(t.countBaseInterfaces()!=0) {
-                o.print(" extends ");
-                o.beginCommaMode();
-                for( int i=0; i<t.countBaseInterfaces(); i++ ) {
-                    o.comma();
-                    String baseName = getTypeName(t.getBaseInterface(i));
-                    if(baseName.equals("IUnknown") || baseName.equals("IDispatch"))
-                        baseName = "Com4jObject";
-                    o.print(baseName);
-                }
-                o.endCommaMode();
+        o.printf("@IID(\"%1s\")",t.getGUID());
+        o.println();
+        o.printf("public interface %1s",typeName);
+        if(t.countBaseInterfaces()!=0) {
+            o.print(" extends ");
+            o.beginCommaMode();
+            for( int i=0; i<t.countBaseInterfaces(); i++ ) {
+                o.comma();
+                String baseName = getTypeName(t.getBaseInterface(i));
+                if(baseName.equals("IUnknown") || baseName.equals("IDispatch"))
+                    baseName = "Com4jObject";
+                o.print(baseName);
             }
-            o.println(" {");
-            o.in();
-
-            for( int j=0; j<t.countMethods(); j++ ) {
-                IMethod m = t.getMethod(j);
-                generate(m,o);
-                m.release();
-            }
-
-            o.out();
-            o.println("}");
-
-            o.close();
-        } catch( BindingException e ) {
-            throw new BindingException(
-                Messages.FAILED_TO_BIND.format(t.getName()),
-                e );
+            o.endCommaMode();
         }
+        o.println(" {");
+        o.in();
+
+        for( int j=0; j<t.countMethods(); j++ ) {
+            IMethod m = t.getMethod(j);
+            try {
+                o.startBuffering();
+                generate(m,o);
+                o.commit();
+            } catch( BindingException e ) {
+                o.cancel();
+                e.addContext("interface "+t.getName());
+                el.error(e);
+            }
+            m.dispose();
+        }
+
+        o.out();
+        o.println("}");
+
+        o.close();
     }
 
     private void generateHeader(IndentingWriter o) {
@@ -549,8 +553,10 @@ public final class Generator {
         pbind( VarType.VT_I2, Short.TYPE, NativeType.Int16, true );
         pbind( VarType.VT_I4, Integer.TYPE, NativeType.Int32, true );
         pbind( VarType.VT_BSTR, String.class, NativeType.BSTR, true );
+        pbind( VarType.VT_LPSTR, String.class, NativeType.CSTR, false );
         pbind( VarType.VT_LPWSTR, String.class, NativeType.Unicode, false );
         // TODO: is it OK to map UI2 to short?
+        pbind( VarType.VT_UI1, Byte.TYPE, NativeType.Int8, true );
         pbind( VarType.VT_UI2, Short.TYPE, NativeType.Int16, true );
         pbind( VarType.VT_UI4, Integer.TYPE, NativeType.Int32, true );
         pbind( VarType.VT_INT, Integer.TYPE, NativeType.Int32, true );
@@ -599,6 +605,10 @@ public final class Generator {
                     // T = VARIANT*
                     return new VariableBinding(Object.class, NativeType.VARIANT_ByRef, true);
                 }
+                if( compPrim.getVarType()==VarType.VT_VOID ) {
+                    // T = void*
+                    return new VariableBinding(Buffer.class,  NativeType.PVOID, true );
+                }
             }
 
             // otherwise use a holder
@@ -641,7 +651,7 @@ public final class Generator {
             if(name.equals("GUID")) {
                 return new VariableBinding( "GUID", NativeType.GUID, true );
             }
-            throw new UnsupportedOperationException("other decl "+declt.getKind());
+            throw new BindingException(Messages.UNSUPPORTED_TYPE.format(getTypeString(t)));
         }
 
         throw new BindingException(Messages.UNSUPPORTED_TYPE.format(getTypeString(t)));
@@ -653,9 +663,8 @@ public final class Generator {
             new MethodBinder(m).declare(o);
             o.println();
         } catch (BindingException e) {
-            throw new BindingException(
-                Messages.FAILED_TO_BIND.format(m.getName()),
-                e );
+            e.addContext("method "+m.getName());
+            throw e;
         }
     }
 

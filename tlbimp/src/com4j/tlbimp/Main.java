@@ -59,13 +59,11 @@ public class Main {
             System.err.println("Processing "+typeLibFileName);
             try {
                 IWTypeLib tlb = COM4J.loadTypeLibrary(typeLibFileName).queryInterface(IWTypeLib.class);
-                Generator.generate(tlb,cw,packageName.value);
-                tlb.release();
+                Generator.generate(tlb,cw,packageName.value,new ErrorListenerImpl());
+                tlb.dispose();
             } catch( ComException e ) {
                 return handleException(e);
             } catch( IOException e ) {
-                return handleException(e);
-            } catch( BindingException e ) {
                 return handleException(e);
             }
         }
@@ -80,6 +78,12 @@ public class Main {
         } else {
             System.err.println(e.getMessage());
             return 1;
+        }
+    }
+
+    private class ErrorListenerImpl implements ErrorListener {
+        public void error(BindingException e) {
+            handleException(e);
         }
     }
 

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.io.FilterWriter;
 import java.util.Stack;
 
 /**
@@ -14,6 +15,7 @@ import java.util.Stack;
  * <ol>
  *  <li>Indentation.
  *  <li>Printing comma-separated tokens.
+ *  <li>Buffering the certain portion of the output and canceling it later.
  * </ol>
  *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
@@ -23,22 +25,40 @@ public class IndentingWriter extends PrintWriter {
     private boolean newLine=true;
 
     public IndentingWriter(Writer out) {
-        super(out);
+        super(new CancellableWriter(out));
     }
 
     public IndentingWriter(Writer out, boolean autoFlush) {
-        super(out, autoFlush);
+        super(new CancellableWriter(out), autoFlush);
     }
 
-    public IndentingWriter(OutputStream out) {
-        super(out);
-    }
-
-    public IndentingWriter(OutputStream out, boolean autoFlush) {
-        super(out, autoFlush);
+    private CancellableWriter getOut() {
+        return (CancellableWriter)out;
     }
 
 
+//
+//
+// buffering, cancelling, and committing
+//
+//
+    public void startBuffering() {
+        try {
+            getOut().mark();
+        } catch (IOException e) {
+        }
+    }
+
+    public void cancel() {
+        getOut().cancel();
+    }
+
+    public void commit() {
+        try {
+            getOut().commit();
+        } catch (IOException e) {
+        }
+    }
 
 //
 //
@@ -140,5 +160,78 @@ public class IndentingWriter extends PrintWriter {
         checkIndent();
         needsComma = true;
         super.write(s, off, len);
+    }
+}
+
+class CancellableWriter extends FilterWriter {
+    /**
+     * Text that might be cancelled later will be buffered here.
+     */
+    private final StringBuffer buffer = new StringBuffer();
+
+    private boolean marked;
+
+    /**
+     * Once called, successive writing will be buffered until
+     * cancel() or commit() is called later.
+     */
+    public void mark() throws IOException {
+        if(marked)  commit();
+        marked = true;
+    }
+
+    /**
+     * Cancel the data written since the last {@link #mark()} method.
+     */
+    public void cancel() {
+        if(!marked)     throw new IllegalStateException();
+        marked = false;
+        buffer.setLength(0);
+    }
+
+    /**
+     * Write the pending data.
+     */
+    public void commit() throws IOException {
+        if(!marked)     throw new IllegalStateException();
+        marked = false;
+        super.append(buffer);
+        buffer.setLength(0);
+    }
+
+
+    public CancellableWriter(Writer out) {
+        super(out);
+    }
+
+    public void write(int c) throws IOException {
+        if(marked)
+            buffer.append( (char)c );
+        else
+            super.write(c);
+    }
+
+    public void write(char[] cbuf, int off, int len) throws IOException {
+        if(marked)
+            buffer.append(cbuf,off,len);
+        else
+            super.write(cbuf, off, len);
+    }
+
+    public void write(String str, int off, int len) throws IOException {
+        if(marked)
+            buffer.append(str,off,len);
+        else
+            super.write(str, off, len);
+    }
+
+    public void flush() throws IOException {
+        super.flush();
+    }
+
+    public void close() throws IOException {
+        if(marked)
+            commit();
+        super.close();
     }
 }

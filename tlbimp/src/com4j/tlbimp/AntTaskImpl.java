@@ -44,7 +44,7 @@ public class AntTaskImpl extends Task {
             IWTypeLib tlb = COM4J.loadTypeLibrary(source).queryInterface(IWTypeLib.class);
             CodeWriter cw = new FileCodeWriter(destDir);
             Generator.generate(tlb,cw,packageName);
-            tlb.release();
+            tlb.dispose();
         } catch( ComException e ) {
             throw new BuildException(e);
         } catch( IOException e ) {
