@@ -14,11 +14,17 @@ enum Messages {
     UNSUPPORTED_VARTYPE,
     UNSUPPORTED_TYPE,
     FAILED_TO_BIND,
+    USAGE,
+    NO_FILE_NAME,
     ;
 
     private static final ResourceBundle rb = ResourceBundle.getBundle(Messages.class.getName());
 
     String format( Object... args ) {
         return MessageFormat.format( rb.getString(name()), args );
+    }
+
+    public String toString() {
+        return format();
     }
 }

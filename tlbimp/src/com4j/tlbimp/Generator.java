@@ -31,14 +31,11 @@ import java.util.Date;
  */
 public final class Generator {
     /**
-     * Root of the output directory.
-     */
-    private final File outDir;
-
-    /**
      * Type library.
      */
     private final IWTypeLib lib;
+
+    private final CodeWriter writer;
 
     /**
      * Package to produce the output.
@@ -54,14 +51,14 @@ public final class Generator {
      * @param packageName
      *      Package to produce the output. Can be empty, but never be null.
      */
-    public static void generate( IWTypeLib lib, File outDir, String packageName ) throws IOException, BindingException {
-        new Generator(lib,outDir,packageName)._generate();
+    public static void generate( IWTypeLib lib, CodeWriter writer, String packageName ) throws IOException, BindingException {
+        new Generator(lib,writer,packageName)._generate();
     }
 
 
-    private Generator( IWTypeLib lib, File outDir, String packageName ) {
+    private Generator( IWTypeLib lib, CodeWriter writer, String packageName ) {
         this.lib = lib;
-        this.outDir = outDir;
+        this.writer = writer;
         this.packageName = packageName;
 
         buildSimpleAliasTable();
@@ -108,15 +105,7 @@ public final class Generator {
 
 
     private File getPackageDir() {
-        File f = new File(outDir,packageName);
-        f.mkdirs();
-        return f;
-    }
-
-    private IndentingWriter createWriter( File f ) throws IOException {
-//        // TODO: handle encoding better
-//        return new PrintWriter(new FileWriter(f));
-        return new IndentingWriter(System.out,true);
+        return new File(packageName.replace('.',File.separatorChar));
     }
 
     private void _generate() throws IOException, BindingException {
@@ -152,7 +141,7 @@ public final class Generator {
     }
 
     private void generatePackageHtml(IWTypeLib lib) throws IOException {
-        PrintWriter o = createWriter( new File(getPackageDir(),"package.html" ) );
+        PrintWriter o = writer.create( new File(getPackageDir(),"package.html" ) );
         o.println("<html><body>");
         o.printf("<h2>%1s</h2>",lib.getName());
         o.printf("<p>%1s</p>",lib.getHelpString());
@@ -181,7 +170,7 @@ public final class Generator {
 
         // generate the prolog
         String typeName = getTypeName(t);
-        IndentingWriter o = createWriter( new File(getPackageDir(),typeName ) );
+        IndentingWriter o = writer.create( new File(getPackageDir(),typeName ) );
         generateHeader(o);
 
         printJavadoc(t.getHelpString(), o);
@@ -227,7 +216,7 @@ public final class Generator {
     private void generate( IInterfaceDecl t ) throws IOException, BindingException {
         try {
             String typeName = getTypeName(t);
-            IndentingWriter o = createWriter( new File(getPackageDir(),typeName ) );
+            IndentingWriter o = writer.create( new File(getPackageDir(),typeName ) );
             generateHeader(o);
 
             printJavadoc(t.getHelpString(), o);
