@@ -19,8 +19,14 @@ public interface IDispInterfaceDecl extends ITypeDecl, IInterface {
     IMethod getMethod(int idx);
 
     /**
-     * get the vtable interface of this dispatch interface. Works only when this is a dual interface.
+     * return true if this interface is a dual interface
      */
     @VTID(9)
+    boolean isDual();
+
+    /**
+     * get the vtable interface of this dispatch interface. Works only when this is a dual interface.
+     */
+    @VTID(10)
     IInterfaceDecl getVtblInterface();
 }

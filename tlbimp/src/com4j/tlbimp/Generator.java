@@ -2,6 +2,8 @@ package com4j.tlbimp;
 
 import com4j.Com4jObject;
 import com4j.NativeType;
+import com4j.COM4J;
+import com4j.GUID;
 import com4j.tlbimp.def.IConstant;
 import com4j.tlbimp.def.IDispInterfaceDecl;
 import com4j.tlbimp.def.IEnumDecl;
@@ -16,6 +18,8 @@ import com4j.tlbimp.def.ITypedefDecl;
 import com4j.tlbimp.def.IWTypeLib;
 import com4j.tlbimp.def.TypeKind;
 import com4j.tlbimp.def.VarType;
+import com4j.tlbimp.def.ICoClassDecl;
+import com4j.tlbimp.def.IImplementedInterfaceDecl;
 
 import java.io.File;
 import java.io.IOException;
@@ -113,12 +117,14 @@ public final class Generator {
     private void _generate() throws IOException, BindingException {
         generatePackageHtml(lib);
 
+        boolean hasCoClass = false;
+
         int len = lib.count();
         for( int i=0; i<len; i++ ) {
             ITypeDecl t = lib.getType(i);
             switch(t.getKind()) {
             case DISPATCH:
-                generate( t.queryInterface(IDispInterfaceDecl.class).getVtblInterface() );
+                generate( t.queryInterface(IDispInterfaceDecl.class) );
                 break;
             case INTERFACE:
                 generate( t.queryInterface(IInterfaceDecl.class) );
@@ -128,18 +134,117 @@ public final class Generator {
                 break;
             case ALIAS:
                 {
-                    ITypedefDecl alias = t.queryInterface(ITypedefDecl.class);
+//                    ITypedefDecl alias = t.queryInterface(ITypedefDecl.class);
 //                    System.out.printf("typedef %1s %2s", alias.getName(),
 //                        getTypeString(alias.getDefinition()));
                     System.out.println();
                     break;
                 }
+            case COCLASS:
+                // we handle all co-classes later
+                if( t.queryInterface(ICoClassDecl.class).isCreatable() )
+                    hasCoClass = true;
+                break;
             default:
                 System.out.println( t.getKind() );
                 break;
             }
             t.release();
         }
+
+        if(hasCoClass) {
+            // generate ClassFactory
+            IndentingWriter o = writer.create(new File(getPackageDir(),"ClassFactory.java"));
+            generateHeader(o);
+
+            printJavadoc("Defines methods to create COM objects",o);
+            o.println("public abstract class ClassFactory {");
+            o.in();
+
+            o.println("private ClassFactory() {} // instanciation is not allowed");
+            o.println();
+
+            for( int i=0; i<len; i++ ) {
+                ICoClassDecl t = lib.getType(i).queryInterface(ICoClassDecl.class);
+                if(t==null)     continue;
+                if(!t.isCreatable())    continue;
+
+                declareFactoryMethod(o, t);
+                t.release();
+            }
+
+            o.out();
+            o.println("}");
+            o.close();
+        }
+    }
+
+//    private Com4jObject createFoo() {
+//        COM4J.createInstance( primaryT, clsid );
+//    }
+
+    /**
+     * Returns the primary interface for the given co-class.
+     */
+    private ITypeDecl getDefaultInterface( ICoClassDecl t ) {
+        final int count = t.countImplementedInterfaces();
+        // look for the default interface first.
+        for( int i=0; i<count; i++ ) {
+            IImplementedInterfaceDecl impl = t.getImplementedInterface(i);
+            if(impl.isSource())
+                continue;
+            if(impl.isDefault())
+                return impl.getType();
+        }
+
+        // if none is found, look for any non-source interface
+        for( int i=0; i<count; i++ ) {
+            IImplementedInterfaceDecl impl = t.getImplementedInterface(i);
+            if(impl.isSource())
+                continue;
+            return impl.getType();
+        }
+
+        return null;
+    }
+
+    private void declareFactoryMethod(IndentingWriter o, ICoClassDecl t) {
+        final int count = t.countImplementedInterfaces();
+
+        String primaryIntf; // default interface name
+        ITypeDecl p = getDefaultInterface(t);
+        if(p!=null)
+            primaryIntf = getTypeName(p);
+        else
+            primaryIntf = Com4jObject.class.getName();
+
+        o.println();
+        printJavadoc(t.getHelpString(),o);
+
+        o.printf("public static %1s create%2s() {", primaryIntf, t.getName() );
+        o.println();
+        o.in();
+
+        o.printf("return COM4J.createInstance( %1s.class, \"%2s\" );",
+            primaryIntf, t.getGUID());
+        o.println();
+
+        o.out();
+        o.println("}");
+//
+//
+//        o.println(t.getHelpString());
+//        o.println(t.getName());
+//        int count = t.countImplementedInterfaces();
+//        for( int j=0; j<count; j++ ) {
+//            IImplementedInterfaceDecl impl = t.getImplementedInterface(j);
+//            o.printf("%1s def:%2b src:%3b rst:%4b\n",
+//                impl.getType().getName(),
+//                impl.isDefault(),
+//                impl.isSource(),
+//                impl.isRestricted());
+//            impl.release();
+//        }
     }
 
     private void generatePackageHtml(IWTypeLib lib) throws IOException {
@@ -151,6 +256,19 @@ public final class Generator {
         o.close();
     }
 
+    private void generate( IDispInterfaceDecl t ) throws IOException, BindingException {
+        try {
+            if(t.isDual())
+                generate( t.getVtblInterface() );
+            else {
+                // TODO: how should we handle this?
+            }
+        } catch( BindingException e ) {
+            throw new BindingException(
+                Messages.FAILED_TO_BIND.format(t.getName()),
+                e );
+        }
+    }
 
     private void generate( IEnumDecl t ) throws IOException {
 
@@ -177,7 +295,7 @@ public final class Generator {
 
         printJavadoc(t.getHelpString(), o);
 
-        o.printf("enum %1s ",typeName);
+        o.printf("public enum %1s ",typeName);
         if(needComEnum)
             o.print("implements ComEnum ");
         o.println("{");
@@ -225,7 +343,7 @@ public final class Generator {
 
             o.printf("@IID(\"%1s\")",t.getGUID());
             o.println();
-            o.printf("interface %1s",typeName);
+            o.printf("public interface %1s",typeName);
             if(t.countBaseInterfaces()!=0) {
                 o.print(" extends ");
                 o.beginCommaMode();
