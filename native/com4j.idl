@@ -26,6 +26,7 @@ library com4j
 	interface ITypeDecl;
 	interface IMethod;
 	interface IParam;
+	interface IConstant;
 
 	typedef enum {
 		TypeKind_ENUM	= 0,
@@ -180,5 +181,37 @@ library com4j
 		HRESULT isIn([out,retval]VARIANT_BOOL* pValue);
 		HRESULT isOut([out,retval]VARIANT_BOOL* pValue);
 		HRESULT isRetval([out,retval]VARIANT_BOOL* pValue);
+	};
+
+	[
+		object,
+		uuid(C99EBD48-0DF6-453d-94A8-BC004F69330F),
+		helpstring("Enum declaration"),
+		pointer_default(unique)
+	]
+	interface IEnumDecl : ITypeDecl
+	{
+		[helpstring("Get the number of enum constants")]
+		HRESULT countConstants([out,retval] int* pNum );
+
+		[helpstring("Get the enum constant")]
+		HRESULT getConstant( int index, IConstant** ppConstant );
+	};
+
+	[
+		object,
+		uuid(579779F8-E889-43cc-9C07-F412A5374970),
+		helpstring("Enum constant declaration"),
+		pointer_default(unique)
+	]
+	interface IConstant : IUnknown {
+		[helpstring("name of the constant")]
+		HRESULT getName(BSTR* pName);
+
+		[helpstring("type of the constant. types should be identical among enum constants.")]
+		HRESULT getType(IType** ppType);
+
+		[helpstring("numeric value of this constant.")]
+		HRESULT getValue(int* pValue);
 	};
 };

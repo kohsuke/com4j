@@ -239,13 +239,73 @@ public:
 
 
 
+class ATL_NO_VTABLE CConstant : 
+	public CComObjectRootEx<CComSingleThreadModel>,
+	public CComCoClass<CConstant, &__uuidof(IConstant)>,
+	public IConstant
+{
+	CTypeDeclPtr	m_pParent;
+	VARDESC*		m_pDesc;
+public:
+	CConstant() {}
+	~CConstant() {
+		getTypeInfo()->ReleaseVarDesc(m_pDesc);
+		m_pDesc = NULL;
+	}
+
+	void init( CTypeDecl* pParent, int idx ) {
+		m_pParent = pParent;
+		getTypeInfo()->GetVarDesc(idx,&m_pDesc);
+	}
+
+	static CComObject<CConstant>* create( CTypeDecl* pParent, int idx ) {
+		CComObject<CConstant>* pObj = NULL;
+		CComObject<CConstant>::CreateInstance(&pObj);
+		pObj->AddRef();
+		pObj->init(pParent,idx);
+		return pObj;
+	}
+
+// DECLARE_REGISTRY_RESOURCEID(...)
+
+DECLARE_PROTECT_FINAL_CONSTRUCT()
+
+BEGIN_COM_MAP(CConstant)
+	COM_INTERFACE_ENTRY(IConstant)
+	COM_INTERFACE_ENTRY(IUnknown)
+END_COM_MAP()
+
+public:
+	ITypeInfo* getTypeInfo();
+
+	STDMETHOD(raw_getName)(BSTR* pName) {
+		UINT unused;
+		return getTypeInfo()->GetNames( m_pDesc->memid, pName, 1, &unused );
+	}
+	STDMETHOD(raw_getType)(IType** ppType) {
+		*ppType = createType(m_pParent, m_pDesc->elemdescVar.tdesc);
+		return S_OK;
+	}
+	STDMETHOD(raw_getValue)(int* pValue) {
+		VARIANT r;
+		HRESULT hr = VariantChangeType(&r, m_pDesc->lpvarValue,0,VT_I4);
+		if(FAILED(hr))	return hr;
+		*pValue = r.intVal;
+		return S_OK;
+	}
+};
+
+
+
+
 
 
 class ATL_NO_VTABLE CTypeDecl : 
 	public CComObjectRootEx<CComSingleThreadModel>,
 	public CComCoClass<CTypeDecl, &__uuidof(ITypeDecl)>,
 	public IDispInterfaceDecl,
-	public IInterfaceDecl
+	public IInterfaceDecl,
+	public IEnumDecl
 {
 public:
 	CTypeLibPtr m_pParent;
@@ -274,6 +334,7 @@ BEGIN_COM_MAP(CTypeDecl)
 	COM_INTERFACE_ENTRY2(ITypeDecl,IInterfaceDecl)
 	COM_INTERFACE_ENTRY(IDispInterfaceDecl)
 	COM_INTERFACE_ENTRY(IInterfaceDecl)
+	COM_INTERFACE_ENTRY(IEnumDecl)
 END_COM_MAP()
 
 public:
@@ -308,6 +369,20 @@ public:
 		}
 	}
 
+	// IEnumDecl
+	STDMETHOD(raw_countConstants)( int* pNum ) {
+		*pNum = m_pAttr->cVars;
+		return S_OK;
+	}
+	STDMETHOD(raw_getConstant)( int index, IConstant** ppConstant ) {
+		if(index<0 || m_pAttr->cVars<=index) {
+			*ppConstant = NULL;
+			return E_INVALIDARG;
+		} else {
+			*ppConstant = CConstant::create(this,index);
+			return S_OK;
+		}
+	}
 };
 
 

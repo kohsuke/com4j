@@ -121,6 +121,12 @@ STDMETHODIMP CMethod::raw_getParam(int index, IParam** pOut) {
 }
 
 
+ITypeInfo* CConstant::getTypeInfo() {
+	return m_pParent->m_pType;
+}
+
+
+
 
 
 
