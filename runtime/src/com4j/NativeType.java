@@ -1,5 +1,7 @@
 package com4j;
 
+import static com4j.Const.BYREF;
+
 import java.util.Calendar;
 
 import static com4j.Const.*;
@@ -18,7 +20,11 @@ public enum NativeType {
      * Expected Java type:
      *      String
      */
-    BSTR(1),
+    BSTR(1) {
+        public NativeType byRef() {
+            return BSTR_ByRef;
+        }
+    },
 
     /**
      * <tt>BSTR*</tt>.
@@ -55,7 +61,21 @@ public enum NativeType {
     CSTR(3),
 
     Int8(100),
-    Int16(101),
+    /**
+     * <tt>INT16</tt> (short).
+     *
+     * <p>
+     * Expected Java type:
+     *      short
+     *      {@link Number}
+     */
+    Int16(101) {
+        public NativeType byRef() {
+            return Int16_ByRef;
+        }
+    },
+    Int16_ByRef(101|BYREF),
+
     /**
      * Marshalled as 32-bit integer.
      *
@@ -86,6 +106,10 @@ public enum NativeType {
             }
 
             return param;
+        }
+
+        public NativeType byRef() {
+            return Int32_ByRef;
         }
     },
     Int32_ByRef(102|BYREF),
@@ -161,6 +185,10 @@ public enum NativeType {
         Object unmassage(Class<?> type,Object param) {
             if(param==null)     return null;
             return COM4J.wrap( (Class<? extends Com4jObject>)type, (Integer)param );
+        }
+
+        public NativeType byRef() {
+            return ComObject_ByRef;
         }
     },
 
@@ -384,5 +412,13 @@ public enum NativeType {
      */
     Object unmassage(Class<?> signature, Object param) {
         return param;
+    }
+
+    /**
+     * If the constant has the BYREF version, return it.
+     * Otherwise null.
+     */
+    public NativeType byRef() {
+        return null;
     }
 }

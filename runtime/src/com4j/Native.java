@@ -32,8 +32,7 @@ class Native {
          Object[] args, int[] parameterConversions,
          Class<RetT> returnType, int returnIndex, boolean returnIsInOut, int returnConversion );
 
-    static native int queryInterface( int pComObject, long iid1, long iid2 )
-        throws ComException;
+    static native int queryInterface( int pComObject, long iid1, long iid2 );
 
     /**
      * Loads a type library from a given file, wraps it, and returns its IUnknown.

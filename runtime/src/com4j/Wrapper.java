@@ -1,11 +1,8 @@
 package com4j;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -28,6 +25,16 @@ final class Wrapper implements InvocationHandler, Com4jObject {
     private int hashCode=0;
 
     /**
+     * Used to form a linked list for {@link ComThread#freeList}.
+     */
+    Wrapper next;
+
+    /**
+     * All the invocation to the wrapper COM object must go through this thread.
+     */
+    private final ComThread thread;
+
+    /**
      * Cached of {@link MethodInfo} keyed by the method decl.
      *
      * TODO: revisit the cache design
@@ -37,6 +44,8 @@ final class Wrapper implements InvocationHandler, Com4jObject {
 
     Wrapper(int ptr) {
         this.ptr = ptr;
+        thread = ComThread.get();
+        thread.addLiveObject();
     }
 
     int getPtr() {
@@ -44,7 +53,8 @@ final class Wrapper implements InvocationHandler, Com4jObject {
     }
 
     protected void finalize() throws Throwable {
-        release();
+        if(ptr!=0)
+            thread.addToFreeList(this);
     }
 
     private static final Object[] EMPTY_ARRAY = new Object[0];
@@ -68,7 +78,9 @@ final class Wrapper implements InvocationHandler, Com4jObject {
             }
         }
 
-        return getMethodInfo(method).invoke(ptr,args);
+        if(invCache==null)
+            invCache = new InvocationThunk();
+        return invCache.invoke(getMethodInfo(method),args);
     }
 
     private MethodInfo getMethodInfo(Method method) {
@@ -80,33 +92,39 @@ final class Wrapper implements InvocationHandler, Com4jObject {
     }
 
     public void release() {
-        if(ptr!=0)
-           Native.release(ptr);
+        if(ptr!=0) {
+            thread.execute(new Task() {
+                void run() {
+                    dispose0();
+                }
+            });
+        }
+    }
+
+    /**
+     * Called from {@link ComThread} to actually call IUnknown::Release.
+     */
+    void dispose0() {
+        assert ptr!=0;
+        Native.release(ptr);
         ptr=0;
-        // object shouldn't change hash code.
-        // so we keep the
-        // hashCode=0;
     }
 
     public <T extends Com4jObject> boolean is( Class<T> comInterface ) {
         try {
             GUID iid = COM4J.getIID(comInterface);
-            int nptr = Native.queryInterface(ptr, iid.v[0], iid.v[1] );
-            Native.release(nptr);
-            return true;
+            return new QITestTask(iid).invoke()!=0;
         } catch( ComException e ) {
             return false;
         }
     }
 
     public <T extends Com4jObject> T queryInterface( Class<T> comInterface ) {
-        try {
-            GUID iid = COM4J.getIID(comInterface);
-            int nptr = Native.queryInterface(ptr, iid.v[0], iid.v[1] );
-            return COM4J.wrap( comInterface, nptr );
-        } catch( ComException e ) {
+        GUID iid = COM4J.getIID(comInterface);
+        int nptr = new QITask(iid).invoke();
+        if(nptr==0)
             return null;    // failed to cast
-        }
+        return COM4J.wrap( comInterface, nptr );
     }
 
     public String toString() {
@@ -116,8 +134,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
     public final int hashCode() {
         if(hashCode==0) {
             if(ptr!=0) {
-                hashCode = COM4J.queryInterface( ptr, COM4J.IID_IUnknown );
-                Native.release(hashCode);
+                hashCode = new QITestTask(COM4J.IID_IUnknown).invoke();
             } else {
                 hashCode = 0;
             }
@@ -130,128 +147,114 @@ final class Wrapper implements InvocationHandler, Com4jObject {
         return hashCode()==rhs.hashCode();
     }
 
+    /**
+     * Used to pass parameters/return values between the host thread
+     * and the peer {@link ComThread}.
+     */
+    private class InvocationThunk extends Task {
+        private MethodInfo method;
+        private Object[] args;
+        private Object returnValue;
+        private RuntimeException exception;
 
+        /**
+         * Invokes the method on the peer {@link ComThread} and returns
+         * its return value.
+         */
+        public synchronized Object invoke( MethodInfo method, Object[] args ) {
+            invCache = null;
+            this.method = method;
+            this.args = args;
 
-    static class MethodInfo {
-        final Method method;
+            thread.execute(this);
 
-        final int vtIndex;
-        // list of params.code
-        final int[] paramConvs;
-        final NativeType[] params;
-        final int returnIndex;
-        final boolean returnIsInOut;
-        final NativeType returnConv;
-        final Class<?>[] paramTypes;
+            invCache = this;
 
-        MethodInfo( Method m ) {
-            method = m;
-
-            VTID vtid = m.getAnnotation(VTID.class);
-            if(vtid==null)
-                throw new IllegalAnnotationException("@VTID is missing: "+m.toGenericString());
-            vtIndex = vtid.value();
-
-            Annotation[][] pa = m.getParameterAnnotations();
-            int paramLen = pa.length;
-
-
-            ReturnValue rt = m.getAnnotation(ReturnValue.class);
-            if(rt!=null) {
-                if(rt.index()==-1)  returnIndex=pa.length;
-                else                returnIndex=rt.index();
-                returnIsInOut = rt.inout();
-                returnConv = rt.type();
+            if( exception!=null ) {
+                exception.fillInStackTrace();
+                RuntimeException e = exception;
+                exception = null;
+                throw e;
             } else {
-                // guess the default
-                if( method.getReturnType()==Void.TYPE ) {
-                    // no return type
-                    returnIndex = -1;
-                    returnIsInOut = false;
-                    returnConv = NativeType.Default;    // unused
-                } else {
-                    returnIndex = paramLen;
-                    returnIsInOut = false;
-                    returnConv = getDefaultConversion(method.getReturnType());
-                }
-            }
-
-            Type[] javaParamTypes = m.getGenericParameterTypes();
-
-            paramTypes = m.getParameterTypes();
-            paramConvs = new int[paramLen];
-            params = new NativeType[paramLen];
-            for( int i=0; i<paramLen; i++ ) {
-                NativeType n=null;
-                for( Annotation a : pa[i] )
-                    if( a instanceof MarshalAs )
-                        n = ((MarshalAs)a).value();
-                if(n==null) {
-                    // missing annotation
-                    n = getDefaultConversion(javaParamTypes[i]);
-                }
-                params[i] = n;
-                paramConvs[i] = n.code;
+                Object r = returnValue;
+                returnValue = null;
+                return r;
             }
         }
 
-        Object invoke( int ptr, Object[] args ) {
-            for( int i=0; i<args.length; i++ )
-                args[i] = params[i].massage(args[i]);
-
+        /**
+         * Called from {@link ComThread} to actually carry out the execution.
+         */
+        public synchronized void run() {
             try {
-                Object r = Native.invoke( ptr, vtIndex, args, paramConvs,
-                    method.getReturnType(), returnIndex, returnIsInOut, returnConv.code );
-                return returnConv.unmassage(method.getReturnType(),r);
-            } finally {
-                for( int i=0; i<args.length; i++ )
-                    args[i] = params[i].unmassage(paramTypes[i],args[i]);
+                returnValue = method.invoke(ptr,args);
+                exception = null;
+            } catch( RuntimeException e ) {
+                exception = e;
+                returnValue = null;
             }
+            // clear fields that are no longer necessary
+            method = null;
+            args = null;
+            // let the caller thread know.
+            notify();
         }
     }
+
+    /**
+     * We cache up to one {@link InvocationThunk}.
+     */
+    InvocationThunk invCache;
 
 
     /**
-     * Computes the default conversion for the given type.
+     * {@link Task} implementation that invokes QueryInterface.
+     *
+     * @author Kohsuke Kawaguchi (kk@kohsuke.org)
      */
-    private static NativeType getDefaultConversion(Type t) {
-        if( t instanceof Class ) {
-            Class<?> c = (Class<?>)t;
-            if(Com4jObject.class.isAssignableFrom(c))
-                return NativeType.ComObject;
-            if(Enum.class.isAssignableFrom(c))
-                return NativeType.Int32;
-            if(GUID.class==t)
-                return NativeType.GUID;
-            if(Integer.TYPE==t)
-                return NativeType.Int32;
-            if(Short.TYPE==t)
-                return NativeType.Int16;
-            if(Byte.TYPE==t)
-                return NativeType.Int8;
-            if(String.class==t)
-                return NativeType.BSTR;
-            if(Boolean.TYPE==t)
-                return NativeType.VariantBool;
-            if(Object.class==t)
-                return NativeType.VARIANT_ByRef;
+    private final class QITask extends Task {
+        private final GUID iid;
+
+        /** the result. */
+        private int nptr;
+
+        public QITask(GUID iid) {
+            this.iid = iid;
         }
 
-        if( t instanceof ParameterizedType ) {
-            ParameterizedType p = (ParameterizedType) t;
-            if( p.getRawType()==Holder.class ) {
-                // let p=Holder<V>
-                Type v = p.getActualTypeArguments()[0];
-                if( v instanceof Class && Com4jObject.class.isAssignableFrom((Class<?>)v))
-                    return NativeType.ComObject_ByRef;
-                if(String.class==v)
-                    return NativeType.BSTR_ByRef;
-                if(Integer.class==v)
-                    return NativeType.Int32_ByRef;
-            }
+        int invoke() {
+            thread.execute(this);
+            return nptr;
         }
 
-        throw new IllegalAnnotationException("no default conversion available for "+t);
+        void run() {
+            nptr = Native.queryInterface(ptr,iid.v[0],iid.v[1]);
+        }
     }
 
+    /**
+     * Invokes QueryInterface but immediately releases that pointer.
+     * Useful for checking if an object implements a particular interface.
+     */
+    private final class QITestTask extends Task {
+        private final GUID iid;
+
+        /** the result. */
+        private int nptr;
+
+        public QITestTask(GUID iid) {
+            this.iid = iid;
+        }
+
+        int invoke() {
+            thread.execute(this);
+            return nptr;
+        }
+
+        void run() {
+            nptr = Native.queryInterface(ptr,iid.v[0],iid.v[1]);
+            if(nptr!=0)
+                Native.release(nptr);
+        }
+    }
 }
