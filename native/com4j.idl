@@ -167,6 +167,7 @@ library com4j
 	]
 	interface IMethod : IUnknown
 	{
+		[helpstring("name of the method")]
 		HRESULT getName([out,retval] BSTR* pName);
 		HRESULT getKind([out,retval] INVOKEKIND* pKind);
 		HRESULT getHelpString([out,retval] BSTR* pHelpString);
