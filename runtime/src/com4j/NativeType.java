@@ -331,7 +331,7 @@ public enum NativeType {
             int disp = (Integer)param;
             if(disp==0)      return null;
             Native.release( disp );
-            return param;
+            return Wrapper.create( (Class<? extends Com4jObject>)type, (Integer)param );
         }
     },
 
