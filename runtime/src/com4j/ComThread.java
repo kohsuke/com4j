@@ -77,6 +77,8 @@ final class ComThread extends Thread {
     }
 
     public synchronized void run() {
+        Native.coInitialize();
+
         // TODO: we need to run Windows message pump
         while(!canExit()) {
             try {
@@ -97,6 +99,8 @@ final class ComThread extends Thread {
                 task.invoke();
             }
         }
+
+        Native.coUninitialize();
     }
 
     /**

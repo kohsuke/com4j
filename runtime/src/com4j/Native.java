@@ -38,4 +38,13 @@ class Native {
      * Loads a type library from a given file, wraps it, and returns its IUnknown.
      */
     static native int loadTypeLibrary(String name);
+
+    /**
+     * Calls "CoInitialize"
+     */
+    static native void coInitialize();
+    /**
+     * Calls "CoUninitialize"
+     */
+    static native void coUninitialize();
 }
