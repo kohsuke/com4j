@@ -29,6 +29,8 @@ public class ComException extends RuntimeException {
     }
 
     private static String cutEOL( String s ) {
+        if(s==null)
+            return "(Unknown error)";
         if(s.endsWith("\r\n"))
             return s.substring(0,s.length()-2);
         else
