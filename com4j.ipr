@@ -258,7 +258,7 @@
   </component>
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/com4j.iml" filepath="$PROJECT_DIR$/com4j.iml" />
+      <module fileurl="file://$PROJECT_DIR$/runtime/runtime.iml" filepath="$PROJECT_DIR$/runtime/runtime.iml" />
       <module fileurl="file://$PROJECT_DIR$/tlbimp/tlbimp.iml" filepath="$PROJECT_DIR$/tlbimp/tlbimp.iml" />
     </modules>
   </component>

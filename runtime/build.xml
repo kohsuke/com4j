@@ -1,23 +1,17 @@
 <?xml version="1.0"?>
-<project name="tlbimp" default="compile" basedir=".">
+<project name="runtime" default="compile" basedir=".">
   <target name="compile">
     <mkdir dir="build/classes"/>
     <javac srcdir="src" destdir="build/classes"
            debug="on">
-      <classpath>
-        <fileset dir="lib" includes="*.jar"/>
-        <pathelement path="../build/classes"/>
-      </classpath>
     </javac>
   </target>
   
   <target name="jar" depends="compile">
     <tstamp/>
-    <jar file="build/tlbimp.jar">
+    <jar file="build/com4j.jar">
       <manifest>
-        <attribute name="Main-Class" value="com4j.tlbimp.Main"/>
         <attribute name="Build-Date" value="${DSTAMP}" />
-        <attribute name="Class-Path" value="com4j.jar args4j-1.0.jar" />
       </manifest>
       <metainf dir="../../www" includes="LICENSE.txt" />
       <fileset dir="build/classes" includes="**/*.class"/>
