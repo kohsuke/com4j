@@ -392,7 +392,7 @@ public enum NativeType {
             t  -= dt.getTimezoneOffset()*60*1000;
 
             // the number of milliseconds since December 30, 1899, 00:00:00 Local Time
-            t += 2209132800000L;
+            t += 2209161600000L;
 
             // DATE is an offset from "30 December 1899"
             if(t<0) {
@@ -407,12 +407,9 @@ public enum NativeType {
         Object unmassage(Class<?> signature, Type genericSignature, Object param) {
             double d = (Double)param;
             long t = (long)(d*MSPD);
-            t -= 2209132800000L;
+            t -= 2209161600000L;
+            t -= defaultTimeZone.getOffset(t);  // convert back to UTC
             java.util.Date dt = new java.util.Date(t);
-            if(defaultTimeZone.inDaylightTime(dt)) {
-                // adjust
-                dt.setTime(t-defaultTimeZone.getDSTSavings());
-            }
             if(Calendar.class.isAssignableFrom(signature)) {
                 GregorianCalendar cal = new GregorianCalendar();
                 cal.setTime(dt);
