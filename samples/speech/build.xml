@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<project name="speech" default="run" basedir=".">
+  
+  <path id="com4j">
+    <fileset dir="../.." includes="*.jar"/>
+    <pathelement location="build/classes"/>
+    <pathelement path="${java.class.path}"/><!-- this line is just to allow the sample inside the workspace -->
+  </path>
+  
+  <taskdef resource="/com4j/tlbimp/ant.properties">
+    <classpath refid="com4j" />
+  </taskdef>
+  
+  
+  <target name="tlbimp">
+    <mkdir dir="build/src"/>
+    <!-- compile Microsoft Speech API -->
+    <tlbimp libid="C866CA3A-32F7-11D2-9602-00C04F8EE628"
+      destdir="build/src" package="speech.types" />
+  </target>
+  
+  <target name="compile" depends="tlbimp">
+    <mkdir dir="build/classes"/>
+    <javac srcdir="build/src" destdir="build/classes"
+           debug="on">
+      <classpath refid="com4j" />
+    </javac>
+    <javac srcdir="src" destdir="build/classes"
+           debug="on">
+      <classpath refid="com4j" />
+    </javac>
+  </target>
+  
+  <target name="run" depends="compile">
+    <java classname="excel.Main" fork="true">
+      <classpath>
+        <path refid="com4j"/>
+      </classpath>
+    </java>
+  </target>
+  
+  <target name="clean">
+    <delete dir="build"/>
+  </target>
+</project>
