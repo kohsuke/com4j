@@ -65,31 +65,52 @@ CPrimitiveTypeImpl vtvariant(VT_VARIANT,L"Variant");
 CPrimitiveTypeImpl vtdate(VT_DATE,L"Date");
 
 
-CWMethod::~CWMethod() {
+CMethod::~CMethod() {
 	m_pParent->m_pType->ReleaseFuncDesc(m_pDesc);
 	m_pDesc=NULL;
+
+	for( int i=0; i<m_nameCount; i++ )
+		SysFreeString(m_pNames[i]);
+	delete m_pNames;
 }
 
 
-void CWMethod::init( CWTypeDecl* pParent, int idx ) {
+void CMethod::init( CWTypeDecl* pParent, int idx ) {
 	m_pParent = pParent;
 	HRESULT hr = m_pParent->m_pType->GetFuncDesc(idx,&m_pDesc);
 	_ASSERT(SUCCEEDED(hr));
+
+	m_nameCount = m_pDesc->cParams+1;
+	m_pNames = new BSTR[m_nameCount];
+	UINT unused;
+	m_pParent->m_pType->GetNames( memid(), m_pNames, m_nameCount, &unused );
 }
 
-STDMETHODIMP CWMethod::raw_getName(BSTR* pName) {
+STDMETHODIMP CMethod::raw_getName(BSTR* pName) {
 	UINT unused;
 	return m_pParent->m_pType->GetNames(m_pDesc->memid, pName, 1, &unused );
 }
-STDMETHODIMP CWMethod::raw_getKind(INVOKEKIND* pKind) {
+STDMETHODIMP CMethod::raw_getKind(INVOKEKIND* pKind) {
 	*pKind = m_pDesc->invkind;
 	return S_OK;
 }
-STDMETHODIMP CWMethod::raw_getHelpString(BSTR* pHelpString) {
+STDMETHODIMP CMethod::raw_getHelpString(BSTR* pHelpString) {
 	return m_pParent->m_pType->GetDocumentation(m_pDesc->memid, NULL, pHelpString, NULL, NULL );
 }
-STDMETHODIMP CWMethod::raw_getReturnType(IType** ppType) {
+STDMETHODIMP CMethod::raw_getReturnType(IType** ppType) {
 	*ppType = createType(m_pParent, m_pDesc->elemdescFunc.tdesc);
+	return S_OK;
+}
+STDMETHODIMP CMethod::raw_getParamCount(int* pOut) {
+	*pOut = m_pDesc->cParams;
+	return S_OK;
+}
+STDMETHODIMP CMethod::raw_getParam(int index, IParam** pOut) {
+	*pOut = NULL;
+	if(index<0 || m_pDesc->cParams<=index)
+		return E_INVALIDARG;
+	
+	*pOut = CParam::create( this, index );
 	return S_OK;
 }
 

@@ -22,5 +22,5 @@ public interface IWTypeLib extends Com4jObject {
     String getHelpString();
 
     @VTID(7)
-    IWType getType( int index );
+    ITypeDecl getType( int index );
 }

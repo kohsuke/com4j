@@ -9,7 +9,7 @@ import com4j.GUID;
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
 @IID("{AF7CC95D-EC5C-4904-B2ED-E1E8838A4377}")
-public interface IWType extends Com4jObject {
+public interface ITypeDecl extends Com4jObject {
     @VTID(3)
     String getName();
 

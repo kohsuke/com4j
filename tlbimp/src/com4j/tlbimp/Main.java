@@ -6,10 +6,10 @@ import com4j.ComException;
 import com4j.tlbimp.def.ITypeLib;
 import com4j.tlbimp.def.ITypeInfo;
 import com4j.tlbimp.def.IWTypeLib;
-import com4j.tlbimp.def.IWType;
+import com4j.tlbimp.def.ITypeDecl;
 import com4j.tlbimp.def.TypeKind;
 import com4j.tlbimp.def.IWDispInterface;
-import com4j.tlbimp.def.IWMethod;
+import com4j.tlbimp.def.IMethod;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,7 +32,7 @@ public class Main {
 
         int len = tlb.count();
         for( int i=0; i<len; i++ ) {
-            IWType t = tlb.getType(i);
+            ITypeDecl t = tlb.getType(i);
             System.out.println(t.getName());
             System.out.println(t.getKind());
             if(t.getKind()==TypeKind.DISPATCH) {
@@ -40,7 +40,7 @@ public class Main {
                 System.out.println(t2.getGUID());
                 System.out.println("# of methods: "+t2.countMethods());
                 for( int j=0; j<t2.countMethods(); j++ ) {
-                    IWMethod m = t2.getMethod(j);
+                    IMethod m = t2.getMethod(j);
                     System.out.println("  "+m.getKind()+" "+m.getName());
                     m.release();
                 }

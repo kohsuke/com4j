@@ -1,12 +1,13 @@
 package com4j.tlbimp;
 
 import com4j.tlbimp.def.IWDispInterface;
-import com4j.tlbimp.def.IWMethod;
-import com4j.tlbimp.def.IWType;
+import com4j.tlbimp.def.IMethod;
+import com4j.tlbimp.def.ITypeDecl;
 import com4j.tlbimp.def.IWTypeLib;
 import com4j.tlbimp.def.IType;
 import com4j.tlbimp.def.IPtrType;
 import com4j.tlbimp.def.IPrimitiveType;
+import com4j.tlbimp.def.IParam;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,7 +54,7 @@ public class Generator {
 
         int len = lib.count();
         for( int i=0; i<len; i++ ) {
-            IWType t = lib.getType(i);
+            ITypeDecl t = lib.getType(i);
             switch(t.getKind()) {
             case DISPATCH:
                 generate( t.queryInterface(IWDispInterface.class) );
@@ -93,7 +94,7 @@ public class Generator {
         o.println();
 
         for( int j=0; j<t.countMethods(); j++ ) {
-            IWMethod m = t.getMethod(j);
+            IMethod m = t.getMethod(j);
             generate(m,o);
             m.release();
         }
@@ -103,7 +104,7 @@ public class Generator {
         o.flush();
     }
 
-    private void generate(IWMethod m, PrintWriter o) {
+    private void generate(IMethod m, PrintWriter o) {
         String doc = m.getHelpString();
         if(doc!=null) {
             o.println("\t/**");
@@ -111,7 +112,20 @@ public class Generator {
             o.println("\t */");
         }
         o.println("\t"+m.getKind());
-        o.println("\t"+getTypeString(m.getReturnType())+' '+m.getName());
+        o.printf("\t%1s %2s(",
+            getTypeString(m.getReturnType()),
+            m.getName());
+        o.println();
+
+        int len = m.getParamCount();
+        for( int i=0; i<len; i++ ) {
+            IParam p = m.getParam(i);
+            o.print("\t\t"+p.getName());
+            if(i!=len-1)    o.print(',');
+            o.println();
+        }
+        o.println("\t);");
+
         o.println();
         o.flush();
     }
@@ -128,10 +142,10 @@ public class Generator {
         if(prim!=null)
             return prim.getName();
 
-        IWType decl = t.queryInterface(IWType.class);
+        ITypeDecl decl = t.queryInterface(ITypeDecl.class);
         if(decl!=null)
             return decl.getName();
-        
+
         return "N/A";
     }
 }

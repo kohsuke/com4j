@@ -24,7 +24,8 @@ library com4j
 
 	interface IType;
 	interface IWTypeDecl;
-	interface IWMethod;
+	interface IMethod;
+	interface IParam;
 
 	typedef enum {
 		TypeKind_ENUM	= 0,
@@ -120,7 +121,7 @@ library com4j
 		HRESULT countMethods([out,retval] int* pValue);
 
 		[helpstring("method")]
-		HRESULT getMethod([in] int index, [out,retval] IWMethod** ppMethod );
+		HRESULT getMethod([in] int index, [out,retval] IMethod** ppMethod );
 	};
 
 	[
@@ -129,11 +130,25 @@ library com4j
 		helpstring("Method on a COM interface"),
 		pointer_default(unique)
 	]
-	interface IWMethod : IUnknown
+	interface IMethod : IUnknown
 	{
 		HRESULT getName([out,retval] BSTR* pName);
 		HRESULT getKind([out,retval] INVOKEKIND* pKind);
 		HRESULT getHelpString([out,retval] BSTR* pHelpString);
 		HRESULT getReturnType([out,retval] IType** ppType);
+		HRESULT getParamCount([out,retval] int* pOut);
+		HRESULT getParam([in] int index, [out,retval] IParam** pOut);
+	};
+
+
+	[
+		object,
+		uuid(8082BEBE-CC6C-44ee-BDF3-0A9BD5B2107B),
+		helpstring("A method parameter"),
+		pointer_default(unique)
+	]
+	interface IParam : IUnknown
+	{
+		HRESULT getName([out,retval] BSTR* pName);
 	};
 };

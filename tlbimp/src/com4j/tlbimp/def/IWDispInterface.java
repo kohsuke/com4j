@@ -8,7 +8,7 @@ import com4j.GUID;
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
 @IID("{3BDCCFBF-B493-4d54-B1D0-4DE2FB1AFC78}")
-public interface IWDispInterface extends IWType {
+public interface IWDispInterface extends ITypeDecl {
     @VTID(6)
     GUID getGUID();
 
@@ -16,5 +16,5 @@ public interface IWDispInterface extends IWType {
     int countMethods();
 
     @VTID(8)
-    IWMethod getMethod(int idx);
+    IMethod getMethod(int idx);
 }

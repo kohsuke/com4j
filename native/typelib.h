@@ -5,9 +5,11 @@
 
 class CWTypeLib;
 class CWTypeDecl;
+class CMethod;
 
 _COM_SMARTPTR_TYPEDEF(CWTypeLib, __uuidof(IWTypeLib));
 _COM_SMARTPTR_TYPEDEF(CWTypeDecl, __uuidof(IWTypeDecl));
+_COM_SMARTPTR_TYPEDEF(CMethod, __uuidof(IMethod));
 
 
 // creates a type object from a descriptor
@@ -115,21 +117,27 @@ public:
 
 
 
-class ATL_NO_VTABLE CWMethod : 
+class ATL_NO_VTABLE CMethod : 
 	public CComObjectRootEx<CComSingleThreadModel>,
-	public CComCoClass<CWMethod, &__uuidof(IWMethod)>,
-	public IWMethod
+	public CComCoClass<CMethod, &__uuidof(IMethod)>,
+	public IMethod
 {
 	CWTypeDeclPtr	m_pParent;
 	FUNCDESC*	m_pDesc;
+	BSTR*		m_pNames;
+	int			m_nameCount;
+
+	friend class CParam;
+
 public:
-	CWMethod() {}
+	CMethod() {}
+	~CMethod();
 
 	void init( CWTypeDecl* pParent, int idx );
 
-	static CComObject<CWMethod>* create( CWTypeDecl* pParent, int idx ) {
-		CComObject<CWMethod>* pObj = NULL;
-		CComObject<CWMethod>::CreateInstance(&pObj);
+	static CComObject<CMethod>* create( CWTypeDecl* pParent, int idx ) {
+		CComObject<CMethod>* pObj = NULL;
+		CComObject<CMethod>::CreateInstance(&pObj);
 		pObj->AddRef();
 		pObj->init(pParent,idx);
 		return pObj;
@@ -139,17 +147,67 @@ public:
 
 DECLARE_PROTECT_FINAL_CONSTRUCT()
 
-BEGIN_COM_MAP(CWMethod)
-	COM_INTERFACE_ENTRY(IWMethod)
+BEGIN_COM_MAP(CMethod)
+	COM_INTERFACE_ENTRY(IMethod)
 	COM_INTERFACE_ENTRY(IUnknown)
 END_COM_MAP()
 
 public:
+	MEMBERID memid() const {
+		return m_pDesc->memid;
+	}
+
 	STDMETHOD(raw_getName)(BSTR* pName);
 	STDMETHOD(raw_getKind)(INVOKEKIND* pKind);
 	STDMETHOD(raw_getHelpString)(BSTR* pHelpString);
 	STDMETHOD(raw_getReturnType)(IType** ppType);
+	STDMETHOD(raw_getParamCount)(int* pOut);
+	STDMETHOD(raw_getParam)(int index, IParam** pOut);
 };
+
+
+
+
+class ATL_NO_VTABLE CParam : 
+	public CComObjectRootEx<CComSingleThreadModel>,
+	public CComCoClass<CParam, &__uuidof(IParam)>,
+	public IParam
+{
+	CMethodPtr	m_pParent;
+	int			m_index;
+public:
+	CParam() {}
+
+	void init( CMethod* pParent, int idx ) {
+		m_pParent.Attach(pParent);
+		m_index = idx;
+	}
+
+	static CComObject<CParam>* create( CMethod* pParent, int idx ) {
+		CComObject<CParam>* pObj = NULL;
+		CComObject<CParam>::CreateInstance(&pObj);
+		pObj->AddRef();
+		pObj->init(pParent,idx);
+		return pObj;
+	}
+
+// DECLARE_REGISTRY_RESOURCEID(...)
+
+DECLARE_PROTECT_FINAL_CONSTRUCT()
+
+BEGIN_COM_MAP(CParam)
+	COM_INTERFACE_ENTRY(IParam)
+	COM_INTERFACE_ENTRY(IUnknown)
+END_COM_MAP()
+
+public:
+	STDMETHOD(raw_getName)(BSTR* pName) {
+		*pName = SysAllocString( m_pParent->m_pNames[m_index+1] );
+		return S_OK;
+	}
+};
+
+
 
 
 
@@ -210,12 +268,12 @@ public:
 		return S_OK;
 	}
 
-	STDMETHOD(raw_getMethod)( int index, IWMethod** ppMethod ) {
+	STDMETHOD(raw_getMethod)( int index, IMethod** ppMethod ) {
 		if(index<0 || m_pAttr->cFuncs<=index) {
 			*ppMethod = NULL;
 			return E_INVALIDARG;
 		} else {
-			*ppMethod = CWMethod::create(this,index);
+			*ppMethod = CMethod::create(this,index);
 			return S_OK;
 		}
 	}
