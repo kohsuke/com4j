@@ -16,6 +16,7 @@ enum Conv {
 	cvINT16 = 101,
 	cvINT32 = 102,
 	cvINT32_byRef = 102|BYREF,
+	cvBool = 103,
 
 	cvHRESULT = 200,
 

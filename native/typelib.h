@@ -53,6 +53,10 @@ public:
 		*pOut = SysAllocString(name);
 		return S_OK;
 	}
+	STDMETHOD(raw_getVarType)( VARTYPE* pOut ) {
+		*pOut = vt;
+		return S_OK;
+	}
 };
 
 class CPrimitiveTypeImpl : public CPrimitiveType {
@@ -164,6 +168,10 @@ public:
 	STDMETHOD(raw_getReturnType)(IType** ppType);
 	STDMETHOD(raw_getParamCount)(int* pOut);
 	STDMETHOD(raw_getParam)(int index, IParam** pOut);
+	STDMETHOD(raw_getVtableIndex)(int* pOut) {
+		*pOut = m_pDesc->oVft/sizeof(void*);
+		return S_OK;
+	}
 };
 
 
@@ -200,15 +208,31 @@ BEGIN_COM_MAP(CParam)
 	COM_INTERFACE_ENTRY(IParam)
 	COM_INTERFACE_ENTRY(IUnknown)
 END_COM_MAP()
-
+	
+	ELEMDESC& desc() {
+		return m_pParent->m_pDesc->lprgelemdescParam[m_index];
+	}
 public:
 	STDMETHOD(raw_getName)(BSTR* pName) {
 		*pName = SysAllocString( m_pParent->m_pNames[m_index+1] );
 		return S_OK;
 	}
 	STDMETHOD(raw_getType)(IType** ppType) {
-		*ppType = createType(m_pParent->m_pParent, m_pParent->m_pDesc->lprgelemdescParam[m_index].tdesc);
+		*ppType = createType(m_pParent->m_pParent, desc().tdesc);
 		return S_OK;
+	}
+	HRESULT getFlag( int mask, VARIANT_BOOL* pValue ) {
+		*pValue = ( desc().paramdesc.wParamFlags & mask )?VARIANT_TRUE:VARIANT_FALSE;
+		return S_OK;
+	}
+	STDMETHOD(raw_isIn)(VARIANT_BOOL* pValue) {
+		return getFlag( PARAMFLAG_FIN, pValue );
+	}
+	STDMETHOD(raw_isOut)(VARIANT_BOOL* pValue) {
+		return getFlag( PARAMFLAG_FOUT, pValue );
+	}
+	STDMETHOD(raw_isRetval)(VARIANT_BOOL* pValue) {
+		return getFlag( PARAMFLAG_FRETVAL, pValue );
 	}
 };
 

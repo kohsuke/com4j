@@ -39,23 +39,22 @@ public:
 };
 
 
-class JMethodID {
+class JMethodID_Base {
+protected:
 	jmethodID id;
 	JClassID& clazz;
 	const char* name;
 	const char* sig;
 
-	void setup( JNIEnv* env ) {
-		id = env->GetMethodID( clazz, name, sig );
-	}
+	virtual void setup( JNIEnv* env ) =0;
 
 	// all JClassID instances are linked by a chain
-	JMethodID* next;
+	JMethodID_Base* next;
 
-	static JMethodID* init;
+	static JMethodID_Base* init;
 
 public:
-	JMethodID( JClassID& _clazz, const char* _name, const char* _sig ) : clazz(_clazz) {
+	JMethodID_Base( JClassID& _clazz, const char* _name, const char* _sig ) : clazz(_clazz) {
 		name = _name;
 		sig = _sig;
 
@@ -76,13 +75,36 @@ public:
 	}
 };
 
+class JMethodID : public JMethodID_Base {
+public:
+	JMethodID( JClassID& _clazz, const char* _name, const char* _sig ) : JMethodID_Base(_clazz,_name,_sig) {};
+protected:
+	void setup( JNIEnv* env ) {
+		id = env->GetMethodID( clazz, name, sig );
+	}
+};
+
+class JStaticMethodID : public JMethodID_Base {
+public:
+	JStaticMethodID( JClassID& _clazz, const char* _name, const char* _sig ) : JMethodID_Base(_clazz,_name,_sig) {};
+protected:
+	void setup( JNIEnv* env ) {
+		id = env->GetStaticMethodID( clazz, name, sig );
+	}
+};
 
 
 
 extern JClassID javaLangNumber;
 extern JMethodID javaLangNumber_intValue;
+
 extern JClassID javaLangInteger;
 extern JMethodID javaLangInteger_new;
+
+extern JClassID javaLangBoolean;
+extern JMethodID javaLangBoolean_booleanValue;
+extern JStaticMethodID javaLangBoolean_valueOf;
+
 // reference to org.kohsuke.com4j.comexception
 extern JClassID comexception;
 extern JMethodID comexception_new;

@@ -3,9 +3,15 @@
 #include "unmarshaller.h"
 
 // throws an error
-void error( JNIEnv* env, const char* msg ) {
+void error( JNIEnv* env, const char* msg ... ) {
+	// format the message
+	char w[1024];
+	va_list va;
+	va_start(va,msg);
+	vsprintf(w,msg,va);
+	
 	jclass iae = env->FindClass("java/lang/IllegalArgumentException");
-	env->ThrowNew(iae,msg);
+	env->ThrowNew(iae,w);
 }
 
 
@@ -128,7 +134,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				break;
 
 			default:
-				error(env,"unexpected conversion type");
+				error(env,"unexpected conversion type: %d",convs[i]);
 				return NULL;
 			}
 		}
@@ -156,7 +162,11 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 					break;
 
 				case cvINT32:
-					retUnm = new PrimitiveUnmarshaller<IntXducer>(env,NULL);
+					retUnm = new IntUnmarshaller(env,NULL);
+					break;
+
+				case cvBool:
+					retUnm = new BoolUnmarshaller(env,NULL);
 					break;
 
 				case cvGUID:
@@ -164,7 +174,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 					break;
 
 				default:
-					error(env,"unexpected conversion type");
+					error(env,"unexpected conversion type: %d",retConv);
 					return NULL;
 				}
 

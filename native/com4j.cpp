@@ -5,7 +5,7 @@
 #include "jstring.h"
 #include "typelib.h"
 
-void error( JNIEnv* env, const char* msg, HRESULT hr ) {
+void error( JNIEnv* env, HRESULT hr, const char* msg ) {
 	env->Throw( (jthrowable)
 		env->NewObject( comexception,
 			env->GetMethodID(comexception,"<init>","(Ljava/lang/String;I)V"),
@@ -50,7 +50,7 @@ JNIEXPORT void JNICALL Java_com4j_Native_init( JNIEnv* env, jclass __unused__ ) 
 
 	HRESULT hr = CoInitialize(NULL);
 	if(FAILED(hr)) {
-		error(env,"failed to initialize COM",hr);
+		error(env,hr,"failed to initialize COM");
 		return;
 	}
 }
@@ -71,7 +71,7 @@ JNIEXPORT jint JNICALL Java_com4j_Native_queryInterface( JNIEnv* env, jclass __u
 	void* p;
 	HRESULT hr = toComObject(pComObject)->QueryInterface(iid,&p);
 	if(FAILED(hr)) {
-		error(env,"failed to query interface",hr);
+		error(env,hr,"failed to query interface");
 		return 0;
 	}
 	return reinterpret_cast<jint>(p);
@@ -87,14 +87,14 @@ JNIEXPORT jint JNICALL Java_com4j_Native_createInstance(
 
 	hr = CLSIDFromProgID(progId,&clsid);
 	if(FAILED(hr)) {
-		error(env,"Unrecognized CLSID",hr);
+		error(env,hr,"Unrecognized CLSID");
 		return 0;
 	}
 
 	void* p;
 	hr = CoCreateInstance(clsid,NULL,CLSCTX_ALL,iid,&p);
 	if(FAILED(hr)) {
-		error(env,"CoCreateInstance failed",hr);
+		error(env,hr,"CoCreateInstance failed");
 		return 0;
 	}
 	return reinterpret_cast<jint>(p);
@@ -125,7 +125,7 @@ JNIEXPORT jint JNICALL Java_com4j_Native_loadTypeLibrary(
 
 	HRESULT hr = LoadTypeLib(name,&pLib);
 	if(FAILED(hr)) {
-		error(env,"LoadTypeLib failed",hr);
+		error(env,hr,"LoadTypeLib failed");
 		return 0;
 	}
 	

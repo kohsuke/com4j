@@ -91,6 +91,9 @@ library com4j
 	interface IPrimitiveType : IType {
 		[helpstring("human readable name of this primitive type")]
 		HRESULT getName( [out,retval] BSTR* pName);
+
+		[helpstring("code that uniquely identifies the primitive type")]
+		HRESULT getVarType( [out,retval] VARTYPE* pOut );
 	};
 
 	[
@@ -156,6 +159,9 @@ library com4j
 		HRESULT getReturnType([out,retval] IType** ppType);
 		HRESULT getParamCount([out,retval] int* pOut);
 		HRESULT getParam([in] int index, [out,retval] IParam** pOut);
+
+		[helpstring("the method's offset in the virtual table.")]
+		HRESULT getVtableIndex([out,retval]int* pOut);
 	};
 
 
@@ -170,5 +176,9 @@ library com4j
 		[helpstring("name of the parameter. Null when the parameter is the value for the PROPSET method.")]
 		HRESULT getName([out,retval] BSTR* pName);
 		HRESULT getType([out,retval] IType** ppType);
+
+		HRESULT isIn([out,retval]VARIANT_BOOL* pValue);
+		HRESULT isOut([out,retval]VARIANT_BOOL* pValue);
+		HRESULT isRetval([out,retval]VARIANT_BOOL* pValue);
 	};
 };

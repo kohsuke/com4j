@@ -77,6 +77,7 @@ class PrimitiveUnmarshaller : public Unmarshaller {
 	XDUCER::NativeType value;
 public:
 	PrimitiveUnmarshaller( JNIEnv* env, XDUCER::JavaType i ) {
+		value = XDUCER::initValue;
 		if(i!=NULL)
 			value = xducer.fromJava(env,i);
 	}
@@ -92,15 +93,33 @@ class IntXducer {
 public:
 	typedef jobject JavaType;
 	typedef INT32 NativeType;
-	jobject toJava( JNIEnv* env, INT32 i ) {
+	const static NativeType initValue = 0;
+	JavaType toJava( JNIEnv* env, NativeType i ) {
 		return env->NewObject( javaLangInteger, javaLangInteger_new, i );
 	}
-	INT32 fromJava( JNIEnv* env, jobject i ) {
+	NativeType fromJava( JNIEnv* env, JavaType i ) {
 		return env->CallIntMethod(i,javaLangNumber_intValue);
 	}
 };
-
 typedef PrimitiveUnmarshaller<IntXducer>	IntUnmarshaller;
+
+class BoolXducer {
+public:
+	typedef jobject JavaType;
+	typedef BOOL NativeType;
+	const static NativeType initValue = 0;
+	JavaType toJava( JNIEnv* env, NativeType i ) {
+		return env->CallStaticObjectMethod( javaLangBoolean, javaLangBoolean_valueOf, (i!=0)?JNI_TRUE:JNI_FALSE );
+	}
+	NativeType fromJava( JNIEnv* env, JavaType i ) {
+		jboolean b = env->CallBooleanMethod(i,javaLangBoolean_booleanValue);
+		if(b==0)	return 0;	// false
+		else		return -1;	// true
+	}
+};
+typedef PrimitiveUnmarshaller<BoolXducer>	BoolUnmarshaller;
+
+
 
 class ComObjectUnmarshaller : public Unmarshaller {
 	IUnknown* pv;
