@@ -86,22 +86,29 @@ class ComObjectVariandHandlerImpl : public VariantHandlerImpl<VT_DISPATCH,xducer
 	}
 };
 
+// conversion table for variant
+// from Java->native, we look for the cls field that can accept the current object,
+// then if they match, we'll call the handler.
+// from native->Java, we look for the vt field that can accept the current variant type.
+// then if they match, we'll call the handler
 struct SetterEntry {
 	JClassID* cls;
+	VARTYPE vt;
 	VariantHandler* handler;
 };
 
 static SetterEntry setters[] = {
-	{ &javaLangBoolean,		new VariantHandlerImpl<VT_BOOL,		xducer::BoxedVariantBoolXducer>() },
-	{ &javaLangString,		new VariantHandlerImpl<VT_BSTR,		xducer::StringXducer>() },
-	{ &javaLangFloat,		new VariantHandlerImpl<VT_R4,		xducer::BoxedFloatXducer>() },
-	{ &javaLangDouble,		new VariantHandlerImpl<VT_R8,		xducer::BoxedDoubleXducer>() },
-	{ &javaLangShort,		new VariantHandlerImpl<VT_I2,		xducer::BoxedShortXducer>() },
-	{ &javaLangInteger,		new VariantHandlerImpl<VT_I4,		xducer::BoxedIntXducer>() },
-	{ &javaLangLong,		new VariantHandlerImpl<VT_I8,		xducer::BoxedLongXducer>() },
+	{ &javaLangBoolean, VT_BOOL,		new VariantHandlerImpl<VT_BOOL,		xducer::BoxedVariantBoolXducer>() },
+	{ &javaLangString,	VT_BSTR,		new VariantHandlerImpl<VT_BSTR,		xducer::StringXducer>() },
+	{ &javaLangFloat,	VT_R4,			new VariantHandlerImpl<VT_R4,		xducer::BoxedFloatXducer>() },
+	{ &javaLangDouble,	VT_R8,			new VariantHandlerImpl<VT_R8,		xducer::BoxedDoubleXducer>() },
+	{ &javaLangShort,	VT_I2,			new VariantHandlerImpl<VT_I2,		xducer::BoxedShortXducer>() },
+	{ &javaLangInteger,	VT_I4,			new VariantHandlerImpl<VT_I4,		xducer::BoxedIntXducer>() },
+	{ &javaLangLong,	VT_I8,			new VariantHandlerImpl<VT_I8,		xducer::BoxedLongXducer>() },
 	// see issue 2 on java.net. I used to convert a COM object to VT_UNKNOWN
-	{ &com4j_Com4jObject,	new VariantHandlerImpl<VT_DISPATCH,	xducer::Com4jObjectXducer>() },
-	{ NULL,					NULL }
+	{ &com4j_Com4jObject,VT_DISPATCH,	new VariantHandlerImpl<VT_DISPATCH,	xducer::Com4jObjectXducer>() },
+	{ &com4j_Com4jObject,VT_UNKNOWN,	new VariantHandlerImpl<VT_DISPATCH,	xducer::Com4jObjectXducer>() },
+	{ NULL, 0, NULL }
 };
 
 // convert a java object to a VARIANT based on the actual type of the Java object.
@@ -122,11 +129,20 @@ VARIANT* convertToVariant( JNIEnv* env, jobject o ) {
 }
 
 jobject VariantUnmarshaller::unmarshal( JNIEnv* env ) {
+	// return type driven
 	for( SetterEntry* p = setters; p->cls!=NULL; p++ ) {
 		if( env->IsAssignableFrom( retType, *(p->cls) ) ) {
 			return p->handler->get(env,&v);
 		}
 	}
+
+	// if none is found, drive by the variant type
+	for( SetterEntry* p = setters; p->cls!=NULL; p++ ) {
+		if( v.vt==p->vt ) {
+			return p->handler->get(env,&v);
+		}
+	}
+
 	// the expected return type is something we can't handle
 	error(env,"The specified return type is not compatible with VARIANT");
 	return NULL;
