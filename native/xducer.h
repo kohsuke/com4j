@@ -36,14 +36,14 @@ namespace xducer {
 
 
 	// transducer between Java boxed type and native primitive type
-	template < class NT, JStaticMethodID* parseMethod, JMethodID<NT>* printMethod >
+	template < class NT, JStaticMethodID<jobject>* parseMethod, JMethodID<NT>* printMethod >
 	class BoxXducer {
 	public:
 		typedef jobject JavaType;
 		typedef NT NativeType;
 
 		static JavaType toJava( JNIEnv* env, NativeType i ) {
-			return env->CallStaticObjectMethod( parseMethod->getClazz(), *parseMethod, i );
+			return (*parseMethod)(env,i);
 		}
 		static NativeType toNative( JNIEnv* env, JavaType i ) {
 			return (*printMethod)(env,i);
@@ -56,7 +56,7 @@ namespace xducer {
 		typedef jobject JavaType;
 		typedef BOOL NativeType;
 		static JavaType toJava( JNIEnv* env, NativeType i ) {
-			return env->CallStaticObjectMethod( javaLangBoolean, javaLangBoolean_valueOf, (i!=0)?JNI_TRUE:JNI_FALSE );
+			return javaLangBoolean_valueOf(env, (i!=0)?JNI_TRUE:JNI_FALSE );
 		}
 		static NativeType toNative( JNIEnv* env, JavaType i ) {
 			jboolean b = javaLangBoolean_booleanValue(env,i);
@@ -71,7 +71,7 @@ namespace xducer {
 		typedef jobject JavaType;
 		typedef VARIANT_BOOL NativeType;
 		static JavaType toJava( JNIEnv* env, NativeType i ) {
-			return env->CallStaticObjectMethod( javaLangBoolean, javaLangBoolean_valueOf, (i!=0)?JNI_TRUE:JNI_FALSE );
+			return javaLangBoolean_valueOf(env, (i!=0)?JNI_TRUE:JNI_FALSE );
 		}
 		static NativeType toNative( JNIEnv* env, JavaType i ) {
 			jboolean b = javaLangBoolean_booleanValue(env,i);
@@ -125,7 +125,10 @@ namespace xducer {
 		static inline NativeType toNative( JNIEnv* env, JavaType value ) {
 			if(value==NULL)		return NULL;
 
-			NativeType ptr;
+			jint p = com4j_COM4J_getPtr(env,value);
+			NativeType ptr = reinterpret_cast<NativeType>(p);
+			
+			if(p==NULL)		return NULL;
 
 			ptr->AddRef();
 			return ptr;

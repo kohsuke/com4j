@@ -113,7 +113,7 @@ public:
 		if(pv==NULL)
 			return NULL;
 
-		return env->CallStaticObjectMethod( javaLangInteger, javaLangInteger_valueOf, reinterpret_cast<jint>(pv) );
+		return javaLangInteger_valueOf( env, reinterpret_cast<jint>(pv) );
 	}
 };
 
@@ -130,5 +130,20 @@ public:
 	}
 	virtual void* addr() {
 		return &guid;
+	}
+};
+
+class VariantUnmarshaller : public Unmarshaller {
+	// the return type that the caller is expecting.
+	jclass const		retType;
+	// we expect the invoked method to set this VARIANT
+	VARIANT v;
+public:
+	VariantUnmarshaller( jclass _retType ) : retType(_retType) {
+		VariantInit(&v);
+	}
+	virtual jobject unmarshal( JNIEnv* env );
+	virtual void* addr() {
+		return &v;
 	}
 };

@@ -85,21 +85,32 @@ protected:
 		id = env->GetMethodID( clazz, name, sig );
 	}
 public:
-	JavaReturnType operator () ( JNIEnv* env ... ) {
+	// invoke this method on a Java object
+	JavaReturnType operator () ( JNIEnv* env, jobject o, ... ) {
         va_list args;
-		va_start(args,env);
-		JavaReturnType r = op::Op<JavaReturnType>::invokeV(env,clazz,id,args);
+		va_start(args,o);
+		JavaReturnType r = op::Op<JavaReturnType>::invokeV(env,o,id,args);
 		va_end(args);
 		return r;
 	}
 };
 
+template < class JavaReturnType >
 class JStaticMethodID : public JMethodID_Base {
 public:
 	JStaticMethodID( JClassID& _clazz, const char* _name, const char* _sig ) : JMethodID_Base(_clazz,_name,_sig) {};
 protected:
 	void setup( JNIEnv* env ) {
 		id = env->GetStaticMethodID( clazz, name, sig );
+	}
+public:
+	// invoke this method
+	JavaReturnType operator () ( JNIEnv* env ... ) {
+        va_list args;
+		va_start(args,env);
+		JavaReturnType r = op::Op<JavaReturnType>::invokeStaticV(env,clazz,id,args);
+		va_end(args);
+		return r;
 	}
 };
 
@@ -128,23 +139,23 @@ extern JMethodID<jdouble> javaLangNumber_doubleValue;
 
 extern JClassID javaLangInteger;
 extern JConstructorID javaLangInteger_new;
-extern JStaticMethodID javaLangInteger_valueOf;
+extern JStaticMethodID<jobject> javaLangInteger_valueOf;
 
 extern JClassID javaLangShort;
-extern JStaticMethodID javaLangShort_valueOf;
+extern JStaticMethodID<jobject> javaLangShort_valueOf;
 
 extern JClassID javaLangLong;
-extern JStaticMethodID javaLangLong_valueOf;
+extern JStaticMethodID<jobject> javaLangLong_valueOf;
 
 extern JClassID javaLangFloat;
-extern JStaticMethodID javaLangFloat_valueOf;
+extern JStaticMethodID<jobject> javaLangFloat_valueOf;
 
 extern JClassID javaLangDouble;
-extern JStaticMethodID javaLangDouble_valueOf;
+extern JStaticMethodID<jobject> javaLangDouble_valueOf;
 
 extern JClassID javaLangBoolean;
 extern JMethodID<jboolean> javaLangBoolean_booleanValue;
-extern JStaticMethodID javaLangBoolean_valueOf;
+extern JStaticMethodID<jobject> javaLangBoolean_valueOf;
 
 extern JClassID javaLangString;
 
@@ -156,6 +167,8 @@ extern JClassID comexception;
 extern JConstructorID comexception_new;
 extern JClassID com4j_Holder;
 extern jfieldID com4j_Holder_value;
+
+extern JClassID com4j_Com4jObject;
 
 extern JClassID com4jWrapper;
 extern JConstructorID com4jWrapper_new;

@@ -2,6 +2,7 @@
 #include "com4j.h"
 #include "com4j_variant.h"
 #include "xducer.h"
+#include "unmarshaller.h"
 
 // used to map two jlongs to the memory image of VARIANT.
 class VARIANT_T : public VARIANT {
@@ -70,28 +71,46 @@ JNIEXPORT jdouble JNICALL Java_com4j_Variant_castToDouble0(JNIEnv* env, jclass, 
 
 
 
-
+class VariantHandler {
+public:
+	virtual void set( JNIEnv* env, jobject src, VARIANT* dst ) = 0;
+	virtual jobject get( JNIEnv* env, VARIANT* v ) = 0;
+};
 
 template <VARTYPE vt, class XDUCER>
-void setVariant( JNIEnv* env, jobject o, VARIANT* v ) {
-	v->vt = vt;
-	*reinterpret_cast<XDUCER::NativeType*>(&v->boolVal) = XDUCER::toNative(
-		env, static_cast<XDUCER::JavaType>(o) );
-}
+class VariantHandlerImpl : public VariantHandler {
+	inline XDUCER::NativeType& addr(VARIANT* v) {
+		return *reinterpret_cast<XDUCER::NativeType*>(&v->boolVal);
+	}
+	void set( JNIEnv* env, jobject o, VARIANT* v ) {
+		v->vt = vt;
+		addr(v) = XDUCER::toNative(
+			env, static_cast<XDUCER::JavaType>(o) );
+	}
+	jobject get( JNIEnv* env, VARIANT* v ) {
+		VARIANT dst;
+		VariantInit(&dst);
+		VariantChangeType(&dst,v,0,vt);
+		jobject o = XDUCER::toJava(env, addr(v));
+		VariantClear(&dst);
+		return o;
+	}
+};
 
 struct SetterEntry {
 	JClassID* cls;
-	void (* setter)(JNIEnv*,jobject,VARIANT*);
+	VariantHandler* handler;
 };
 
 static SetterEntry setters[] = {
-	{ &javaLangBoolean,		setVariant<VT_BOOL,	xducer::BoxedVariantBoolXducer> },
-	{ &javaLangString,		setVariant<VT_BSTR,	xducer::StringXducer> },
-	{ &javaLangFloat,		setVariant<VT_R4,	xducer::BoxedFloatXducer> },
-	{ &javaLangDouble,		setVariant<VT_R8,	xducer::BoxedDoubleXducer> },
-	{ &javaLangShort,		setVariant<VT_I2,	xducer::BoxedShortXducer> },
-	{ &javaLangInteger,		setVariant<VT_I4,	xducer::BoxedIntXducer> },
-	{ &javaLangLong,		setVariant<VT_I8,	xducer::BoxedLongXducer> },
+	{ &javaLangBoolean,		new VariantHandlerImpl<VT_BOOL,		xducer::BoxedVariantBoolXducer>() },
+	{ &javaLangString,		new VariantHandlerImpl<VT_BSTR,		xducer::StringXducer>() },
+	{ &javaLangFloat,		new VariantHandlerImpl<VT_R4,		xducer::BoxedFloatXducer>() },
+	{ &javaLangDouble,		new VariantHandlerImpl<VT_R8,		xducer::BoxedDoubleXducer>() },
+	{ &javaLangShort,		new VariantHandlerImpl<VT_I2,		xducer::BoxedShortXducer>() },
+	{ &javaLangInteger,		new VariantHandlerImpl<VT_I4,		xducer::BoxedIntXducer>() },
+	{ &javaLangLong,		new VariantHandlerImpl<VT_I8,		xducer::BoxedLongXducer>() },
+	{ &com4j_Com4jObject,	new VariantHandlerImpl<VT_UNKNOWN,	xducer::Com4jObjectXducer>() },
 	{ NULL,					NULL }
 };
 
@@ -107,11 +126,22 @@ VARIANT* convertToVariant( JNIEnv* env, jobject o ) {
 	
 	for( SetterEntry* p = setters; p->cls!=NULL; p++ ) {
 		if( env->IsAssignableFrom( cls, *(p->cls) ) ) {
-			(p->setter)(env,o,v);
+			p->handler->set(env,o,v);
 			return v;
 		}
 	}
 
 	delete v;
+	return NULL;
+}
+
+jobject VariantUnmarshaller::unmarshal( JNIEnv* env ) {
+	for( SetterEntry* p = setters; p->cls!=NULL; p++ ) {
+		if( env->IsAssignableFrom( retType, *(p->cls) ) ) {
+			return p->handler->get(env,&v);
+		}
+	}
+	// the expected return type is something we can't handle
+	error(env,"The specified return type is not compatible with VARIANT");
 	return NULL;
 }

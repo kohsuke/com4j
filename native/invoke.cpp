@@ -253,6 +253,10 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 					retUnm = new GUIDUnmarshaller();
 					break;
 
+				case cvVARIANT_byRef:
+					retUnm = new VariantUnmarshaller(retType);
+					break;
+
 				default:
 					error(env,"unexpected conversion type: %d",retConv);
 					return NULL;

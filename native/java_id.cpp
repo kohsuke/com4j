@@ -15,23 +15,23 @@ JMethodID<jshort> javaLangNumber_shortValue(javaLangNumber,"shortValue","()S");
 JMethodID<jlong> javaLangNumber_longValue(javaLangNumber,"longValue","()J");
 
 JClassID javaLangInteger("java/lang/Integer");
-JStaticMethodID javaLangInteger_valueOf(javaLangInteger,"valueOf","(I)Ljava/lang/Integer;");
+JStaticMethodID<jobject> javaLangInteger_valueOf(javaLangInteger,"valueOf","(I)Ljava/lang/Integer;");
 
 JClassID javaLangShort("java/lang/Short");
-JStaticMethodID javaLangShort_valueOf(javaLangShort,"valueOf","(S)Ljava/lang/Short;");
+JStaticMethodID<jobject> javaLangShort_valueOf(javaLangShort,"valueOf","(S)Ljava/lang/Short;");
 
 JClassID javaLangLong("java/lang/Long");
-JStaticMethodID javaLangLong_valueOf(javaLangLong,"valueOf","(J)Ljava/lang/Long;");
+JStaticMethodID<jobject> javaLangLong_valueOf(javaLangLong,"valueOf","(J)Ljava/lang/Long;");
 
 JClassID javaLangFloat("java/lang/Float");
-JStaticMethodID javaLangFloat_valueOf(javaLangFloat,"valueOf","(F)Ljava/lang/Float;");
+JStaticMethodID<jobject> javaLangFloat_valueOf(javaLangFloat,"valueOf","(F)Ljava/lang/Float;");
 
 JClassID javaLangDouble("java/lang/Double");
-JStaticMethodID javaLangDouble_valueOf(javaLangDouble,"valueOf","(D)Ljava/lang/Double;");
+JStaticMethodID<jobject> javaLangDouble_valueOf(javaLangDouble,"valueOf","(D)Ljava/lang/Double;");
 
 JClassID javaLangBoolean("java/lang/Boolean");
 JMethodID<jboolean> javaLangBoolean_booleanValue(javaLangBoolean,"booleanValue","()Z");
-JStaticMethodID javaLangBoolean_valueOf(javaLangBoolean,"valueOf","(Z)Ljava/lang/Boolean;");
+JStaticMethodID<jobject> javaLangBoolean_valueOf(javaLangBoolean,"valueOf","(Z)Ljava/lang/Boolean;");
 
 JClassID javaLangString("java/lang/String");
 
@@ -42,6 +42,8 @@ JClassID comexception("com4j/ComException");
 JConstructorID comexception_new(comexception,"(Ljava/lang/String;I)V");
 JClassID com4j_Holder("com4j/Holder");
 jfieldID com4j_Holder_value;
+
+JClassID com4j_Com4jObject("com4j/Com4jObject");
 
 JClassID com4jWrapper("com4j/Wrapper");
 JConstructorID com4jWrapper_new(com4jWrapper,"(I)V");
