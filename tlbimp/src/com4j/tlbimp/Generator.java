@@ -1,29 +1,30 @@
 package com4j.tlbimp;
 
-import com4j.tlbimp.def.IDispInterfaceDecl;
-import com4j.tlbimp.def.IMethod;
-import com4j.tlbimp.def.ITypeDecl;
-import com4j.tlbimp.def.IWTypeLib;
-import com4j.tlbimp.def.IType;
-import com4j.tlbimp.def.IPtrType;
-import com4j.tlbimp.def.IPrimitiveType;
-import com4j.tlbimp.def.IParam;
-import com4j.tlbimp.def.IInterfaceDecl;
-import com4j.tlbimp.def.IInterface;
-import com4j.tlbimp.def.VarType;
-import com4j.tlbimp.def.IEnumDecl;
-import com4j.tlbimp.def.IConstant;
-import com4j.tlbimp.def.ITypedefDecl;
-import com4j.tlbimp.def.TypeKind;
 import com4j.NativeType;
-import com4j.ComException;
+import com4j.Variant;
+import com4j.Com4jObject;
+import com4j.tlbimp.def.IConstant;
+import com4j.tlbimp.def.IDispInterfaceDecl;
+import com4j.tlbimp.def.IEnumDecl;
+import com4j.tlbimp.def.IInterfaceDecl;
+import com4j.tlbimp.def.IMethod;
+import com4j.tlbimp.def.IParam;
+import com4j.tlbimp.def.IPrimitiveType;
+import com4j.tlbimp.def.IPtrType;
+import com4j.tlbimp.def.IType;
+import com4j.tlbimp.def.ITypeDecl;
+import com4j.tlbimp.def.ITypedefDecl;
+import com4j.tlbimp.def.IWTypeLib;
+import com4j.tlbimp.def.TypeKind;
+import com4j.tlbimp.def.VarType;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Map;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Date;
 
 /**
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
@@ -315,12 +316,7 @@ public final class Generator {
 
             declareReturnType(o);
 
-            String name = method.getName();
-            if(Character.isUpperCase(name.charAt(0))) {
-                // change "ThisKindOfName" to "thisKindOfName"
-                name = Character.toLowerCase(name.charAt(0))+name.substring(1);
-            }
-            o.print(name);
+            o.print(camelize(method.getName()));
             o.print('(');
             o.in();
 
@@ -352,7 +348,7 @@ public final class Generator {
             o.print(' ');
             String name = p.getName();
             if(name==null)  name="rhs";
-            o.print(name);
+            o.print(camelize(name));
         }
 
         /**
@@ -425,13 +421,17 @@ public final class Generator {
         // initialize the primitive binding
         pbind( VarType.VT_I2, Short.TYPE, NativeType.Int16, true );
         pbind( VarType.VT_I4, Integer.TYPE, NativeType.Int32, true );
-        pbind( VarType.VT_BSTR, String.class, NativeType.BSTR, false );
+        pbind( VarType.VT_BSTR, String.class, NativeType.BSTR, true );
         // TODO: is it OK to map UI2 to short?
         pbind( VarType.VT_UI2, Short.TYPE, NativeType.Int16, true );
         pbind( VarType.VT_UI4, Integer.TYPE, NativeType.Int32, true );
         pbind( VarType.VT_INT, Integer.TYPE, NativeType.Int32, true );
         pbind( VarType.VT_UINT, Integer.TYPE, NativeType.Int32, true );
         pbind( VarType.VT_BOOL, Boolean.TYPE, NativeType.VariantBool, true );
+        pbind( VarType.VT_VARIANT, Object.class, NativeType.VARIANT_ByRef, true );
+        pbind( VarType.VT_DISPATCH, Com4jObject.class, NativeType.Dispatch, false );
+        pbind( VarType.VT_UNKNOWN, Com4jObject.class, NativeType.ComObject, true );
+        pbind( VarType.VT_DATE, Date.class, NativeType.Date, true );
         // TODO
 //        pbind( VarType.VT_R4, Float.TYPE, NativeType.Float );
 //        pbind( VarType.VT_R8, Double.TYPE, NativeType.Double );
@@ -463,6 +463,13 @@ public final class Generator {
                 // t = T* where T is a declared interface
                 return new VariableBinding( getTypeName(compDecl), NativeType.ComObject, true );
 
+            IPrimitiveType compPrim = comp.queryInterface(IPrimitiveType.class);
+            if( compPrim!=null ) {
+                if( compPrim.getVarType()==VarType.VT_VARIANT ) {
+                    // T = VARIANT*
+                    return new VariableBinding(Object.class, NativeType.VARIANT_ByRef, true);
+                }
+            }
             // TODO
             throw new UnsupportedOperationException(getTypeString(t));
         }
@@ -531,5 +538,14 @@ public final class Generator {
             return getTypeName(decl);
 
         return "N/A";
+    }
+
+    private static String camelize(String s) {
+        if(Character.isUpperCase(s.charAt(0))) {
+            // change "ThisKindOfName" to "thisKindOfName"
+            return Character.toLowerCase(s.charAt(0))+s.substring(1);
+        } else {
+            return s;
+        }
     }
 }
