@@ -8,7 +8,14 @@ package com4j;
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
 public final class GUID {
-    final long l1,l2;
+    /**
+     * The first 64 bits of the GUID.
+     */
+    public final long l1;
+    /**
+     * The second 64 bits of the GUID.
+     */
+    public final long l2;
 
     /**
      * Parses the string representation "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}".

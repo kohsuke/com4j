@@ -10,3 +10,7 @@
 
 #include <crtdbg.h>
 #include <oleauto.h>
+
+#include <atlbase.h>
+extern CComModule _Module;
+#include <atlcom.h>

@@ -19,8 +19,11 @@ public @interface ReturnValue {
      *
      * <p>
      * If 0, the retval parameter is the 1st parameter in the parameter list.
+     *
+     * <p>
+     * The default value '-1' means the return value is the last parameter.
      */
-    int index();
+    int index() default -1;
 
     /**
      * True if the parameter is "in/out" (therefore it shows up in the
@@ -31,10 +34,6 @@ public @interface ReturnValue {
 
     /**
      * The native type to be unmarshalled.
-     *
-     * <p>
-     * Becase a "retval" parameter is always passed by reference
-     * in IDL, this is usually <tt>{@link NativeType}.XXX_ByRef</tt>.
      */
-    NativeType type();
+    NativeType type() default NativeType.Default;
 }

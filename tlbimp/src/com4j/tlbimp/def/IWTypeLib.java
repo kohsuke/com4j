@@ -1,0 +1,26 @@
+package com4j.tlbimp.def;
+
+import static com4j.NativeType.HRESULT;
+import com4j.IID;
+import com4j.VTID;
+import com4j.Com4jObject;
+import com4j.ReturnValue;
+import com4j.NativeType;
+
+/**
+ * @author Kohsuke Kawaguchi (kk@kohsuke.org)
+ */
+@IID("{2CC69AC1-D228-401b-83D9-7A7C42E5DBD9}")
+public interface IWTypeLib extends Com4jObject {
+    @VTID(3)
+    int count();
+
+    @VTID(5)
+    String getName();
+
+    @VTID(6)
+    String getHelpString();
+
+    @VTID(7)
+    IWType getType( int index );
+}

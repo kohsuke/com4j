@@ -1,0 +1,48 @@
+/*
+	The easiest way to go between the native code and com4j runtime
+	is by using COM interfaces, because com4j provides that functionality.
+
+	We don't actually register those interfaces and classes, but
+	defining the interfaces via IDL would allow us to use tlbimp to
+	use itself to build itself.
+*/
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+interface IWType;
+
+
+[
+	object,
+	uuid(2CC69AC1-D228-401b-83D9-7A7C42E5DBD9),
+	helpstring("Information about a type library"),
+	pointer_default(unique)
+]
+interface IWTypeLib : IUnknown
+{
+	[helpstring("gets the number of types in this library")]
+	HRESULT getCount([out,retval] int* pCount);
+	
+	[helpstring("gets the GUID of this type library")]
+	HRESULT getGUID([out,retval] GUID* pValue);
+	
+	HRESULT getName([out,retval] BSTR* pName);
+
+	HRESULT getHelpString([out,retval] BSTR* pHelpString);
+
+	[helpstring("gets the type in this library")]
+	HRESULT getType(int nIndex, [out, retval] IWType** ppType);
+};
+
+[
+	object,
+	uuid(AF7CC95D-EC5C-4904-B2ED-E1E8838A4377),
+	helpstring("Information about a type"),
+	pointer_default(unique)
+]
+interface IWType : IUnknown
+{
+	HRESULT getName([out,retval] BSTR* pName);
+	HRESULT getHelpString([out,retval] BSTR* pHelpString);
+};

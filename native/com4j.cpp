@@ -2,7 +2,8 @@
 #include "java_id.h"
 #include "com4j.h"
 #include "com4j_native.h"
-
+#include "jstring.h"
+#include "typelib.h"
 
 void error( JNIEnv* env, const char* msg, HRESULT hr ) {
 	env->Throw( (jthrowable)
@@ -27,11 +28,6 @@ JNIEXPORT jobject JNICALL Java_com4j_Native_invoke(JNIEnv* env,
 	jboolean returnIsInOut,	// true if the return type also shows up in the paramter list
 	jint returnConv			// conversion of the return type
 ) {
-
-	IDispatch* pDisp = (IDispatch*)pComObject;
-	UINT ui;
-	pDisp->GetTypeInfoCount(&ui);
-
 	Environment e(env);
 	jint* convs =  env->GetIntArrayElements(_convs,NULL);
 	jobject r = e.invoke(
@@ -42,11 +38,6 @@ JNIEXPORT jobject JNICALL Java_com4j_Native_invoke(JNIEnv* env,
 	return r;
 }
 
-JClassID javaLangNumber("java/lang/Number");
-JClassID comexception("com4j/ComException");
-JClassID com4j_Holder("com4j/Holder");
-jfieldID com4j_Holder_value;
-
 extern "C"
 JNIEXPORT jint JNICALL JVM_OnLoad(JavaVM* jvm, const char* options, void* reserved) {
 	return JNI_OK;
@@ -54,6 +45,7 @@ JNIEXPORT jint JNICALL JVM_OnLoad(JavaVM* jvm, const char* options, void* reserv
 
 JNIEXPORT void JNICALL Java_com4j_Native_init( JNIEnv* env, jclass __unused__ ) {
 	JClassID::runInit(env);
+	JMethodID::runInit(env);
 	com4j_Holder_value = env->GetFieldID(com4j_Holder,"value","Ljava/lang/Object;");
 
 	HRESULT hr = CoInitialize(NULL);
@@ -86,15 +78,14 @@ JNIEXPORT jint JNICALL Java_com4j_Native_queryInterface( JNIEnv* env, jclass __u
 }
 
 JNIEXPORT jint JNICALL Java_com4j_Native_createInstance(
-	JNIEnv* env, jclass __unused__, jstring progId, jlong iid1, jlong iid2 ) {
+	JNIEnv* env, jclass __unused__, jstring _progId, jlong iid1, jlong iid2 ) {
 	
 	MyGUID iid(iid1,iid2);
 	CLSID clsid;
 	HRESULT hr;
+	JString progId(env,_progId);
 
-	const wchar_t* strCLSID = env->GetStringChars(progId,NULL);
-	hr = CLSIDFromProgID(strCLSID,&clsid);
-	env->ReleaseStringChars(progId,strCLSID);
+	hr = CLSIDFromProgID(progId,&clsid);
 	if(FAILED(hr)) {
 		error(env,"Unrecognized CLSID",hr);
 		return 0;
@@ -107,4 +98,36 @@ JNIEXPORT jint JNICALL Java_com4j_Native_createInstance(
 		return 0;
 	}
 	return reinterpret_cast<jint>(p);
+}
+
+/*
+JNIEXPORT jint JNICALL Java_com4j_Native_loadTypeLibrary(
+	JNIEnv* env, jclass __unused__, jstring _name ) {
+
+	JString name(env,_name);
+	ITypeLib* pLib=NULL;
+
+	HRESULT hr = LoadTypeLib(name,&pLib);
+	if(FAILED(hr)) {
+		error(env,"LoadTypeLib failed",hr);
+		return 0;
+	}
+
+	return reinterpret_cast<jint>(pLib);
+}
+*/
+
+JNIEXPORT jint JNICALL Java_com4j_Native_loadTypeLibrary(
+	JNIEnv* env, jclass __unused__, jstring _name ) {
+
+	JString name(env,_name);
+	ITypeLib* pLib=NULL;
+
+	HRESULT hr = LoadTypeLib(name,&pLib);
+	if(FAILED(hr)) {
+		error(env,"LoadTypeLib failed",hr);
+		return 0;
+	}
+	
+	return reinterpret_cast<jint>(CWTypeLib::create(pLib));
 }

@@ -47,6 +47,14 @@ JNIEXPORT jobject JNICALL Java_com4j_Native_invoke
 JNIEXPORT jint JNICALL Java_com4j_Native_queryInterface
   (JNIEnv *, jclass, jint, jlong, jlong);
 
+/*
+ * Class:     com4j_Native
+ * Method:    loadTypeLibrary
+ * Signature: (Ljava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_com4j_Native_loadTypeLibrary
+  (JNIEnv *, jclass, jstring);
+
 #ifdef __cplusplus
 }
 #endif

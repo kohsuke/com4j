@@ -108,6 +108,9 @@
 				RelativePath="com4j.cpp">
 			</File>
 			<File
+				RelativePath="com4j.idl">
+			</File>
+			<File
 				RelativePath="invoke.cpp">
 			</File>
 			<File
@@ -128,6 +131,9 @@
 						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath="typelib.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="ヘッダー ファイル"
@@ -145,7 +151,13 @@
 				RelativePath="java_id.h">
 			</File>
 			<File
+				RelativePath="jstring.h">
+			</File>
+			<File
 				RelativePath="stdafx.h">
+			</File>
+			<File
+				RelativePath="typelib.h">
 			</File>
 			<File
 				RelativePath="unmarshaller.h">
@@ -155,9 +167,6 @@
 			Name="リソース ファイル"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 		</Filter>
-		<File
-			RelativePath="ReadMe.txt">
-		</File>
 	</Files>
 	<Globals>
 	</Globals>

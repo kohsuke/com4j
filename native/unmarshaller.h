@@ -70,3 +70,53 @@ public:
 		return env->NewString(bstr,SysStringLen(bstr));
 	}
 };
+
+template < class XDUCER >
+class PrimitiveUnmarshaller : public Unmarshaller {
+	XDUCER xducer;
+	XDUCER::NativeType value;
+public:
+	PrimitiveUnmarshaller( JNIEnv* env, XDUCER::JavaType i ) {
+		if(i!=NULL)
+			value = xducer.fromJava(env,i);
+	}
+	
+	void* addr() { return &value; }
+
+	XDUCER::JavaType unmarshal( JNIEnv* env ) {
+		return xducer.toJava(env,value);
+	}
+};
+
+class IntXducer {
+public:
+	typedef jobject JavaType;
+	typedef INT32 NativeType;
+	jobject toJava( JNIEnv* env, INT32 i ) {
+		return env->NewObject( javaLangInteger, javaLangInteger_new, i );
+	}
+	INT32 fromJava( JNIEnv* env, jobject i ) {
+		return env->CallIntMethod(i,javaLangNumber_intValue);
+	}
+};
+
+typedef PrimitiveUnmarshaller<IntXducer>	IntUnmarshaller;
+
+class ComObjectUnmarshaller : public Unmarshaller {
+	IUnknown* pv;
+public:
+	ComObjectUnmarshaller() {
+		pv = NULL;
+	}
+
+	void* addr() {
+		return &pv;
+	}
+
+	jobject unmarshal( JNIEnv* env ) {
+		if(pv==NULL)
+			return NULL;
+
+		return env->NewObject( javaLangInteger, javaLangInteger_new, reinterpret_cast<jint>(pv) );
+	}
+};

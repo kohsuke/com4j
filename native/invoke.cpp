@@ -65,9 +65,13 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				break;
 
 			case cvBSTR_byRef:
-				unm = new BSTRUnmarshaller(toBSTR((jstring)jholder(arg)->get(env)));
-				add( new OutParamHandler( jholder(arg), unm ) );
-				pv = unm->addr();
+				if(arg==NULL) {
+					pv = NULL;
+				} else {
+					unm = new BSTRUnmarshaller(toBSTR((jstring)jholder(arg)->get(env)));
+					add( new OutParamHandler( jholder(arg), unm ) );
+					pv = unm->addr();
+				}
 				_asm push pv;
 				break;
 
@@ -95,10 +99,29 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				_asm push int16;
 
 			case cvINT32:
+			case cvComObject:
 				_ASSERT( sizeof(INT32)==sizeof(jint) );
-				int32 = env->CallByteMethod(arg,
-					env->GetMethodID(javaLangNumber,"intValue","()I"));
-				_asm push int16;
+				int32 = env->CallIntMethod(arg,javaLangNumber_intValue);
+				_asm push int32;
+				break;
+
+			case cvINT32_byRef:
+				if(arg==NULL) {
+					pv = NULL;
+				} else {
+					unm = new PrimitiveUnmarshaller<IntXducer>(env,arg);
+					add( new OutParamHandler( jholder(arg), unm ) );
+					pv = unm->addr();
+				}
+				_asm push pv;
+				break;
+
+			case cvGUID:
+				_ASSERT( sizeof(GUID)==sizeof(jlong)*2 );
+				pv = env->GetLongArrayElements( (jlongArray)arg, NULL );
+				add(new LongArrayCleanUp((jlongArray)arg,pv));
+				_asm push pv;
+				break;
 
 			default:
 				error(env,"unexpected conversion type");
@@ -126,6 +149,18 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 					// this is a special case which we handle later
 					break;
 
+				case cvComObject:
+					retUnm = new ComObjectUnmarshaller();
+					pv = retUnm->addr();
+					_asm push pv;
+					break;
+
+				case cvINT32:
+					retUnm = new PrimitiveUnmarshaller<IntXducer>(env,NULL);
+					pv = retUnm->addr();
+					_asm push pv;
+					break;
+
 				default:
 					error(env,"unexpected conversion type");
 					return NULL;
@@ -144,12 +179,26 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 	// and the return value should be in EAX.
 	__asm mov hr,EAX;
 
+	// if the caller wants the HRESULT as the return value,
+	// don't throw ComException
 	if(retConv==cvHRESULT) {
 		jclass javaLangInteger = env->FindClass("java/lang/Integer");
 		return env->NewObject(
 			javaLangInteger,
 			env->GetMethodID(javaLangInteger,"<init>","(I)V"),
 			hr );
+	}
+
+	// otherwise check the HRESULT first
+	if(FAILED(hr)) {
+		wchar_t* pmsg;
+		jobject str = NULL;
+		if(!FAILED(FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM, NULL, hr, 0, (LPWSTR)&pmsg, 0, NULL ))) {
+			str = env->NewString(pmsg,wcslen(pmsg));
+			LocalFree(pmsg);
+		}
+		
+		env->Throw( (jthrowable)env->NewObject( comexception, comexception_new, str, (jint)hr ) );
 	}
 
 	if(retUnm==NULL)	return NULL;

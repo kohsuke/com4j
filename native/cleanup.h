@@ -43,3 +43,18 @@ public:
 		p = NULL;
 	}
 };
+
+class LongArrayCleanUp : public PostAction {
+	jlongArray array;
+	jlong* buf;
+public:
+	LongArrayCleanUp( jlongArray _array, void* _buf ) {
+		array = _array;
+		buf = static_cast<jlong*>(_buf);
+	}
+	void act( JNIEnv* env ) {
+		env->ReleaseLongArrayElements( array, buf, 0 );
+		array = NULL;
+		buf = NULL;
+	}
+};

@@ -15,8 +15,13 @@ enum Conv {
 	cvINT8 = 100,
 	cvINT16 = 101,
 	cvINT32 = 102,
+	cvINT32_byRef = 102|BYREF,
 
 	cvHRESULT = 200,
+
+	cvComObject = 300,
+	cvComObject_byRef = 300|BYREF,
+	cvGUID = 301,
 };
 
 
@@ -62,11 +67,6 @@ public:
 
 	BSTR toBSTR( jstring s );
 };
-
-// reference to java.lang.Number
-extern JClassID javaLangNumber;
-// reference to org.kohsuke.com4j.comexception
-extern JClassID comexception;
 
 
 

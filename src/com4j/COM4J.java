@@ -1,6 +1,7 @@
 package com4j;
 
 import java.lang.reflect.Proxy;
+import java.io.File;
 
 /**
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
@@ -18,12 +19,7 @@ public class COM4J {
         GUID iid = getIID(primaryInterface);
 
         // create instance
-        int ptr = Native.createInstance(clsid,iid.l1,iid.l2);
-
-        return (T)Proxy.newProxyInstance(
-            primaryInterface.getClassLoader(),
-            new Class<?>[]{primaryInterface},
-            new Wrapper(ptr));
+        return wrap( primaryInterface, Native.createInstance(clsid,iid.l1,iid.l2) );
     }
 
     /**
@@ -34,14 +30,20 @@ public class COM4J {
         return new GUID(iid.value());
     }
 
-    /**
-     * Releases the COM object that the given wrapper holds.
-     */
-    public static void dispose( Com4jObject obj ) {
-        unwrap(obj).release();
+    public static Com4jObject loadTypeLibrary( File typeLibraryFile ) {
+        return wrap(Com4jObject.class, Native.loadTypeLibrary(typeLibraryFile.getAbsolutePath()));
     }
 
-    private static Wrapper unwrap( Com4jObject obj ) {
+
+    static <T>
+    T wrap( Class<T> primaryInterface, int ptr ) {
+        return primaryInterface.cast(Proxy.newProxyInstance(
+            primaryInterface.getClassLoader(),
+            new Class<?>[]{primaryInterface},
+            new Wrapper(ptr)));
+    }
+
+    static Wrapper unwrap( Com4jObject obj ) {
         return (Wrapper)Proxy.getInvocationHandler(obj);
     }
 
