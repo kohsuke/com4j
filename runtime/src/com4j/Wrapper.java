@@ -83,6 +83,9 @@ final class Wrapper implements InvocationHandler, Com4jObject {
         if(ptr!=0)
            Native.release(ptr);
         ptr=0;
+        // object shouldn't change hash code.
+        // so we keep the
+        // hashCode=0;
     }
 
     public <T extends Com4jObject> boolean is( Class<T> comInterface ) {
@@ -111,12 +114,13 @@ final class Wrapper implements InvocationHandler, Com4jObject {
     }
 
     public final int hashCode() {
-        if(ptr==0)
-            throw new IllegalStateException("COM object is already disposed");
-
         if(hashCode==0) {
-            hashCode = COM4J.queryInterface( ptr, COM4J.IID_IUnknown );
-            Native.release(hashCode);
+            if(ptr!=0) {
+                hashCode = COM4J.queryInterface( ptr, COM4J.IID_IUnknown );
+                Native.release(hashCode);
+            } else {
+                hashCode = 0;
+            }
         }
         return hashCode;
     }
