@@ -124,6 +124,9 @@
 				RelativePath="java_id.cpp">
 			</File>
 			<File
+				RelativePath="safearray.cpp">
+			</File>
+			<File
 				RelativePath="stdafx.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">

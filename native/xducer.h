@@ -1,6 +1,7 @@
 #pragma once
+#include "com4j.h"
 #include "jstring.h"
-
+#include "java_id.h"
 /*
 	Transducers are basic unit of conversion between Java and Native Types.
 
@@ -99,6 +100,22 @@ namespace xducer {
 			return env->NewString(value,SysStringLen(value));
 		}
 	};
+
+	// object <-> VARIANT.
+	class VariantXducer {
+	public:
+		typedef VARIANT NativeType;
+		typedef jobject JavaType;
+
+		static inline NativeType toNative( JNIEnv* env, JavaType value ) {
+			return *convertToVariant(env,value);
+		}
+
+//		TODO
+//		static inline JavaType toJava( JNIEnv* env, NativeType value ) {
+//		}
+	};
+
 
 	typedef BoxXducer<float,&javaLangFloat_valueOf, &javaLangNumber_floatValue >
 		BoxedFloatXducer;

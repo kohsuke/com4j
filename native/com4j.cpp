@@ -23,9 +23,9 @@ JNIEXPORT jobject JNICALL Java_com4j_Native_invoke(JNIEnv* env,
 		reinterpret_cast<void*>(pComObject),
 		(*reinterpret_cast<VTable*>(pComObject))[pFuncIndex],
 		args,
-		reinterpret_cast<ConvSpec*>(convs),
+		convs,
 		returnType, returnIndex, returnIsInOut!=0,
-		*reinterpret_cast<ConvSpec*>(&returnConv) );
+		returnConv );
 	env->ReleaseIntArrayElements(_convs,convs,0);
 	return r;
 }

@@ -21,8 +21,8 @@ Environment::~Environment() {
 static int invocationCount = 0;
 #endif
 
-jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray args, ConvSpec* convs,
-	jclass retType, int retIndex, bool retIsInOut, ConvSpec retConv ) {
+jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray args, jint* convs,
+	jclass retType, int retIndex, bool retIsInOut, jint retConv ) {
 	// list of clean up actions
 
 	int i;
@@ -62,7 +62,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 		
 		if( i!=paramLen ) {
 			arg = env->GetObjectArrayElement(args,i);
-			switch( convs[i].major ) {
+			switch( convs[i] ) {
 			case cvBSTR:
 				bstr = toBSTR((jstring)arg);
 				_asm push bstr;
@@ -165,40 +165,11 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				break;
 
 			case cvSAFEARRAY:
-				psa = NULL;
-				switch(convs[i].minor) {
-				case cvsaBoolean:
-					psa = safearray::PrimitiveArrayXducer<VT_BOOL,VARIANT_BOOL,jboolean>::toNative(env,(jarray)arg);
-					break;
-				case cvsaByte:
-					psa = safearray::PrimitiveArrayXducer<VT_UI1,byte,jbyte>::toNative(env,(jarray)arg);
-					break;
-				case cvsaChar:
-					psa = safearray::PrimitiveArrayXducer<VT_UI2,unsigned short,jchar>::toNative(env,(jarray)arg);
-					break;
-				case cvsaDouble:
-					psa = safearray::PrimitiveArrayXducer<VT_R8,double,jdouble>::toNative(env,(jarray)arg);
-					break;
-				case cvsaFloat:
-					psa = safearray::PrimitiveArrayXducer<VT_R4,float,jfloat>::toNative(env,(jarray)arg);
-					break;
-				case cvsaInt:
-					psa = safearray::PrimitiveArrayXducer<VT_I4,INT32,jint>::toNative(env,(jarray)arg);
-					break;
-				case cvsaLong:
-					psa = safearray::PrimitiveArrayXducer<VT_I8,INT64,jlong>::toNative(env,(jarray)arg);
-					break;
-				case cvsaShort:
-					psa = safearray::PrimitiveArrayXducer<VT_I2,short,jshort>::toNative(env,(jarray)arg);
-					break;
-				case cvsaString:
-					psa = safearray::BasicArrayXducer<VT_BSTR,xducer::StringXducer>::toNative(env,(jarray)arg);
-					break;
-//				case cvsaVariant:
-					// to convert each item, we need to find out each type individually.
-					// if we have that functionality, there's no need for receiving convspec.minor!
+				psa = safearray::SafeArrayXducer::toNative(env,(jarray)arg);
+				if(psa==NULL) {
+					error(env,"unable to convert the given array to SAFEARRAY");
+					return NULL;
 				}
-				_ASSERT(psa!=NULL);
 				add( new SAFEARRAYCleanUp(psa) );
 				_asm push psa;
 				break;
@@ -219,7 +190,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				}
 				retUnm = unm;
 			} else {
-				switch(retConv.major) {
+				switch(retConv) {
 				case cvBSTR:
 					retUnm = new BSTRUnmarshaller(NULL);
 					break;
@@ -286,7 +257,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 
 	// if the caller wants the HRESULT as the return value,
 	// don't throw ComException
-	if(retConv.major==cvHRESULT) {
+	if(retConv==cvHRESULT) {
 		jclass javaLangInteger = env->FindClass("java/lang/Integer");
 		return env->NewObject(
 			javaLangInteger,
@@ -302,8 +273,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 			str = env->NewString(pmsg,wcslen(pmsg));
 			LocalFree(pmsg);
 		}
-		
-		env->Throw( (jthrowable)comexception_new(env, str, (jint)hr ) );
+		env->Throw( (jthrowable)comexception_new_hr(env, str, (jint)hr ) );
 	}
 
 	if(retUnm==NULL)	return NULL;

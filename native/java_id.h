@@ -160,11 +160,12 @@ extern JStaticMethodID<jobject> javaLangBoolean_valueOf;
 extern JClassID javaLangString;
 
 extern JClassID com4j_COM4J;
-extern JMethodID<jint> com4j_COM4J_getPtr;
+extern JStaticMethodID<jint> com4j_COM4J_getPtr;
 
 // reference to org.kohsuke.com4j.comexception
 extern JClassID comexception;
 extern JConstructorID comexception_new;
+extern JConstructorID comexception_new_hr;
 extern JClassID com4j_Holder;
 extern jfieldID com4j_Holder_value;
 
@@ -172,3 +173,14 @@ extern JClassID com4j_Com4jObject;
 
 extern JClassID com4jWrapper;
 extern JConstructorID com4jWrapper_new;
+
+extern JClassID booleanArray;
+extern JClassID byteArray;
+extern JClassID charArray;
+extern JClassID doubleArray;
+extern JClassID floatArray;
+extern JClassID intArray;
+extern JClassID longArray;
+extern JClassID shortArray;
+extern JClassID stringArray;
+extern JClassID objectArray;

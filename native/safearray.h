@@ -4,6 +4,15 @@
 
 namespace safearray {
 	
+	// looks at the runtime type of the Java array and determines the correct type
+	// for SAFEARRAY.
+	class SafeArrayXducer {
+	public:
+		typedef SAFEARRAY*	NativeType;
+		typedef jarray		JavaType;
+
+		static NativeType toNative( JNIEnv* env, JavaType a );
+	};
 
 	template < VARTYPE vt, class XDUCER >
 	class BasicArrayXducer {

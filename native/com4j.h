@@ -33,30 +33,6 @@ enum Conv {
 	cvSAFEARRAY = 500,
 };
 
-// the minor SpecConv for cvSAFEARRAY:
-enum ConvSubSepc_SafeArray {
-	cvsaBoolean,
-	cvsaByte,
-	cvsaChar,
-	cvsaDouble,
-	cvsaFloat,
-	cvsaInt,
-	cvsaLong,
-	cvsaShort,
-	cvsaString
-};
-
-// conversion specification. given by the Java side to control how 
-// each parameter is converted to the native type.
-struct ConvSpec {
-	// used to specify the details of the conversion.
-	// this field is used only when major==cvSAFEARRAY or major==cvVARIANT
-	short minor;
-	// one of the Conv enum.
-	// determines the overall conversion strategy for a given parameter
-	short major;
-};
-
 
 typedef void (*ComMethod)();
 typedef ComMethod* VTable;
@@ -79,11 +55,11 @@ public:
 		void* pComObject,		// pointer to the the COM object
 		ComMethod		method,	// pointer to the method to invoke
 		jobjectArray	args,	// arguments
-		ConvSpec*		convs,	// conversions
+		jint*			convs,	// conversions
 		jclass			retType,
 		int				retIndex,
 		bool			retIsInOut,
-		ConvSpec		retConv
+		jint			retConv
 	);
 
 	// adds a new post action

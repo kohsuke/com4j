@@ -8,12 +8,8 @@ void error( JNIEnv* env, HRESULT hr, const char* msg ... ) {
 	va_start(va,msg);
 	vsprintf(w,msg,va);
 
-	env->Throw( (jthrowable)
-		env->NewObject( comexception,
-			env->GetMethodID(comexception,"<init>","(Ljava/lang/String;I)V"),
-			env->NewStringUTF(w),
-			hr )
-	);
+	env->ExceptionClear();
+	env->Throw( (jthrowable)comexception_new_hr( env, env->NewStringUTF(w), hr ) );
 }
 
 void error( JNIEnv* env, const char* msg ... ) {
@@ -23,9 +19,6 @@ void error( JNIEnv* env, const char* msg ... ) {
 	va_start(va,msg);
 	vsprintf(w,msg,va);
 
-	env->Throw( (jthrowable)
-		env->NewObject( comexception,
-			env->GetMethodID(comexception,"<init>","(Ljava/lang/String;)V"),
-			env->NewStringUTF(w) )
-	);
+	env->ExceptionClear();
+	env->Throw( (jthrowable)comexception_new( env, env->NewStringUTF(w) ) );
 }

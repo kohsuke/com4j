@@ -36,10 +36,11 @@ JStaticMethodID<jobject> javaLangBoolean_valueOf(javaLangBoolean,"valueOf","(Z)L
 JClassID javaLangString("java/lang/String");
 
 JClassID com4j_COM4J("com4j/COM4J");
-JMethodID<jint> com4j_COM4J_getPtr(com4j_COM4J,"getPtr","(Lcom4j/Com4jObject;)I");
+JStaticMethodID<jint> com4j_COM4J_getPtr(com4j_COM4J,"getPtr","(Lcom4j/Com4jObject;)I");
 
 JClassID comexception("com4j/ComException");
-JConstructorID comexception_new(comexception,"(Ljava/lang/String;I)V");
+JConstructorID comexception_new_hr(comexception,"(Ljava/lang/String;I)V");
+JConstructorID comexception_new(comexception,"(Ljava/lang/String;)V");
 JClassID com4j_Holder("com4j/Holder");
 jfieldID com4j_Holder_value;
 
@@ -47,3 +48,14 @@ JClassID com4j_Com4jObject("com4j/Com4jObject");
 
 JClassID com4jWrapper("com4j/Wrapper");
 JConstructorID com4jWrapper_new(com4jWrapper,"(I)V");
+
+JClassID booleanArray("[Z");
+JClassID byteArray("[B");
+JClassID charArray("[C");
+JClassID doubleArray("[D");
+JClassID floatArray("[F");
+JClassID intArray("[I");
+JClassID longArray("[J");
+JClassID shortArray("[S");
+JClassID stringArray("[Ljava/lang/String;");
+JClassID objectArray("[Ljava/lang/Object;");
