@@ -2,11 +2,11 @@ package com4j.tlbimp;
 
 import com4j.Com4jObject;
 import com4j.NativeType;
-import com4j.COM4J;
-import com4j.GUID;
+import com4j.tlbimp.def.ICoClassDecl;
 import com4j.tlbimp.def.IConstant;
 import com4j.tlbimp.def.IDispInterfaceDecl;
 import com4j.tlbimp.def.IEnumDecl;
+import com4j.tlbimp.def.IImplementedInterfaceDecl;
 import com4j.tlbimp.def.IInterfaceDecl;
 import com4j.tlbimp.def.IMethod;
 import com4j.tlbimp.def.IParam;
@@ -18,8 +18,6 @@ import com4j.tlbimp.def.ITypedefDecl;
 import com4j.tlbimp.def.IWTypeLib;
 import com4j.tlbimp.def.TypeKind;
 import com4j.tlbimp.def.VarType;
-import com4j.tlbimp.def.ICoClassDecl;
-import com4j.tlbimp.def.IImplementedInterfaceDecl;
 
 import java.io.File;
 import java.io.IOException;
@@ -209,8 +207,6 @@ public final class Generator {
     }
 
     private void declareFactoryMethod(IndentingWriter o, ICoClassDecl t) {
-        final int count = t.countImplementedInterfaces();
-
         String primaryIntf; // default interface name
         ITypeDecl p = getDefaultInterface(t);
         if(p!=null)
