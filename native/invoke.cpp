@@ -240,6 +240,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 					break;
 
 				case cvComObject:
+				case cvDISPATCH:
 					retUnm = new ComObjectUnmarshaller();
 					break;
 
