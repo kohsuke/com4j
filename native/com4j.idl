@@ -130,6 +130,18 @@ library com4j
 
 	[
 		object,
+		uuid(1FA456D6-6E48-4ff0-9BF8-300937470A02),
+		helpstring("Typedef declaration"),
+		pointer_default(unique)
+	]
+	interface ITypedefDecl : ITypeDecl
+	{
+		[helpstring("get the definition of this typedef")]
+		HRESULT getDefinition( [out,retval] IType** ppType );
+	};
+
+	[
+		object,
 		uuid(EE076FF5-2E16-4a23-AE24-5DF610F6006E),
 		helpstring("VTBL Interface. ITypeDecl can be casted to this when its kind is TypeKind_DISPATCH"),
 		pointer_default(unique)

@@ -13,6 +13,7 @@ import com4j.tlbimp.def.IInterface;
 import com4j.tlbimp.def.VarType;
 import com4j.tlbimp.def.IEnumDecl;
 import com4j.tlbimp.def.IConstant;
+import com4j.tlbimp.def.ITypedefDecl;
 import com4j.NativeType;
 
 import java.io.File;
@@ -74,6 +75,14 @@ public class Generator {
             case ENUM:
                 generate( t.queryInterface(IEnumDecl.class) );
                 break;
+            case ALIAS:
+                {
+                    ITypedefDecl alias = t.queryInterface(ITypedefDecl.class);
+                    System.out.printf("typedef %1s %2s", alias.getName(),
+                        getTypeString(alias.getDefinition()));
+                    System.out.println();
+                    break;
+                }
             default:
                 System.out.println( t.getKind() );
                 break;

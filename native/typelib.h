@@ -306,7 +306,8 @@ class ATL_NO_VTABLE CTypeDecl :
 	public CComCoClass<CTypeDecl, &__uuidof(ITypeDecl)>,
 	public IDispInterfaceDecl,
 	public IInterfaceDecl,
-	public IEnumDecl
+	public IEnumDecl,
+	public ITypedefDecl
 {
 public:
 	CTypeLibPtr m_pParent;
@@ -329,13 +330,30 @@ public:
 // DECLARE_REGISTRY_RESOURCEID(...)
 
 DECLARE_PROTECT_FINAL_CONSTRUCT()
+	
+
+//
+// used to enable additional interfaces based on the TYPEKIND.
+//
+	#define	DYNAMIC_CAST_TEST(CONST,INTF) \
+		if(riid==__uuidof(INTF) && kind==CONST) { *ppv = static_cast<INTF*>(pThis); pThis->AddRef(); return S_OK; }
+
+	static HRESULT WINAPI castDynamic(void* pv, REFIID riid, LPVOID* ppv, DWORD dw) {
+		CTypeDecl* pThis = static_cast<CTypeDecl*>(pv);
+		TYPEKIND kind = pThis->m_pAttr->typekind;
+
+		DYNAMIC_CAST_TEST(TypeKind_DISPATCH,		IDispInterfaceDecl)
+		DYNAMIC_CAST_TEST(TypeKind_INTERFACE,		IInterfaceDecl)
+		DYNAMIC_CAST_TEST(TypeKind_ENUM,			IEnumDecl)
+		DYNAMIC_CAST_TEST(TypeKind_ALIAS,			ITypedefDecl)
+		return E_NOINTERFACE;
+	}
+
 
 BEGIN_COM_MAP(CTypeDecl)
 	COM_INTERFACE_ENTRY2(IType,IInterfaceDecl)
 	COM_INTERFACE_ENTRY2(ITypeDecl,IInterfaceDecl)
-	COM_INTERFACE_ENTRY(IDispInterfaceDecl)
-	COM_INTERFACE_ENTRY(IInterfaceDecl)
-	COM_INTERFACE_ENTRY(IEnumDecl)
+	COM_INTERFACE_ENTRY_FUNC_BLIND(0,castDynamic)
 END_COM_MAP()
 
 public:
@@ -383,6 +401,12 @@ public:
 			*ppConstant = CConstant::create(this,index);
 			return S_OK;
 		}
+	}
+
+	// ITypedefDecl
+	STDMETHOD(raw_getDefinition)( IType** ppType ) {
+		*ppType = createType(this,m_pAttr->tdescAlias);
+		return S_OK;
 	}
 };
 
