@@ -17,6 +17,10 @@ public class ComException extends RuntimeException {
         this.hresult = hresult;
     }
 
+    public ComException( String msg ) {
+        this(msg,-1);
+    }
+
     /**
      * Gets the HRESULT code of this error.`
      */
