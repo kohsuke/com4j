@@ -28,6 +28,7 @@ library com4j
 	interface IMethod;
 	interface IParam;
 	interface IConstant;
+	interface IImplementedInterfaceDecl;
 
 	typedef enum {
 		[helpstring("testing")]
@@ -128,6 +129,9 @@ library com4j
 
 		[helpstring("method")]
 		HRESULT getMethod([in] int index, [out,retval] IMethod** ppMethod );
+	
+		[helpstring("return true if this interface is a dual interface")]
+		HRESULT isDual([out,retval]VARIANT_BOOL* pOut);
 
 		[helpstring("get the vtable interface of this dispatch interface. Works only when this is a dual interface.")]
 		HRESULT getVtblInterface([out,retval] IInterfaceDecl** ppInterface );
@@ -239,5 +243,47 @@ library com4j
 		HRESULT getValue([out,retval]int* pValue);
 
 		HRESULT getHelpString([out,retval] BSTR* pHelpString);
+	};
+
+	[
+		object,
+		uuid(A2F511E4-CC26-4337-A4F4-EA992190D082),
+		helpstring("CoClass declaration"),
+		pointer_default(unique)
+	]
+	interface ICoClassDecl : ITypeDecl
+	{
+		[helpstring("count the number of the interfaces implemented by this co-class")]
+		HRESULT countImplementedInterfaces([out,retval] int* pValue);
+
+		[helpstring("gets an interface implemented by this co-class")]
+		HRESULT getImplementedInterface(int index, [out,retval] IImplementedInterfaceDecl** ppType );
+
+		[helpstring("checks if this co-class is creatable")]
+		HRESULT isCreatable([out,retval] VARIANT_BOOL* pOut);
+
+		[helpstring("gets the CLSID of this co-class")]
+		HRESULT getGUID([out,retval] GUID* pValue);
+	};
+
+	[
+		object,
+		uuid(9F6412CF-9B35-4b72-A8B9-AF83491E5B73),
+		helpstring("interface implemented by a co-class"),
+		pointer_default(unique)
+	]
+	interface IImplementedInterfaceDecl : IUnknown
+	{
+		[helpstring("is this the default source/sink?")]
+		HRESULT isDefault([out,retval] VARIANT_BOOL* pValue);
+
+		[helpstring("is this a sink?")]
+		HRESULT isSource([out,retval] VARIANT_BOOL* pValue);
+
+		[helpstring("is restricted?")]
+		HRESULT isRestricted([out,retval] VARIANT_BOOL* pValue);
+
+		[helpstring("gets the definition of the interface")]
+		HRESULT getType([out,retval] ITypeDecl** ppType );
 	};
 };

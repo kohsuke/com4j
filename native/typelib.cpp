@@ -145,3 +145,8 @@ void CTypeDecl::init( CTypeLib* pParent, ITypeInfo* pType ) {
 	_ASSERT( pParent->children.find(pType)==pParent->children.end() );
 	pParent->children[pType] = this;
 }
+
+
+ITypeInfo* CImplInterface::pType() {
+	return m_pParent->m_pType;
+}

@@ -307,13 +307,85 @@ public:
 
 
 
+
+
+class ATL_NO_VTABLE CImplInterface : 
+	public CComObjectRootEx<CComSingleThreadModel>,
+	public CComCoClass<CImplInterface, &__uuidof(IImplementedInterfaceDecl)>,
+	public IImplementedInterfaceDecl
+{
+	CTypeDeclPtr	m_pParent;
+	int				m_index;
+public:
+	CImplInterface() {}
+
+	void init( CTypeDecl* pParent, int idx ) {
+		m_pParent = pParent;
+		m_index = idx;
+	}
+
+	static CComObject<CImplInterface>* create( CTypeDecl* pParent, int idx ) {
+		CComObject<CImplInterface>* pObj = NULL;
+		CComObject<CImplInterface>::CreateInstance(&pObj);
+		pObj->AddRef();
+		pObj->init(pParent,idx);
+		return pObj;
+	}
+
+// DECLARE_REGISTRY_RESOURCEID(...)
+
+DECLARE_PROTECT_FINAL_CONSTRUCT()
+
+BEGIN_COM_MAP(CImplInterface)
+	COM_INTERFACE_ENTRY(IImplementedInterfaceDecl)
+	COM_INTERFACE_ENTRY(IUnknown)
+END_COM_MAP()
+	
+	ITypeInfo* pType();
+	HRESULT getFlag( int mask, VARIANT_BOOL* pValue ) {
+		int flags;
+		HRESULT hr = pType()->GetImplTypeFlags(m_index,&flags);
+		if(FAILED(hr))	return hr;
+		if( flags&mask )	*pValue = VARIANT_TRUE;
+		else				*pValue = VARIANT_FALSE;
+		return S_OK;
+	}
+public:
+	STDMETHOD(raw_isDefault)(VARIANT_BOOL* pValue) {
+		return getFlag( IMPLTYPEFLAG_FDEFAULT, pValue );
+	}
+	STDMETHOD(raw_isSource)(VARIANT_BOOL* pValue) {
+		return getFlag( IMPLTYPEFLAG_FSOURCE, pValue );
+	}
+	STDMETHOD(raw_isRestricted)(VARIANT_BOOL* pValue) {
+		return getFlag( IMPLTYPEFLAG_FRESTRICTED, pValue );
+	}
+	STDMETHOD(raw_getType)(ITypeDecl** ppType ) {
+		*ppType = NULL;
+		HREFTYPE href;
+		HRESULT hr = pType()->GetRefTypeOfImplType( m_index, &href );
+		if(FAILED(hr))	return hr;
+
+		*ppType = getRef(m_pParent,href);
+		if(*ppType==NULL)
+			return E_FAIL;
+		return S_OK;
+	}
+};
+
+
+
+
+
+
 class ATL_NO_VTABLE CTypeDecl : 
 	public CComObjectRootEx<CComSingleThreadModel>,
 	public CComCoClass<CTypeDecl, &__uuidof(ITypeDecl)>,
 	public IDispInterfaceDecl,
 	public IInterfaceDecl,
 	public IEnumDecl,
-	public ITypedefDecl
+	public ITypedefDecl,
+	public ICoClassDecl
 {
 public:
 	CTypeLibPtr m_pParent;
@@ -352,6 +424,7 @@ DECLARE_PROTECT_FINAL_CONSTRUCT()
 		DYNAMIC_CAST_TEST(TypeKind_INTERFACE,		IInterfaceDecl)
 		DYNAMIC_CAST_TEST(TypeKind_ENUM,			IEnumDecl)
 		DYNAMIC_CAST_TEST(TypeKind_ALIAS,			ITypedefDecl)
+		DYNAMIC_CAST_TEST(TypeKind_COCLASS,			ICoClassDecl)
 		return E_NOINTERFACE;
 	}
 
@@ -412,6 +485,16 @@ public:
 	}
 
 	// IDispInterface
+	STDMETHOD(raw_isDual)(VARIANT_BOOL* pOut) {
+		HREFTYPE href;
+		HRESULT hr = m_pType->GetRefTypeOfImplType(-1,&href);
+		if(FAILED(hr)) {
+			*pOut = VARIANT_FALSE;
+		} else {
+			*pOut = VARIANT_TRUE;
+		}
+		return S_OK;
+	}
 	STDMETHOD(raw_getVtblInterface)(IInterfaceDecl** ppInterface ) {
 		HREFTYPE href;
 		HRESULT hr = m_pType->GetRefTypeOfImplType(-1,&href);
@@ -443,6 +526,27 @@ public:
 	// ITypedefDecl
 	STDMETHOD(raw_getDefinition)( IType** ppType ) {
 		*ppType = createType(this,m_pAttr->tdescAlias);
+		return S_OK;
+	}
+
+	// ICoClassDecl
+	STDMETHOD(raw_countImplementedInterfaces)(int* pValue) {
+		*pValue = m_pAttr->cImplTypes;
+		return S_OK;
+	}
+
+	STDMETHOD(raw_getImplementedInterface)(int index, IImplementedInterfaceDecl** ppType ) {
+		if(index<0 || m_pAttr->cImplTypes<=index) {
+			*ppType = NULL;
+			return E_INVALIDARG;
+		} else {
+			*ppType = CImplInterface::create(this,index);
+			return S_OK;
+		}
+	}
+
+	STDMETHOD(raw_isCreatable)(VARIANT_BOOL* pOut) {
+		*pOut = (m_pAttr->wTypeFlags & TYPEFLAG_FCANCREATE )?VARIANT_TRUE:VARIANT_FALSE;
 		return S_OK;
 	}
 };
