@@ -84,7 +84,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
     public <T extends Com4jObject> T queryInterface( Class<T> comInterface ) {
         try {
             GUID iid = COM4J.getIID(comInterface);
-            int nptr = Native.queryInterface(ptr, iid.l1, iid.l2 );
+            int nptr = Native.queryInterface(ptr, iid.v[0], iid.v[1] );
             return COM4J.wrap( comInterface, nptr );
         } catch( ComException e ) {
             return null;    // failed to cast
@@ -118,7 +118,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
         final int returnIndex;
         final boolean returnIsInOut;
         final NativeType returnConv;
-        final Class[] paramTypes;
+        final Class<?>[] paramTypes;
 
         MethodInfo( Method m ) {
             method = m;
@@ -135,7 +135,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
             ReturnValue rt = m.getAnnotation(ReturnValue.class);
             if(rt!=null) {
                 if(rt.index()==-1)  returnIndex=pa.length;
-                else                returnIndex=rt.index();   
+                else                returnIndex=rt.index();
                 returnIsInOut = rt.inout();
                 returnConv = rt.type();
             } else {
@@ -195,6 +195,8 @@ final class Wrapper implements InvocationHandler, Com4jObject {
             Class<?> c = (Class<?>)t;
             if(Com4jObject.class.isAssignableFrom(c))
                 return NativeType.ComObject;
+            if(Enum.class.isAssignableFrom(c))
+                return NativeType.Int32;
             if(GUID.class==t)
                 return NativeType.GUID;
             if(Integer.TYPE==t)

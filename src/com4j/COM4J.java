@@ -19,7 +19,7 @@ public class COM4J {
         GUID iid = getIID(primaryInterface);
 
         // create instance
-        return wrap( primaryInterface, Native.createInstance(clsid,iid.l1,iid.l2) );
+        return wrap( primaryInterface, Native.createInstance(clsid,iid.v[0],iid.v[1]) );
     }
 
     /**

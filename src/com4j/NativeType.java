@@ -2,6 +2,8 @@ package com4j;
 
 import static com4j.Const.*;
 
+import java.lang.reflect.Field;
+
 /**
  * Native method type.
  *
@@ -54,7 +56,38 @@ public enum NativeType {
 
     Int8(100),
     Int16(101),
-    Int32(102),
+    /**
+     * Marshalled as 32-bit integer.
+     *
+     * <p>
+     * Java "int" is 32 bit.
+     *
+     * <p>
+     * Expected Java type:
+     *      int
+     *      {@link Number}
+     *      {@link Enum} (see {@link ComEnum})
+     */
+    Int32(102) {
+        // the native code will see the raw pointer value as Integer
+        Object massage(Object param) {
+            Class<?> clazz = param.getClass();
+
+            if( Enum.class.isAssignableFrom(clazz) ) {
+                // if it's an enum constant, change it to the number
+                return EnumDictionary.get((Class<? extends Enum>)clazz).value((Enum)param);
+            }
+            return param;
+        }
+
+        Object unmassage(Class<?> type,Object param) {
+            if( Enum.class.isAssignableFrom(type) ) {
+                return EnumDictionary.get((Class<? extends Enum>)type).constant((Integer)param);
+            }
+
+            return param;
+        }
+    },
     Int32_ByRef(102|BYREF),
 
     /**
@@ -131,12 +164,11 @@ public enum NativeType {
         // pass in the value as two longs
         Object massage(Object param) {
             GUID g = (GUID)param;
-            return new long[]{g.l1, g.l2};
+            return g.v;
         }
-        Object unmassage(Class<?> type,Object param) {
-            Holder<Object> h = (Holder<Object>)param;
-            h.value = ComObject.massage(h.value);
-            return h;
+        Object unmassage(Class<?> signature, Object param) {
+            if(param==null)     return null;
+            return new GUID( (long[])param );
         }
     }
 
