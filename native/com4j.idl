@@ -202,6 +202,9 @@ library com4j
 
 		[helpstring("the method's offset in the virtual table.")]
 		HRESULT getVtableIndex([out,retval]int* pOut);
+
+		[helpstring("returns true if this method is vararg. If true, the last parameter is always SAFEARRAY.")]
+		HRESULT isVarArg([out,retval]VARIANT_BOOL* pOut);
 	};
 
 

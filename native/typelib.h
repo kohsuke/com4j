@@ -2,6 +2,7 @@
 //#include "com4j_h.h"
 #import "com4j.tlb" no_namespace
 
+namespace typelib {
 
 class CTypeLib;
 class CTypeDecl;
@@ -95,17 +96,23 @@ private:
 	bool isPtr;
 
 public:
-	void init( CTypeDecl* containingType, TYPEDESC& t, bool _isPtr ) {
+	HRESULT init( CTypeDecl* containingType, TYPEDESC& t, bool _isPtr ) {
 		m_pType = createType(containingType,t);
 		isPtr = _isPtr;
-		_ASSERT(m_pType!=NULL);
+		if(m_pType==NULL)
+			return E_FAIL;
+		else
+			return S_OK;
 	}
 
 	static CComObject<CPtrType>* create( CTypeDecl* containingType, TYPEDESC& t, bool _isPtr ) {
 		CComObject<CPtrType>* pObj = NULL;
 		CComObject<CPtrType>::CreateInstance(&pObj);
 		pObj->AddRef();
-		pObj->init(containingType,t,_isPtr);
+		if(FAILED(pObj->init(containingType,t,_isPtr))) {
+			pObj->Release();
+			return NULL;
+		}
 		return pObj;
 	}
 
@@ -194,6 +201,10 @@ public:
 	STDMETHOD(raw_getParam)(int index, IParam** pOut);
 	STDMETHOD(raw_getVtableIndex)(int* pOut) {
 		*pOut = m_pDesc->oVft/sizeof(void*);
+		return S_OK;
+	}
+	STDMETHOD(raw_isVarArg)(VARIANT_BOOL* pOut) {
+		*pOut = (m_pDesc->cParamsOpt==-1)?VARIANT_TRUE:VARIANT_FALSE;
 		return S_OK;
 	}
 };
@@ -412,8 +423,15 @@ public:
 	CTypeLibPtr m_pParent;
 	ITypeInfoPtr m_pType;
 	TYPEATTR* m_pAttr;
+#ifdef	_DEBUG
+	DWORD	m_ThreadID;
+#endif
 
-	CTypeDecl() {}
+	CTypeDecl() {
+#ifdef	_DEBUG
+		m_ThreadID = ::GetCurrentThreadId();
+#endif
+	}
 	~CTypeDecl();
 
 	void init( CTypeLib* pParent, ITypeInfo* pType );
@@ -655,3 +673,6 @@ public:
 		return hr;
 	}
 };
+
+
+}
