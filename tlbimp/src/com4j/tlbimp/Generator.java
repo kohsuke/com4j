@@ -18,6 +18,7 @@ import com4j.tlbimp.def.ITypedefDecl;
 import com4j.tlbimp.def.IWTypeLib;
 import com4j.tlbimp.def.TypeKind;
 import com4j.tlbimp.def.VarType;
+import com4j.tlbimp.def.ISafeArrayType;
 
 import java.io.File;
 import java.io.IOException;
@@ -386,6 +387,7 @@ public final class Generator {
     private class MethodBinder {
         private final IMethod method;
         private final IParam[] params;
+        private int retParam;
 
         public MethodBinder(IMethod method) {
             this.method = method;
@@ -394,6 +396,8 @@ public final class Generator {
             params = new IParam[len];
             for( int i=0; i<len; i++ )
                 params[i] = method.getParam(i);
+
+            retParam = getReturnParam();
         }
 
         /**
@@ -401,11 +405,26 @@ public final class Generator {
          * or -1 if none.
          */
         private int getReturnParam() {
-             for( int i=0; i<params.length; i++ ) {
+            // look for [retval] attribute
+            for( int i=0; i<params.length; i++ ) {
                 if(params[i].isRetval())
                     return i;
             }
-            return -1;
+
+            // sometimes a COM method has only one [out] param.
+            // treat that as the return value.
+            // this is seen frequently in MSHTML (see IHTMLChangeLog, for example)
+            int outIdx=-1;
+            for( int i=0; i<params.length; i++ ) {
+                if(params[i].isOut() && !params[i].isIn()) {
+                    if(outIdx==-1)
+                        outIdx=i;
+                    else
+                        return -1;  // more than one out. no return value
+                }
+            }
+
+            return outIdx;
         }
 
         public void declare( IndentingWriter o ) throws BindingException {
@@ -424,7 +443,7 @@ public final class Generator {
             boolean first = true;
             // declare parameters
             for( IParam p : params ) {
-                if( p.isRetval() && !p.isIn() )
+                if( retParam!=-1 && p==params[retParam] && !p.isIn() )
                     continue;   // skip, cause it's showing up as the return value
                 if(!first)
                     o.println(',');
@@ -445,7 +464,15 @@ public final class Generator {
             if(!vb.isDefault) {
                 o.printf("@MarshalAs(NativeType.%1s) ",vb.nativeType.name());
             }
-            o.print(vb.javaType);
+
+            String javaType = vb.javaType;
+
+            if(method.isVarArg() && p==params[params.length-1]) {
+                // use varargs if applicable
+                if( javaType.endsWith("[]") )
+                    javaType = javaType.substring(0,javaType.length()-2)+"...";
+            }
+            o.print(javaType);
             o.print(' ');
             String name = p.getName();
             if(name==null)  name="rhs";
@@ -456,31 +483,30 @@ public final class Generator {
          * Declares the return type.
          */
         private void declareReturnType(IndentingWriter o) throws BindingException {
-            int r = getReturnParam();
-            if(r==-1) {
+            if(retParam==-1) {
                 o.print("void ");
             } else {
                 // we assume that the [retval] param to be passed by reference
-                IPtrType pt = params[r].getType().queryInterface(IPtrType.class);
+                IPtrType pt = params[retParam].getType().queryInterface(IPtrType.class);
                 if(pt==null)
                     throw new BindingException(Messages.RETVAL_MUST_BY_REFERENCE.format());
                 VariableBinding vb = bind(pt.getPointedAtType());
 
                 // add @ReturnValue if necessary
-                if(!vb.isDefault || params[r].isIn() || r!=params.length-1 ) {
+                if(!vb.isDefault || params[retParam].isIn() || retParam!=params.length-1 ) {
                     o.print("@ReturnValue(");
                     o.beginCommaMode();
                     if(!vb.isDefault) {
                         o.comma();
                         o.print("type=NativeType."+vb.nativeType.name());
                     }
-                    if(params[r].isIn()) {
+                    if(params[retParam].isIn()) {
                         o.comma();
                         o.print("inout=true");
                     }
-                    if(r!=params.length-1) {
+                    if(retParam!=params.length-1) {
                         o.comma();;
-                        o.print("index="+r);
+                        o.print("index="+retParam);
                     }
                     o.endCommaMode();
                     o.println(")");
@@ -523,12 +549,15 @@ public final class Generator {
         pbind( VarType.VT_I2, Short.TYPE, NativeType.Int16, true );
         pbind( VarType.VT_I4, Integer.TYPE, NativeType.Int32, true );
         pbind( VarType.VT_BSTR, String.class, NativeType.BSTR, true );
+        pbind( VarType.VT_LPWSTR, String.class, NativeType.Unicode, false );
         // TODO: is it OK to map UI2 to short?
         pbind( VarType.VT_UI2, Short.TYPE, NativeType.Int16, true );
         pbind( VarType.VT_UI4, Integer.TYPE, NativeType.Int32, true );
         pbind( VarType.VT_INT, Integer.TYPE, NativeType.Int32, true );
         pbind( VarType.VT_UINT, Integer.TYPE, NativeType.Int32, true );
         pbind( VarType.VT_BOOL, Boolean.TYPE, NativeType.VariantBool, true );
+        pbind( VarType.VT_R4, Float.TYPE, NativeType.Float, true );
+        pbind( VarType.VT_R8, Double.TYPE, NativeType.Double, true );
         pbind( VarType.VT_VARIANT, Object.class, NativeType.VARIANT_ByRef, true );
         pbind( VarType.VT_DISPATCH, Com4jObject.class, NativeType.Dispatch, false );
         pbind( VarType.VT_UNKNOWN, Com4jObject.class, NativeType.ComObject, true );
@@ -571,8 +600,24 @@ public final class Generator {
                     return new VariableBinding(Object.class, NativeType.VARIANT_ByRef, true);
                 }
             }
-            // TODO
-            throw new UnsupportedOperationException(getTypeString(t));
+
+            // otherwise use a holder
+            VariableBinding b = bind(comp);
+            if(b!=null && b.nativeType.byRef()!=null )
+                return new VariableBinding( "Holder<"+b.javaType+">", b.nativeType.byRef(), b.isDefault );
+        }
+
+        ISafeArrayType at = t.queryInterface(ISafeArrayType.class);
+        if(at!=null) {
+            IType comp = at.getComponentType();
+
+            IPrimitiveType compPrim = comp.queryInterface(IPrimitiveType.class);
+            if( compPrim!=null ) {
+                VariableBinding r = primitiveTypeBindings.get(compPrim.getVarType());
+                if(r!=null) {
+                    return new VariableBinding(r.javaType+"[]", NativeType.SafeArray, true );
+                }
+            }
         }
 
         // T = typedef
@@ -599,7 +644,7 @@ public final class Generator {
             throw new UnsupportedOperationException("other decl "+declt.getKind());
         }
 
-        throw new BindingException(Messages.UNSUPPORTED_TYPE.format());
+        throw new BindingException(Messages.UNSUPPORTED_TYPE.format(getTypeString(t)));
     }
 
 

@@ -29,4 +29,7 @@ public interface IMethod extends Com4jObject {
 
     @VTID(9)
     int getVtableIndex();
+
+    @VTID(10)
+    boolean isVarArg();
 }
