@@ -1,3 +1,8 @@
+/*
+	Defines conversion between Java arrays and SAFEARRAY.
+
+	SafeArrayXducer::toNative is probably the most useful public entry point.
+*/
 #pragma once
 #include "array.h"
 #include "xducer.h"
@@ -11,10 +16,18 @@ namespace safearray {
 		typedef SAFEARRAY*	NativeType;
 		typedef jarray		JavaType;
 
-		static NativeType toNative( JNIEnv* env, JavaType a );
+		static NativeType toNative( JNIEnv* env, JavaType a ) {
+			return toNative2(env,a).first;
+		}
+		// also returns the item type
+		static pair<NativeType,VARTYPE> toNative2( JNIEnv* env, JavaType a );
 	};
 
-	template < VARTYPE vt, class XDUCER >
+	// Transducer that turns a Java array into SAFEARRAY
+	//
+	// itemType : array item type
+	// XDUCER : converter for each array item
+	template < VARTYPE itemType, class XDUCER >
 	class BasicArrayXducer {
 	public:
 		typedef array::Array<XDUCER::JavaType> JARRAY;
@@ -29,7 +42,7 @@ namespace safearray {
 			SAFEARRAYBOUND bounds;
 			bounds.cElements=length;
 			bounds.lLbound=0;
-			SAFEARRAY* psa = SafeArrayCreate(vt,1,&bounds);
+			SAFEARRAY* psa = SafeArrayCreate(itemType,1,&bounds);
 			
 
 			XDUCER::JavaType* pSrc = JARRAY::lock(env,static_cast<JARRAY::ARRAY>(javaArray));
@@ -72,5 +85,4 @@ namespace safearray {
 	template < VARTYPE vt, class NT, class JT >
 	class PrimitiveArrayXducer : public BasicArrayXducer< vt, xducer::IdentityXducer<NT,JT> > {
 	};
-
 }

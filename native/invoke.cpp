@@ -193,9 +193,11 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 
 			case cvVARIANT_byRef:
 				if(env->IsSameObject(env->GetObjectClass(arg),com4j_Variant)) {
+					// if we got a com4j.Variant object, pass its image
 					jobject img = env->GetObjectField(arg,com4j_Variant_image);
 					pvar = (VARIANT*)env->GetDirectBufferAddress(img);
 				} else {
+					// otherwise convert a value to a VARIANT
 					pvar = convertToVariant(env,arg);
 					add(new VARIANTCleanUp(pvar));
 				}

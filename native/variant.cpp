@@ -3,6 +3,7 @@
 #include "com4j_variant.h"
 #include "xducer.h"
 #include "unmarshaller.h"
+#include "safearray.h"
 
 // used to map two jlongs to the memory image of VARIANT.
 static VARIANT* getVariantImage( JNIEnv* env, jobject buffer ) {
@@ -62,11 +63,9 @@ public:
 		return v;
 	}
 	jobject get( JNIEnv* env, VARIANT* v ) {
-		VARIANT dst;
-		VariantInit(&dst);
-		VariantChangeType(&dst,v,0,vt);
-		jobject o = XDUCER::toJava(env, addr(v));
-		VariantClear(&dst);
+		_variant_t dst(v);
+		dst.ChangeType(vt);
+		jobject o = XDUCER::toJava(env, addr(&dst));
 		return o;
 	}
 };
@@ -118,11 +117,21 @@ static SetterEntry setters[] = {
 VARIANT* convertToVariant( JNIEnv* env, jobject o ) {
 	jclass cls = env->GetObjectClass(o);
 	
+	// consdier a conversion for scalars
 	for( SetterEntry* p = setters; p->cls!=NULL; p++ ) {
 		if( env->IsAssignableFrom( cls, *(p->cls) ) ) {
 			VARIANT* v = p->handler->set(env,o);
 			return v;
 		}
+	}
+
+	// consider a conversion to SAFEARRAY
+	pair<SAFEARRAY*,VARTYPE> sa = safearray::SafeArrayXducer::toNative2(env,static_cast<jarray>(o));
+	if(sa.first!=NULL) {
+		_variant_t* v = new _variant_t();
+		v->vt = VT_ARRAY|sa.second;
+		v->parray = sa.first;
+		return v;
 	}
 
 	return NULL;
