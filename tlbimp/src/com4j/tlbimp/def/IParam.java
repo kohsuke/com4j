@@ -14,4 +14,13 @@ public interface IParam extends Com4jObject {
 
     @VTID(4)
     IType getType();
+
+    @VTID(5)
+    boolean isIn();
+
+    @VTID(6)
+    boolean isOut();
+
+    @VTID(7)
+    boolean isRetval();
 }

@@ -26,4 +26,7 @@ public interface IMethod extends Com4jObject {
 
     @VTID(8)
     IParam getParam(int idx);
+
+    @VTID(9)
+    int getVtableIndex();
 }

@@ -10,4 +10,7 @@ import com4j.VTID;
 public interface IPrimitiveType extends IType {
     @VTID(3)
     String getName();
+
+    @VTID(4)
+    VarType getVarType();
 }

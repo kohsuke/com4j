@@ -10,10 +10,14 @@ import com4j.tlbimp.def.IPrimitiveType;
 import com4j.tlbimp.def.IParam;
 import com4j.tlbimp.def.IInterfaceDecl;
 import com4j.tlbimp.def.IInterface;
+import com4j.tlbimp.def.VarType;
+import com4j.NativeType;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Map;
+import java.util.EnumMap;
 
 /**
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
@@ -45,13 +49,13 @@ public class Generator {
         return f;
     }
 
-    private PrintWriter createWriter( File f ) throws IOException {
+    private IndentingWriter createWriter( File f ) throws IOException {
 //        // TODO: handle encoding better
 //        return new PrintWriter(new FileWriter(f));
-        return new PrintWriter(System.out);
+        return new IndentingWriter(System.out,true);
     }
 
-    public void generate( IWTypeLib lib ) throws IOException {
+    public void generate( IWTypeLib lib ) throws IOException, BindingException {
         generatePackageHtml(lib);
 
         int len = lib.count();
@@ -82,62 +86,227 @@ public class Generator {
 //        o.close();
     }
 
-    private void generate( IInterface t ) throws IOException {
-        String typeName = t.getName();
-        PrintWriter o = createWriter( new File(getPackageDir(),typeName ) );
-        o.println("// GENERATED. DO NOT MODIFY");
-        if(packageName.length()!=0) {
-            o.printf("package %1s",packageName);
+    private void generate( IInterface t ) throws IOException, BindingException {
+        try {
+            String typeName = t.getName();
+            IndentingWriter o = createWriter( new File(getPackageDir(),typeName ) );
+            o.println("// GENERATED. DO NOT MODIFY");
+            if(packageName.length()!=0) {
+                o.printf("package %1s",packageName);
+                o.println();
+                o.println();
+            }
+
+            o.println("import com4j.*;");
             o.println();
+
+            printJavadoc(t.getHelpString(), o);
+
+            o.printf("@IID(\"%1s\")",t.getGUID());
             o.println();
+            o.printf("interface %1s {",typeName);
+            o.println();
+            o.in();
+
+            for( int j=0; j<t.countMethods(); j++ ) {
+                IMethod m = t.getMethod(j);
+                generate(m,o);
+                m.release();
+            }
+
+            o.out();
+            o.println("}");
+
+            o.flush();
+        } catch( BindingException e ) {
+            throw new BindingException(
+                Messages.FAILED_TO_BIND.format(t.getName()),
+                e );
         }
-
-        o.println("import com4j.*;");
-        o.println();
-
-
-        o.printf("@IID(\"%1s\")",t.getGUID());
-        o.println();
-        o.printf("interface %1s {",typeName);
-        o.println();
-
-        for( int j=0; j<t.countMethods(); j++ ) {
-            IMethod m = t.getMethod(j);
-            generate(m,o);
-            m.release();
-        }
-
-        o.println("}");
-
-        o.flush();
     }
 
-    private void generate(IMethod m, PrintWriter o) {
-        String doc = m.getHelpString();
-        if(doc!=null) {
-            o.println("\t/**");
-            o.println("\t * "+doc);
-            o.println("\t */");
-        }
-        o.println("\t"+m.getKind());
-        o.printf("\t%1s %2s(",
-            getTypeString(m.getReturnType()),
-            m.getName());
-        o.println();
+    /**
+     * Binds a native method to a Java method.
+     */
+    class MethodBinder {
+        private final IMethod method;
+        private final IParam[] params;
 
-        int len = m.getParamCount();
-        for( int i=0; i<len; i++ ) {
-            IParam p = m.getParam(i);
-            o.printf("\t\t%1s %2s",
-               getTypeString(p.getType()),
-                p.getName());
-            if(i!=len-1)    o.print(',');
+        public MethodBinder(IMethod method) {
+            this.method = method;
+
+            int len = method.getParamCount();
+            params = new IParam[len];
+            for( int i=0; i<len; i++ )
+                params[i] = method.getParam(i);
+        }
+
+        /**
+         * Returns the index of the return value parameter,
+         * or -1 if none.
+         */
+        private int getReturnParam() {
+             for( int i=0; i<params.length; i++ ) {
+                if(params[i].isRetval())
+                    return i;
+            }
+            return -1;
+        }
+
+        public void declare( IndentingWriter o ) throws BindingException {
+            printJavadoc(method.getHelpString(), o);
+            o.println("// "+method.getKind());
+            o.printf("@VTID(%1d)",
+                method.getVtableIndex());
             o.println();
-        }
-        o.println("\t);");
 
-        o.println();
-        o.flush();
+            declareReturnType(o);
+
+            String name = method.getName();
+            if(Character.isUpperCase(name.charAt(0))) {
+                // change "ThisKindOfName" to "thisKindOfName"
+                name = Character.toLowerCase(name.charAt(0))+name.substring(1);
+            }
+            o.print(name);
+            o.println('(');
+        }
+
+        /**
+         * Declares the return type.
+         */
+        private void declareReturnType(IndentingWriter o) throws BindingException {
+            int r = getReturnParam();
+            if(r==-1) {
+                o.print("void ");
+            } else {
+                // we assume that the [retval] param to be passed by reference
+                IPtrType pt = params[r].getType().queryInterface(IPtrType.class);
+                if(pt==null)
+                    throw new BindingException(Messages.RETVAL_MUST_BY_REFERENCE.format());
+                VariableBinding vb = bind(pt.getPointedAtType());
+
+                // add @ReturnType if necessary
+                if(!vb.isDefault || params[r].isIn() || r!=params.length-1 ) {
+                    o.print("@ReturnType(");
+                    o.beginCommaMode();
+                    if(!vb.isDefault) {
+                        o.comma();
+                        o.print("type="+vb.nativeType.name());
+                    }
+                    if(params[r].isIn()) {
+                        o.comma();
+                        o.print("inout=true");
+                    }
+                    if(r!=params.length-1) {
+                        o.comma();;
+                        o.print("index="+r);
+                    }
+                    o.endCommaMode();
+                    o.println(")");
+                }
+
+                o.print(vb.javaType);
+                o.print(' ');
+            }
+        }
+    }
+
+    static class VariableBinding {
+        public final String javaType;
+        public final NativeType nativeType;
+        /**
+         * True if the {@link #nativeType} is the default native type
+         * for the {@link #javaType}.
+         */
+        public final boolean isDefault;
+
+        public VariableBinding(ITypeDecl typeDecl, NativeType nativeType, boolean isDefault) {
+            this(typeDecl.getName(),nativeType,isDefault);
+        }
+
+        public VariableBinding(Class javaType, NativeType nativeType, boolean isDefault) {
+            this(javaType.getName(),nativeType,isDefault);
+        }
+
+        public VariableBinding(String javaType, NativeType nativeType, boolean isDefault) {
+            this.javaType = javaType;
+            this.nativeType = nativeType;
+            this.isDefault = isDefault;
+        }
+    }
+
+    /**
+     * Defines the type bindings for the primitive types.
+     */
+    static final Map<VarType,VariableBinding> primitiveTypeBindings
+        = new EnumMap<VarType,VariableBinding>(VarType.class);
+
+    static {
+        // initialize the primitive binding
+        pbind( VarType.VT_I2, Short.TYPE, NativeType.Int16, true );
+        pbind( VarType.VT_I4, Integer.TYPE, NativeType.Int32, true );
+        pbind( VarType.VT_BSTR, String.class, NativeType.BSTR, false );
+        // TODO
+//        pbind( VarType.VT_R4, Float.TYPE, NativeType.Float );
+//        pbind( VarType.VT_R8, Double.TYPE, NativeType.Double );
+    }
+
+    private static void pbind( VarType vt, Class c, NativeType n, boolean isDefault ) {
+        primitiveTypeBindings.put(vt,new VariableBinding(c,n,isDefault));
+    }
+
+    /**
+     * Binds the native type to a Java type and its conversion.
+     */
+    private VariableBinding bind( IType t ) throws BindingException {
+        IPrimitiveType pt = t.queryInterface(IPrimitiveType.class);
+        if(pt!=null) {
+            // primitive
+            VariableBinding r = primitiveTypeBindings.get(pt.getVarType());
+            if(r!=null)     return r;
+
+            throw new BindingException(Messages.UNSUPPORTED_VARTYPE.format(pt.getVarType()));
+        }
+
+        IPtrType ptrt = t.queryInterface(IPtrType.class);
+        if(ptrt!=null) {
+            // pointer type
+            IType comp = ptrt.getPointedAtType();
+            ITypeDecl compDecl = comp.queryInterface(ITypeDecl.class);
+            if( compDecl!=null )
+                // t = T* where T is a declared interface
+                return new VariableBinding( compDecl, NativeType.ComObject, true );
+
+            // TODO
+            throw new UnsupportedOperationException();
+        }
+
+        ITypeDecl declt = t.queryInterface(ITypeDecl.class);
+        if(declt!=null) {
+            throw new UnsupportedOperationException("other decl");
+        }
+
+        throw new BindingException(Messages.UNSUPPORTED_TYPE.format());
+    }
+
+
+    private void generate(IMethod m, IndentingWriter o) throws BindingException {
+        try {
+            new MethodBinder(m).declare(o);
+            o.println();
+        } catch (BindingException e) {
+            throw new BindingException(
+                Messages.FAILED_TO_BIND.format(m.getName()),
+                e );
+        }
+    }
+
+    private void printJavadoc(String doc, PrintWriter o) {
+        if(doc!=null) {
+            o.println("/**");
+            o.println(" * "+doc);
+            o.println(" */");
+        }
     }
 
     private String getTypeString(IType t) {

@@ -18,7 +18,8 @@ import java.io.IOException;
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
 public class Main {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
+        // TODO: exception handling
         File typeLibFileName = new File(args[0]);
         IWTypeLib tlb = COM4J.loadTypeLibrary(typeLibFileName).queryInterface(IWTypeLib.class);
         new Generator(new File(".")).generate(tlb);
