@@ -209,7 +209,7 @@ library com4j
 		HRESULT countConstants([out,retval] int* pNum );
 
 		[helpstring("Get the enum constant")]
-		HRESULT getConstant( int index, IConstant** ppConstant );
+		HRESULT getConstant( int index, [out,retval]IConstant** ppConstant );
 	};
 
 	[
@@ -220,13 +220,13 @@ library com4j
 	]
 	interface IConstant : IUnknown {
 		[helpstring("name of the constant")]
-		HRESULT getName(BSTR* pName);
+		HRESULT getName([out,retval]BSTR* pName);
 
 		[helpstring("type of the constant. types should be identical among enum constants.")]
-		HRESULT getType(IType** ppType);
+		HRESULT getType([out,retval]IType** ppType);
 
 		[helpstring("numeric value of this constant.")]
-		HRESULT getValue(int* pValue);
+		HRESULT getValue([out,retval]int* pValue);
 
 		HRESULT getHelpString([out,retval] BSTR* pHelpString);
 	};
