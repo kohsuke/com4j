@@ -77,7 +77,7 @@ class PrimitiveUnmarshaller : public Unmarshaller {
 	XDUCER::NativeType value;
 public:
 	PrimitiveUnmarshaller( JNIEnv* env, XDUCER::JavaType i ) {
-		value = XDUCER::initValue;
+		value = 0;
 		if(i!=NULL)
 			value = xducer.fromJava(env,i);
 	}
@@ -93,9 +93,8 @@ class IntXducer {
 public:
 	typedef jobject JavaType;
 	typedef INT32 NativeType;
-	const static NativeType initValue = 0;
 	JavaType toJava( JNIEnv* env, NativeType i ) {
-		return env->NewObject( javaLangInteger, javaLangInteger_new, i );
+		return env->CallStaticObjectMethod( javaLangInteger, javaLangInteger_valueOf, i );
 	}
 	NativeType fromJava( JNIEnv* env, JavaType i ) {
 		return env->CallIntMethod(i,javaLangNumber_intValue);
@@ -103,11 +102,36 @@ public:
 };
 typedef PrimitiveUnmarshaller<IntXducer>	IntUnmarshaller;
 
+class FloatXducer {
+public:
+	typedef jobject JavaType;
+	typedef float NativeType;
+	JavaType toJava( JNIEnv* env, NativeType i ) {
+		return env->CallStaticObjectMethod( javaLangFloat, javaLangFloat_valueOf, i );
+	}
+	NativeType fromJava( JNIEnv* env, JavaType i ) {
+		return env->CallBooleanMethod(i,javaLangNumber_floatValue);
+	}
+};
+typedef PrimitiveUnmarshaller<FloatXducer>	FloatUnmarshaller;
+
+class DoubleXducer {
+public:
+	typedef jobject JavaType;
+	typedef float NativeType;
+	JavaType toJava( JNIEnv* env, NativeType i ) {
+		return env->CallStaticObjectMethod( javaLangDouble, javaLangDouble_valueOf, i );
+	}
+	NativeType fromJava( JNIEnv* env, JavaType i ) {
+		return env->CallBooleanMethod(i,javaLangNumber_doubleValue);
+	}
+};
+typedef PrimitiveUnmarshaller<DoubleXducer>	DoubleUnmarshaller;
+
 class BoolXducer {
 public:
 	typedef jobject JavaType;
 	typedef BOOL NativeType;
-	const static NativeType initValue = 0;
 	JavaType toJava( JNIEnv* env, NativeType i ) {
 		return env->CallStaticObjectMethod( javaLangBoolean, javaLangBoolean_valueOf, (i!=0)?JNI_TRUE:JNI_FALSE );
 	}
@@ -136,7 +160,7 @@ public:
 		if(pv==NULL)
 			return NULL;
 
-		return env->NewObject( javaLangInteger, javaLangInteger_new, reinterpret_cast<jint>(pv) );
+		return env->CallStaticObjectMethod( javaLangInteger, javaLangInteger_valueOf, reinterpret_cast<jint>(pv) );
 	}
 };
 

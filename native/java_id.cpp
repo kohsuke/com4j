@@ -12,7 +12,13 @@ JMethodID javaLangNumber_floatValue(javaLangNumber,"floatValue","()F");
 JMethodID javaLangNumber_doubleValue(javaLangNumber,"doubleValue","()D");
 
 JClassID javaLangInteger("java/lang/Integer");
-JMethodID javaLangInteger_new(javaLangInteger,"<init>","(I)V");
+JStaticMethodID javaLangInteger_valueOf(javaLangInteger,"valueOf","(I)Ljava/lang/Integer;");
+
+JClassID javaLangFloat("java/lang/Float");
+JStaticMethodID javaLangFloat_valueOf(javaLangFloat,"valueOf","(F)Ljava/lang/Float;");
+
+JClassID javaLangDouble("java/lang/Double");
+JStaticMethodID javaLangDouble_valueOf(javaLangDouble,"valueOf","(D)Ljava/lang/Double;");
 
 JClassID javaLangBoolean("java/lang/Boolean");
 JMethodID javaLangBoolean_booleanValue(javaLangBoolean,"booleanValue","()Z");

@@ -102,6 +102,13 @@ extern JMethodID javaLangNumber_doubleValue;
 
 extern JClassID javaLangInteger;
 extern JMethodID javaLangInteger_new;
+extern JStaticMethodID javaLangInteger_valueOf;
+
+extern JClassID javaLangFloat;
+extern JStaticMethodID javaLangFloat_valueOf;
+
+extern JClassID javaLangDouble;
+extern JStaticMethodID javaLangDouble_valueOf;
 
 extern JClassID javaLangBoolean;
 extern JMethodID javaLangBoolean_booleanValue;

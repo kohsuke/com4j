@@ -195,6 +195,14 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 					retUnm = new BoolUnmarshaller(env,NULL);
 					break;
 
+				case cvFloat:
+					retUnm = new FloatUnmarshaller(env,NULL);
+					break;
+
+				case cvDouble:
+					retUnm = new DoubleUnmarshaller(env,NULL);
+					break;
+
 				case cvGUID:
 					retUnm = new GUIDUnmarshaller();
 					break;
