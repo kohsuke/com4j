@@ -17,4 +17,16 @@ public interface IInterfaceDecl extends ITypeDecl, IInterface {
 
     @VTID(8)
     IMethod getMethod(int idx);
+
+    /**
+     * count the number of the base interfaces
+     */
+    @VTID(9)
+    int countBaseInterfaces();
+
+    /**
+     * gets the base interface
+     */
+    @VTID(10)
+    ITypeDecl getBaseInterface(int index);
 }

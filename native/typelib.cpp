@@ -1,34 +1,36 @@
 #include "stdafx.h"
 #include "typelib.h"
 
+ITypeDecl* getRef( CTypeDecl* pTypeInfo, HREFTYPE href ) {
+	ITypeInfoPtr pRefType;
+	if(FAILED(pTypeInfo->m_pType->GetRefTypeInfo( href, &pRefType )))
+		return NULL;
+
+	ITypeLibPtr unused;
+	UINT index;
+	if(FAILED(pRefType->GetContainingTypeLib(&unused,&index)))
+		return NULL;
+	
+	CTypeLib* pLib = pTypeInfo->m_pParent;
+	if( unused==pLib->m_pTypeLib ) {
+		ITypeDecl* r;
+		if(FAILED(pLib->raw_getTypeDecl(index,&r)))
+			return NULL;
+		return r;
+	} else {
+		// TODO: what does it mean to load another type lib?
+		ITypeDecl* r;
+		CTypeLib* lib = CTypeLib::create( unused );
+		lib->raw_getTypeDecl(index,&r);
+		return r;
+	}
+}
 
 IType* createType( CTypeDecl* containingType, TYPEDESC& t ) {
 	switch(t.vt) {
 	case VT_USERDEFINED:
-	{
-		ITypeInfoPtr pRefType;
-		if(FAILED(containingType->m_pType->GetRefTypeInfo( t.hreftype, &pRefType )))
-			return NULL;
+		return getRef( containingType, t.hreftype );
 
-		ITypeLibPtr unused;
-		UINT index;
-		if(FAILED(pRefType->GetContainingTypeLib(&unused,&index)))
-			return NULL;
-		
-		CTypeLib* pLib = containingType->m_pParent;
-		if( unused==pLib->m_pTypeLib ) {
-			ITypeDecl* r;
-			if(FAILED(pLib->raw_getTypeDecl(index,&r)))
-				return NULL;
-			return r;
-		} else {
-			// TODO: what does it mean to load another type lib?
-			ITypeDecl* r;
-			CTypeLib* lib = CTypeLib::create( unused );
-			lib->raw_getTypeDecl(index,&r);
-			return r;
-		}
-	}
 	case VT_PTR:
 		return CComObject<CPtrType>::create(containingType,*t.lptdesc);
 	

@@ -125,10 +125,10 @@ public final class Generator {
             ITypeDecl t = lib.getType(i);
             switch(t.getKind()) {
             case DISPATCH:
-                generate( t.queryInterface(IDispInterfaceDecl.class) );
+                // TODO: temporarily removed to test the enum support
+//                generate( t.queryInterface(IDispInterfaceDecl.class) );
                 break;
             case INTERFACE:
-                // TODO: temporarily removed to test the enum support
                 generate( t.queryInterface(IInterfaceDecl.class) );
                 break;
             case ENUM:
@@ -223,7 +223,7 @@ public final class Generator {
 //        o.close();    // TODO: close
     }
 
-    private void generate( IInterface t ) throws IOException, BindingException {
+    private void generate( IInterfaceDecl t ) throws IOException, BindingException {
         try {
             String typeName = getTypeName(t);
             IndentingWriter o = createWriter( new File(getPackageDir(),typeName ) );
@@ -233,8 +233,20 @@ public final class Generator {
 
             o.printf("@IID(\"%1s\")",t.getGUID());
             o.println();
-            o.printf("interface %1s {",typeName);
-            o.println();
+            o.printf("interface %1s",typeName);
+            if(t.countBaseInterfaces()!=0) {
+                o.print(" extends ");
+                o.beginCommaMode();
+                for( int i=0; i<t.countBaseInterfaces(); i++ ) {
+                    o.comma();
+                    String baseName = getTypeName(t.getBaseInterface(i));
+                    if(baseName.equals("IUnknown") || baseName.equals("IDispatch"))
+                        baseName = "Com4jObject";
+                    o.print(baseName);
+                }
+                o.endCommaMode();
+            }
+            o.println(" {");
             o.in();
 
             for( int j=0; j<t.countMethods(); j++ ) {

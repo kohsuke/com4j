@@ -16,6 +16,9 @@ _COM_SMARTPTR_TYPEDEF(CMethod, __uuidof(IMethod));
 // return an addref-ed pointer
 IType* createType( CTypeDecl* containingType, TYPEDESC& t );
 
+// resolve HREFTYPE to ITypeDecl under the context of pTypeInfo
+ITypeDecl* getRef( CTypeDecl* pTypeInfo, HREFTYPE href );
+
 
 class ATL_NO_VTABLE CPrimitiveType :
 	public CComObjectRootEx<CComSingleThreadModel>,
@@ -389,6 +392,23 @@ public:
 			*ppMethod = CMethod::create(this,index);
 			return S_OK;
 		}
+	}
+
+	STDMETHOD(raw_countBaseInterfaces)(int* pValue) {
+		*pValue = m_pAttr->cImplTypes;
+		return S_OK;
+	}
+
+	STDMETHOD(raw_getBaseInterface)(int index, ITypeDecl** ppType ) {
+		*ppType = NULL;
+		HREFTYPE href;
+		HRESULT hr = m_pType->GetRefTypeOfImplType( index, &href );
+		if(FAILED(hr))	return hr;
+
+		*ppType = getRef(this,href);
+		if(*ppType==NULL)
+			return E_FAIL;
+		return S_OK;
 	}
 
 	// IEnumDecl
