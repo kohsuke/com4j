@@ -2,6 +2,7 @@ package com4j;
 
 import java.io.File;
 import java.lang.reflect.Proxy;
+import java.net.URL;
 
 /**
  * The root of the COM4J library.
@@ -71,6 +72,33 @@ public abstract class COM4J {
     }
 
     static {
-        System.loadLibrary("com4j");
+        loadNativeLibrary();
+    }
+
+    private static void loadNativeLibrary() {
+        try {
+            // load the native part of the code.
+            // first try java.library.path
+            System.loadLibrary("com4j");
+            return;
+        } catch( Throwable t ) {
+            ;
+        }
+
+        // try loading com4j.dll in the same directory as com4j.jar
+        URL res = COM4J.class.getClassLoader().getResource("com4j/COM4J.class");
+        String url = res.toExternalForm();
+        if(url.startsWith("jar://")) {
+            int idx = url.lastIndexOf('!');
+            String filePortion = url.substring(6,idx);
+            if(filePortion.startsWith("file://")) {
+                File jarFile = new File(filePortion.substring(7));
+                File dllFile = new File(jarFile.getParentFile(),"com4j.dll");
+                System.load(dllFile.getPath());
+                return;
+            }
+        }
+
+        throw new UnsatisfiedLinkError("Unable to load com4j.dll");
     }
 }
