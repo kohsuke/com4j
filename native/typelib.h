@@ -411,6 +411,20 @@ public:
 		return S_OK;
 	}
 
+	// IDispInterface
+	STDMETHOD(raw_getVtblInterface)(IInterfaceDecl** ppInterface ) {
+		HREFTYPE href;
+		HRESULT hr = m_pType->GetRefTypeOfImplType(-1,&href);
+		if(FAILED(hr))	return hr;
+
+		ITypeDecl* r = getRef(this,href);
+		TypeKind k = r->getKind();
+		hr = r->QueryInterface(ppInterface);
+		r->Release();
+		return hr;
+	}
+
+
 	// IEnumDecl
 	STDMETHOD(raw_countConstants)( int* pNum ) {
 		*pNum = m_pAttr->cVars;

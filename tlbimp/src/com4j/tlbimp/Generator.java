@@ -16,6 +16,7 @@ import com4j.tlbimp.def.IConstant;
 import com4j.tlbimp.def.ITypedefDecl;
 import com4j.tlbimp.def.TypeKind;
 import com4j.NativeType;
+import com4j.ComException;
 
 import java.io.File;
 import java.io.IOException;
@@ -125,8 +126,7 @@ public final class Generator {
             ITypeDecl t = lib.getType(i);
             switch(t.getKind()) {
             case DISPATCH:
-                // TODO: temporarily removed to test the enum support
-//                generate( t.queryInterface(IDispInterfaceDecl.class) );
+                generate( t.queryInterface(IDispInterfaceDecl.class).getVtblInterface() );
                 break;
             case INTERFACE:
                 generate( t.queryInterface(IInterfaceDecl.class) );

@@ -24,6 +24,7 @@ library com4j
 
 	interface IType;
 	interface ITypeDecl;
+	interface IInterfaceDecl;
 	interface IMethod;
 	interface IParam;
 	interface IConstant;
@@ -127,6 +128,9 @@ library com4j
 
 		[helpstring("method")]
 		HRESULT getMethod([in] int index, [out,retval] IMethod** ppMethod );
+
+		[helpstring("get the vtable interface of this dispatch interface. Works only when this is a dual interface.")]
+		HRESULT getVtblInterface([out,retval] IInterfaceDecl** ppInterface );
 	};
 
 	[

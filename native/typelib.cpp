@@ -11,19 +11,17 @@ ITypeDecl* getRef( CTypeDecl* pTypeInfo, HREFTYPE href ) {
 	if(FAILED(pRefType->GetContainingTypeLib(&unused,&index)))
 		return NULL;
 	
+	// if we already have CTypeDecl for this pRefType, return it.
 	CTypeLib* pLib = pTypeInfo->m_pParent;
-	if( unused==pLib->m_pTypeLib ) {
-		ITypeDecl* r;
-		if(FAILED(pLib->raw_getTypeDecl(index,&r)))
-			return NULL;
-		return r;
-	} else {
-		// TODO: what does it mean to load another type lib?
-		ITypeDecl* r;
-		CTypeLib* lib = CTypeLib::create( unused );
-		lib->raw_getTypeDecl(index,&r);
-		return r;
+	CTypeLib::childrenT::iterator itr = pLib->children.find(pRefType);
+	if(itr!=pLib->children.end()) {
+		// reuse
+		CTypeDecl* r = (*itr).second;
+		r->AddRef();
+		return static_cast<IInterfaceDecl*>(r);
 	}
+
+	return static_cast<IInterfaceDecl*>( CTypeDecl::create( pLib, pRefType ) );
 }
 
 IType* createType( CTypeDecl* containingType, TYPEDESC& t ) {
