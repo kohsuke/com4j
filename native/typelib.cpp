@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "typelib.h"
 
+namespace typelib {
+
 ITypeDecl* getRef( CTypeDecl* pTypeInfo, HREFTYPE href ) {
 	ITypeInfoPtr pRefType;
 	if(FAILED(pTypeInfo->m_pType->GetRefTypeInfo( href, &pRefType )))
@@ -56,9 +58,11 @@ CPrimitiveTypeImpl vti4(VT_I4,L"int");
 CPrimitiveTypeImpl vtr4(VT_R4,L"float");
 CPrimitiveTypeImpl vtr8(VT_R8,L"double");
 CPrimitiveTypeImpl vtbstr(VT_BSTR,L"BSTR");
+CPrimitiveTypeImpl vtlpstr(VT_LPSTR,L"LPSTR");
 CPrimitiveTypeImpl vtlpwstr(VT_LPWSTR,L"LPWSTR");
 CPrimitiveTypeImpl vtbool(VT_BOOL,L"bool");
 CPrimitiveTypeImpl vtvoid(VT_VOID,L"void");
+CPrimitiveTypeImpl vtui1(VT_UI1,L"byte");
 CPrimitiveTypeImpl vtui2(VT_UI2,L"ushort");
 CPrimitiveTypeImpl vtui4(VT_UI4,L"uint");
 CPrimitiveTypeImpl vtint(VT_INT,L"int");
@@ -131,6 +135,10 @@ ITypeInfo* CConstant::getTypeInfo() {
 
 
 CTypeDecl::~CTypeDecl() {
+#ifdef	_DEBUG
+	DWORD curThread = ::GetCurrentThreadId();
+	_ASSERT(m_ThreadID == curThread);
+#endif
 	m_pType->ReleaseTypeAttr(m_pAttr);
 	int r = m_pParent->children.erase(m_pType);
 	_ASSERT(r==1);
@@ -149,4 +157,7 @@ void CTypeDecl::init( CTypeLib* pParent, ITypeInfo* pType ) {
 
 ITypeInfo* CImplInterface::pType() {
 	return m_pParent->m_pType;
+}
+
+
 }

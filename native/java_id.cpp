@@ -29,6 +29,9 @@ JStaticMethodID<jobject> javaLangFloat_valueOf(javaLangFloat,"valueOf","(F)Ljava
 JClassID javaLangDouble("java/lang/Double");
 JStaticMethodID<jobject> javaLangDouble_valueOf(javaLangDouble,"valueOf","(D)Ljava/lang/Double;");
 
+JClassID javaLangByte("java/lang/Byte");
+JStaticMethodID<jobject> javaLangByte_valueOf(javaLangByte,"valueOf","(B)Ljava/lang/Byte;");
+
 JClassID javaLangBoolean("java/lang/Boolean");
 JMethodID<jboolean> javaLangBoolean_booleanValue(javaLangBoolean,"booleanValue","()Z");
 JStaticMethodID<jobject> javaLangBoolean_valueOf(javaLangBoolean,"valueOf","(Z)Ljava/lang/Boolean;");

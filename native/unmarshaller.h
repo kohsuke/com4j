@@ -86,6 +86,7 @@ public:
 	}
 };
 
+typedef PrimitiveUnmarshaller<xducer::BoxedByteXducer>		ByteUnmarshaller;
 typedef PrimitiveUnmarshaller<xducer::BoxedShortXducer>		ShortUnmarshaller;
 typedef PrimitiveUnmarshaller<xducer::BoxedIntXducer>		IntUnmarshaller;
 typedef PrimitiveUnmarshaller<xducer::BoxedLongXducer>		LongUnmarshaller;

@@ -153,6 +153,9 @@ extern JStaticMethodID<jobject> javaLangFloat_valueOf;
 extern JClassID javaLangDouble;
 extern JStaticMethodID<jobject> javaLangDouble_valueOf;
 
+extern JClassID javaLangByte;
+extern JStaticMethodID<jobject> javaLangByte_valueOf;
+
 extern JClassID javaLangBoolean;
 extern JMethodID<jboolean> javaLangBoolean_booleanValue;
 extern JStaticMethodID<jobject> javaLangBoolean_valueOf;

@@ -95,16 +95,49 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				_asm push int8;
 				break;
 
+			case cvINT8_byRef:
+				if(arg==NULL) {
+					pv = NULL;
+				} else {
+					unm = new ByteUnmarshaller(env,arg);
+					add(new OutParamHandler( jholder(arg), unm ) );
+					pv = unm->addr();
+				}
+				_asm push pv;
+				break;
+
 			case cvINT16:
 				_ASSERT( sizeof(INT16)==sizeof(jshort) );
 				int16 = javaLangNumber_shortValue(env,arg);
 				_asm push int16;
+				break;
+
+			case cvINT16_byRef:
+				if(arg==NULL) {
+					pv = NULL;
+				} else {
+					unm = new ShortUnmarshaller(env,arg);
+					add(new OutParamHandler( jholder(arg), unm ) );
+					pv = unm->addr();
+				}
+				_asm push pv;
+				break;
 
 			case cvINT32:
 			case cvComObject:
+			case cvDISPATCH:
 				_ASSERT( sizeof(INT32)==sizeof(jint) );
 				int32 = javaLangNumber_intValue(env,arg);
 				_asm push int32;
+				break;
+
+			case cvPVOID:
+				pv = env->GetDirectBufferAddress(arg);
+				if(pv==NULL) {
+					error(env,"the given Buffer object is not a direct buffer");
+					return NULL;
+				}
+				_asm push pv;
 				break;
 
 			case cvINT32_byRef:

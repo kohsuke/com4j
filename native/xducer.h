@@ -37,17 +37,17 @@ namespace xducer {
 
 
 	// transducer between Java boxed type and native primitive type
-	template < class NT, JStaticMethodID<jobject>* parseMethod, JMethodID<NT>* printMethod >
+	template < class NT, class JT, JStaticMethodID<jobject>* parseMethod, JMethodID<JT>* printMethod >
 	class BoxXducer {
 	public:
 		typedef jobject JavaType;
 		typedef NT NativeType;
 
 		static JavaType toJava( JNIEnv* env, NativeType i ) {
-			return (*parseMethod)(env,i);
+			return (*parseMethod)(env,static_cast<JT>(i));
 		}
 		static NativeType toNative( JNIEnv* env, JavaType i ) {
-			return (*printMethod)(env,i);
+			return static_cast<NT>((*printMethod)(env,i));
 		}
 	};
 
@@ -117,19 +117,22 @@ namespace xducer {
 	};
 
 
-	typedef BoxXducer<float,&javaLangFloat_valueOf, &javaLangNumber_floatValue >
+	typedef BoxXducer<byte,jbyte,&javaLangByte_valueOf, &javaLangNumber_byteValue >
+		BoxedByteXducer;
+
+	typedef BoxXducer<float,jfloat,&javaLangFloat_valueOf, &javaLangNumber_floatValue >
 		BoxedFloatXducer;
 
-	typedef BoxXducer<double,&javaLangDouble_valueOf, &javaLangNumber_doubleValue >
+	typedef BoxXducer<double,jdouble,&javaLangDouble_valueOf, &javaLangNumber_doubleValue >
 		BoxedDoubleXducer;
 
-	typedef BoxXducer<short, &javaLangShort_valueOf, &javaLangNumber_shortValue >
+	typedef BoxXducer<short,jshort, &javaLangShort_valueOf, &javaLangNumber_shortValue >
 		BoxedShortXducer;
 
-	typedef BoxXducer< long/*32bit*/, &javaLangInteger_valueOf, &javaLangNumber_intValue >
+	typedef BoxXducer<long,jint, &javaLangInteger_valueOf, &javaLangNumber_intValue >
 		BoxedIntXducer;
 
-	typedef BoxXducer< INT64, &javaLangLong_valueOf, &javaLangNumber_longValue >
+	typedef BoxXducer<INT64,jlong, &javaLangLong_valueOf, &javaLangNumber_longValue >
 		BoxedLongXducer;
 
 

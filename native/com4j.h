@@ -13,7 +13,9 @@ enum Conv {
 
 
 	cvINT8 = 100,
+	cvINT8_byRef = 100|BYREF,
 	cvINT16 = 101,
+	cvINT16_byRef = 101|BYREF,
 	cvINT32 = 102,
 	cvINT32_byRef = 102|BYREF,
 	cvBool = 103,
@@ -27,6 +29,8 @@ enum Conv {
 	cvComObject_byRef = 300|BYREF,
 	cvGUID = 301,
 	cvVARIANT_byRef = 302|BYREF,
+	cvDISPATCH = 303,
+	cvPVOID = 304,
 
 	cvDATE = 400,
 
