@@ -6,7 +6,7 @@
            debug="on">
       <classpath>
         <fileset dir="lib" includes="*.jar"/>
-        <pathelement path="../build/classes"/>
+        <pathelement path="../runtime/build/classes"/>
       </classpath>
     </javac>
   </target>
@@ -23,6 +23,9 @@
       <fileset dir="build/classes" includes="**/*.class"/>
       <fileset dir="src" includes="**/*.properties"/>
     </jar>
+    <zip file="build/tlbimp-src.zip">
+      <fileset dir="src" excludes="**/CVS"/>
+    </zip>
   </target>
   
   <target name="clean">

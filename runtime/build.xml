@@ -17,6 +17,9 @@
       <fileset dir="build/classes" includes="**/*.class"/>
       <fileset dir="src" includes="**/*.properties"/>
     </jar>
+    <zip file="build/com4j-src.zip">
+      <fileset dir="src" excludes="**/CVS"/>
+    </zip>
   </target>
   
   <target name="clean">
