@@ -249,8 +249,6 @@ public final class Generator {
                         el.error(e);
                         baseName = "Com4jObject";
                     }
-                    if(baseName.equals("IUnknown") || baseName.equals("IDispatch"))
-                        baseName = "Com4jObject";
                     o.print(baseName);
                 }
                 if(hasEnum) {
@@ -602,10 +600,15 @@ public final class Generator {
         private String getTypeName(ITypeDecl decl) {
             assert decl.getParent().equals(lib);
 
+            String name;
             if(aliases.containsKey(decl))
-                return aliases.get(decl);
+                name = aliases.get(decl);
             else
-                return decl.getName();
+                name = decl.getName();
+            if(name.equals("IUnknown") || name.equals("IDispatch"))
+                return "Com4jObject";
+            else
+                return name;
         }
     }
 
