@@ -22,6 +22,10 @@ Environment::~Environment() {
 	}
 }
 
+#ifdef	_DEBUG
+static int invocationCount = 0;
+#endif
+
 jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray args, jint* convs,
 	jclass retType, int retIndex, bool retIsInOut, jint retConv ) {
 	// list of clean up actions
@@ -171,6 +175,10 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 			}
 		}
 	}
+
+#ifdef	_DEBUG
+	invocationCount++;	// for debugging. this makes it easier to set a break-point.
+#endif
 
 	// push the 'this' pointer
 	__asm push pComObject;

@@ -11,4 +11,7 @@ import com4j.VTID;
 public interface IParam extends Com4jObject {
     @VTID(3)
     String getName();
+
+    @VTID(4)
+    IType getType();
 }

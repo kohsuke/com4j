@@ -8,7 +8,7 @@ import com4j.tlbimp.def.ITypeInfo;
 import com4j.tlbimp.def.IWTypeLib;
 import com4j.tlbimp.def.ITypeDecl;
 import com4j.tlbimp.def.TypeKind;
-import com4j.tlbimp.def.IWDispInterface;
+import com4j.tlbimp.def.IDispInterfaceDecl;
 import com4j.tlbimp.def.IMethod;
 
 import java.io.File;
@@ -36,7 +36,7 @@ public class Main {
             System.out.println(t.getName());
             System.out.println(t.getKind());
             if(t.getKind()==TypeKind.DISPATCH) {
-                IWDispInterface t2 = t.queryInterface(IWDispInterface.class);
+                IDispInterfaceDecl t2 = t.queryInterface(IDispInterfaceDecl.class);
                 System.out.println(t2.getGUID());
                 System.out.println("# of methods: "+t2.countMethods());
                 for( int j=0; j<t2.countMethods(); j++ ) {

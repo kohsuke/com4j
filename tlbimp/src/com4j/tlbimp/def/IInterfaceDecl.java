@@ -7,8 +7,8 @@ import com4j.GUID;
 /**
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
-@IID("{3BDCCFBF-B493-4d54-B1D0-4DE2FB1AFC78}")
-public interface IWDispInterface extends ITypeDecl {
+@IID("{EE076FF5-2E16-4a23-AE24-5DF610F6006E}")
+public interface IInterfaceDecl extends ITypeDecl, IInterface {
     @VTID(6)
     GUID getGUID();
 

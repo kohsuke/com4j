@@ -2,7 +2,7 @@
 #include "typelib.h"
 
 
-IType* createType( CWTypeDecl* containingType, TYPEDESC& t ) {
+IType* createType( CTypeDecl* containingType, TYPEDESC& t ) {
 	switch(t.vt) {
 	case VT_USERDEFINED:
 	{
@@ -15,16 +15,18 @@ IType* createType( CWTypeDecl* containingType, TYPEDESC& t ) {
 		if(FAILED(pRefType->GetContainingTypeLib(&unused,&index)))
 			return NULL;
 		
-		CWTypeLib* pLib = containingType->m_pParent;
+		CTypeLib* pLib = containingType->m_pParent;
 		if( unused==pLib->m_pTypeLib ) {
-			IWTypeDecl* r;
+			ITypeDecl* r;
 			if(FAILED(pLib->raw_getTypeDecl(index,&r)))
 				return NULL;
 			return r;
 		} else {
-			// TODO: the interface is in another type library.
-			// I don't know what's the expected behavior here is.
-			return NULL;
+			// TODO: what does it mean to load another type lib?
+			ITypeDecl* r;
+			CTypeLib* lib = CTypeLib::create( unused );
+			lib->raw_getTypeDecl(index,&r);
+			return r;
 		}
 	}
 	case VT_PTR:
@@ -49,6 +51,7 @@ IType* createType( CWTypeDecl* containingType, TYPEDESC& t ) {
 
 map<VARTYPE, IPrimitiveType*> CPrimitiveType::singletons;
 
+CPrimitiveTypeImpl vti1(VT_I1,L"char");
 CPrimitiveTypeImpl vti2(VT_I2,L"short");
 CPrimitiveTypeImpl vti4(VT_I4,L"int");
 CPrimitiveTypeImpl vtr4(VT_R4,L"float");
@@ -56,6 +59,7 @@ CPrimitiveTypeImpl vtr8(VT_R8,L"double");
 CPrimitiveTypeImpl vtbstr(VT_BSTR,L"BSTR");
 CPrimitiveTypeImpl vtbool(VT_BOOL,L"bool");
 CPrimitiveTypeImpl vtvoid(VT_VOID,L"void");
+CPrimitiveTypeImpl vtui2(VT_UI2,L"ushort");
 CPrimitiveTypeImpl vtui4(VT_UI4,L"uint");
 CPrimitiveTypeImpl vtint(VT_INT,L"int");
 CPrimitiveTypeImpl vtuint(VT_UINT,L"uint");
@@ -63,6 +67,7 @@ CPrimitiveTypeImpl vtdispatch(VT_DISPATCH,L"(IDISPATCH)");
 CPrimitiveTypeImpl vtunknown(VT_UNKNOWN,L"(IUNKNOWN)");
 CPrimitiveTypeImpl vtvariant(VT_VARIANT,L"Variant");
 CPrimitiveTypeImpl vtdate(VT_DATE,L"Date");
+CPrimitiveTypeImpl vthresult(VT_HRESULT,L"HRESULT");
 
 
 CMethod::~CMethod() {
@@ -75,13 +80,14 @@ CMethod::~CMethod() {
 }
 
 
-void CMethod::init( CWTypeDecl* pParent, int idx ) {
+void CMethod::init( CTypeDecl* pParent, int idx ) {
 	m_pParent = pParent;
 	HRESULT hr = m_pParent->m_pType->GetFuncDesc(idx,&m_pDesc);
 	_ASSERT(SUCCEEDED(hr));
 
 	m_nameCount = m_pDesc->cParams+1;
 	m_pNames = new BSTR[m_nameCount];
+	memset(m_pNames,0,sizeof(BSTR)*m_nameCount);
 	UINT unused;
 	m_pParent->m_pType->GetNames( memid(), m_pNames, m_nameCount, &unused );
 }
@@ -118,13 +124,13 @@ STDMETHODIMP CMethod::raw_getParam(int index, IParam** pOut) {
 
 
 
-CWTypeDecl::~CWTypeDecl() {
+CTypeDecl::~CTypeDecl() {
 	m_pType->ReleaseTypeAttr(m_pAttr);
 	int r = m_pParent->children.erase(m_pType);
 	_ASSERT(r==1);
 }
 
-void CWTypeDecl::init( CWTypeLib* pParent, ITypeInfo* pType ) {
+void CTypeDecl::init( CTypeLib* pParent, ITypeInfo* pType ) {
 	m_pParent = pParent;
 	m_pType = pType;
 	pType->GetTypeAttr(&m_pAttr);

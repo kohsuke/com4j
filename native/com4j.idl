@@ -23,7 +23,7 @@ library com4j
 
 
 	interface IType;
-	interface IWTypeDecl;
+	interface ITypeDecl;
 	interface IMethod;
 	interface IParam;
 
@@ -45,7 +45,7 @@ library com4j
 		helpstring("Information about a type library"),
 		pointer_default(unique)
 	]
-	interface IWTypeLib : IUnknown
+	interface ITypeLibrary : IUnknown
 	{
 		[helpstring("gets the number of types in this library")]
 		HRESULT getCount([out,retval] int* pCount);
@@ -58,7 +58,7 @@ library com4j
 		HRESULT getHelpString([out,retval] BSTR* pHelpString);
 
 		[helpstring("gets the type in this library")]
-		HRESULT getTypeDecl(int nIndex, [out, retval] IWTypeDecl** ppType);
+		HRESULT getTypeDecl(int nIndex, [out, retval] ITypeDecl** ppType);
 	};
 
 	[
@@ -99,7 +99,7 @@ library com4j
 		helpstring("type declared in this type library"),
 		pointer_default(unique)
 	]
-	interface IWTypeDecl : IType
+	interface ITypeDecl : IType
 	{
 		HRESULT getName([out,retval] BSTR* pName);
 		HRESULT getHelpString([out,retval] BSTR* pHelpString);
@@ -109,10 +109,28 @@ library com4j
 	[
 		object,
 		uuid(3BDCCFBF-B493-4d54-B1D0-4DE2FB1AFC78),
-		helpstring("Dispinterface. IWType can be casted to this when its kind is TypeKind_DISPATCH"),
+		helpstring("Dispinterface. ITypeDecl can be casted to this when its kind is TypeKind_DISPATCH"),
 		pointer_default(unique)
 	]
-	interface IWDispInterfaceDecl : IWTypeDecl
+	interface IDispInterfaceDecl : ITypeDecl
+	{
+		[helpstring("gets the GUID of this type")]
+		HRESULT getGUID([out,retval] GUID* pValue);
+
+		[helpstring("number of methods on this interface")]
+		HRESULT countMethods([out,retval] int* pValue);
+
+		[helpstring("method")]
+		HRESULT getMethod([in] int index, [out,retval] IMethod** ppMethod );
+	};
+
+	[
+		object,
+		uuid(EE076FF5-2E16-4a23-AE24-5DF610F6006E),
+		helpstring("VTBL Interface. ITypeDecl can be casted to this when its kind is TypeKind_DISPATCH"),
+		pointer_default(unique)
+	]
+	interface IInterfaceDecl : ITypeDecl
 	{
 		[helpstring("gets the GUID of this type")]
 		HRESULT getGUID([out,retval] GUID* pValue);
@@ -149,6 +167,8 @@ library com4j
 	]
 	interface IParam : IUnknown
 	{
+		[helpstring("name of the parameter. Null when the parameter is the value for the PROPSET method.")]
 		HRESULT getName([out,retval] BSTR* pName);
+		HRESULT getType([out,retval] IType** ppType);
 	};
 };

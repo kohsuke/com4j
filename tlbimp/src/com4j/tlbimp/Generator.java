@@ -1,6 +1,6 @@
 package com4j.tlbimp;
 
-import com4j.tlbimp.def.IWDispInterface;
+import com4j.tlbimp.def.IDispInterfaceDecl;
 import com4j.tlbimp.def.IMethod;
 import com4j.tlbimp.def.ITypeDecl;
 import com4j.tlbimp.def.IWTypeLib;
@@ -8,6 +8,8 @@ import com4j.tlbimp.def.IType;
 import com4j.tlbimp.def.IPtrType;
 import com4j.tlbimp.def.IPrimitiveType;
 import com4j.tlbimp.def.IParam;
+import com4j.tlbimp.def.IInterfaceDecl;
+import com4j.tlbimp.def.IInterface;
 
 import java.io.File;
 import java.io.IOException;
@@ -57,7 +59,13 @@ public class Generator {
             ITypeDecl t = lib.getType(i);
             switch(t.getKind()) {
             case DISPATCH:
-                generate( t.queryInterface(IWDispInterface.class) );
+                generate( t.queryInterface(IDispInterfaceDecl.class) );
+                break;
+            case INTERFACE:
+                generate( t.queryInterface(IInterfaceDecl.class) );
+                break;
+            default:
+                System.out.println( t.getKind() );
                 break;
             }
             t.release();
@@ -74,7 +82,7 @@ public class Generator {
 //        o.close();
     }
 
-    private void generate( IWDispInterface t ) throws IOException {
+    private void generate( IInterface t ) throws IOException {
         String typeName = t.getName();
         PrintWriter o = createWriter( new File(getPackageDir(),typeName ) );
         o.println("// GENERATED. DO NOT MODIFY");
@@ -120,7 +128,9 @@ public class Generator {
         int len = m.getParamCount();
         for( int i=0; i<len; i++ ) {
             IParam p = m.getParam(i);
-            o.print("\t\t"+p.getName());
+            o.printf("\t\t%1s %2s",
+               getTypeString(p.getType()),
+                p.getName());
             if(i!=len-1)    o.print(',');
             o.println();
         }

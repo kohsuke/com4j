@@ -3,18 +3,18 @@
 #import "com4j.tlb" no_namespace
 
 
-class CWTypeLib;
-class CWTypeDecl;
+class CTypeLib;
+class CTypeDecl;
 class CMethod;
 
-_COM_SMARTPTR_TYPEDEF(CWTypeLib, __uuidof(IWTypeLib));
-_COM_SMARTPTR_TYPEDEF(CWTypeDecl, __uuidof(IWTypeDecl));
+_COM_SMARTPTR_TYPEDEF(CTypeLib, __uuidof(ITypeLibrary));
+_COM_SMARTPTR_TYPEDEF(CTypeDecl, __uuidof(ITypeDecl));
 _COM_SMARTPTR_TYPEDEF(CMethod, __uuidof(IMethod));
 
 
 // creates a type object from a descriptor
 // return an addref-ed pointer
-IType* createType( CWTypeDecl* containingType, TYPEDESC& t );
+IType* createType( CTypeDecl* containingType, TYPEDESC& t );
 
 
 class ATL_NO_VTABLE CPrimitiveType :
@@ -86,11 +86,12 @@ private:
 	ITypePtr m_pType;
 
 public:
-	void init( CWTypeDecl* containingType, TYPEDESC& t ) {
+	void init( CTypeDecl* containingType, TYPEDESC& t ) {
 		m_pType = createType(containingType,t);
+		_ASSERT(m_pType!=NULL);
 	}
 
-	static CComObject<CPtrType>* create( CWTypeDecl* containingType, TYPEDESC& t ) {
+	static CComObject<CPtrType>* create( CTypeDecl* containingType, TYPEDESC& t ) {
 		CComObject<CPtrType>* pObj = NULL;
 		CComObject<CPtrType>::CreateInstance(&pObj);
 		pObj->AddRef();
@@ -122,7 +123,7 @@ class ATL_NO_VTABLE CMethod :
 	public CComCoClass<CMethod, &__uuidof(IMethod)>,
 	public IMethod
 {
-	CWTypeDeclPtr	m_pParent;
+	CTypeDeclPtr	m_pParent;
 	FUNCDESC*	m_pDesc;
 	BSTR*		m_pNames;
 	int			m_nameCount;
@@ -133,9 +134,9 @@ public:
 	CMethod() {}
 	~CMethod();
 
-	void init( CWTypeDecl* pParent, int idx );
+	void init( CTypeDecl* pParent, int idx );
 
-	static CComObject<CMethod>* create( CWTypeDecl* pParent, int idx ) {
+	static CComObject<CMethod>* create( CTypeDecl* pParent, int idx ) {
 		CComObject<CMethod>* pObj = NULL;
 		CComObject<CMethod>::CreateInstance(&pObj);
 		pObj->AddRef();
@@ -179,7 +180,7 @@ public:
 	CParam() {}
 
 	void init( CMethod* pParent, int idx ) {
-		m_pParent.Attach(pParent);
+		m_pParent = pParent;
 		m_index = idx;
 	}
 
@@ -205,6 +206,10 @@ public:
 		*pName = SysAllocString( m_pParent->m_pNames[m_index+1] );
 		return S_OK;
 	}
+	STDMETHOD(raw_getType)(IType** ppType) {
+		*ppType = createType(m_pParent->m_pParent, m_pParent->m_pDesc->lprgelemdescParam[m_index].tdesc);
+		return S_OK;
+	}
 };
 
 
@@ -212,24 +217,25 @@ public:
 
 
 
-class ATL_NO_VTABLE CWTypeDecl : 
+class ATL_NO_VTABLE CTypeDecl : 
 	public CComObjectRootEx<CComSingleThreadModel>,
-	public CComCoClass<CWTypeDecl, &__uuidof(IWTypeDecl)>,
-	public IWDispInterfaceDecl
+	public CComCoClass<CTypeDecl, &__uuidof(ITypeDecl)>,
+	public IDispInterfaceDecl,
+	public IInterfaceDecl
 {
 public:
-	CWTypeLibPtr m_pParent;
+	CTypeLibPtr m_pParent;
 	ITypeInfoPtr m_pType;
 	TYPEATTR* m_pAttr;
 
-	CWTypeDecl() {}
-	~CWTypeDecl();
+	CTypeDecl() {}
+	~CTypeDecl();
 
-	void init( CWTypeLib* pParent, ITypeInfo* pType );
+	void init( CTypeLib* pParent, ITypeInfo* pType );
 
-	static CComObject<CWTypeDecl>* create( CWTypeLib* pParent, ITypeInfo* pType ) {
-		CComObject<CWTypeDecl>* pObj = NULL;
-		CComObject<CWTypeDecl>::CreateInstance(&pObj);
+	static CComObject<CTypeDecl>* create( CTypeLib* pParent, ITypeInfo* pType ) {
+		CComObject<CTypeDecl>* pObj = NULL;
+		CComObject<CTypeDecl>::CreateInstance(&pObj);
 		pObj->AddRef();
 		pObj->init(pParent,pType);
 		return pObj;
@@ -239,11 +245,11 @@ public:
 
 DECLARE_PROTECT_FINAL_CONSTRUCT()
 
-BEGIN_COM_MAP(CWTypeDecl)
-	COM_INTERFACE_ENTRY(IUnknown)
-	COM_INTERFACE_ENTRY(IType)
-	COM_INTERFACE_ENTRY(IWTypeDecl)
-	COM_INTERFACE_ENTRY(IWDispInterfaceDecl)
+BEGIN_COM_MAP(CTypeDecl)
+	COM_INTERFACE_ENTRY2(IType,IInterfaceDecl)
+	COM_INTERFACE_ENTRY2(ITypeDecl,IInterfaceDecl)
+	COM_INTERFACE_ENTRY(IDispInterfaceDecl)
+	COM_INTERFACE_ENTRY(IInterfaceDecl)
 END_COM_MAP()
 
 public:
@@ -287,20 +293,20 @@ public:
 
 
 
-class ATL_NO_VTABLE CWTypeLib : 
+class ATL_NO_VTABLE CTypeLib : 
 	public CComObjectRootEx<CComSingleThreadModel>,
-	public CComCoClass<CWTypeLib, &__uuidof(IWTypeLib)>,
-	public IWTypeLib
+	public CComCoClass<CTypeLib, &__uuidof(ITypeLib)>,
+	public ITypeLibrary
 {
 public:
 	ITypeLibPtr	m_pTypeLib;
 	TLIBATTR* m_pAttr;
 	// child objects.
-	typedef map<ITypeInfo*,CWTypeDecl*> childrenT;
+	typedef map<ITypeInfo*,CTypeDecl*> childrenT;
 	childrenT children;
 
-	CWTypeLib() {}
-	~CWTypeLib() {
+	CTypeLib() {}
+	~CTypeLib() {
 		m_pTypeLib->ReleaseTLibAttr(m_pAttr);
 		m_pTypeLib=NULL;
 	}
@@ -310,9 +316,9 @@ public:
 		pTypeLib->GetLibAttr(&m_pAttr);
 	}
 
-	static CComObject<CWTypeLib>* create( ITypeLib* pTypeLib ) {
-		CComObject<CWTypeLib>* pObj = NULL;
-		CComObject<CWTypeLib>::CreateInstance(&pObj);
+	static CComObject<CTypeLib>* create( ITypeLib* pTypeLib ) {
+		CComObject<CTypeLib>* pObj = NULL;
+		CComObject<CTypeLib>::CreateInstance(&pObj);
 		pObj->AddRef();
 		pObj->init(pTypeLib);
 		return pObj;
@@ -322,8 +328,8 @@ public:
 
 DECLARE_PROTECT_FINAL_CONSTRUCT()
 
-BEGIN_COM_MAP(CWTypeLib)
-	COM_INTERFACE_ENTRY(IWTypeLib)
+BEGIN_COM_MAP(CTypeLib)
+	COM_INTERFACE_ENTRY(ITypeLibrary)
 	COM_INTERFACE_ENTRY(IUnknown)
 END_COM_MAP()
 
@@ -345,19 +351,21 @@ public:
 		*pGuid = m_pAttr->guid;
 		return S_OK;
 	}
-	STDMETHOD(raw_getTypeDecl)(int nIndex, IWTypeDecl** ppType) {
+	STDMETHOD(raw_getTypeDecl)(int nIndex, ITypeDecl** ppType) {
 		HRESULT hr;
 		ITypeInfo* p=NULL;
 		hr = m_pTypeLib->GetTypeInfo(nIndex,&p);
 		if(FAILED(hr))		return hr;
 
 		childrenT::const_iterator itr = children.find(p);
+		CTypeDecl* pT;
 		if( itr!=children.end() ) {
-			*ppType = (*itr).second;
-			(*ppType)->AddRef();
+			pT = (*itr).second;
+			pT->AddRef();
 		} else {
-			*ppType = CWTypeDecl::create(this,p);
+			pT = CTypeDecl::create(this,p);
 		}
+		*ppType = static_cast<IInterfaceDecl*>(pT);
 		return hr;
 	}
 };

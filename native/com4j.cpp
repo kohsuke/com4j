@@ -129,5 +129,5 @@ JNIEXPORT jint JNICALL Java_com4j_Native_loadTypeLibrary(
 		return 0;
 	}
 	
-	return reinterpret_cast<jint>(CWTypeLib::create(pLib));
+	return reinterpret_cast<jint>(CTypeLib::create(pLib));
 }
