@@ -105,7 +105,7 @@ public:
 
 
 // throw a Java ComException
-void error( JNIEnv* env, const char* msg ... );
-void error( JNIEnv* env, HRESULT hr, const char* msg ... );
+void error( JNIEnv* env, const char* fileName, int line, const char* msg ... );
+void error( JNIEnv* env, const char* fileName, int line, HRESULT hr, const char* msg ... );
 
 

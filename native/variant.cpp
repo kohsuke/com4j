@@ -14,7 +14,7 @@ static VARIANT* getVariantImage( JNIEnv* env, jobject buffer ) {
 JNIEXPORT void JNICALL Java_com4j_Variant_clear0(JNIEnv* env, jclass, jobject image) {
 	HRESULT hr = VariantClear(getVariantImage(env,image));
 	if(FAILED(hr))
-		error(env,hr,"failed to clear variant");
+		error(env,__FILE__,__LINE__,hr,"failed to clear variant");
 }
 
 // change the variant type in the same place
@@ -23,7 +23,7 @@ void VariantChangeType( JNIEnv* env, VARIANT* v, VARTYPE type ) {
 	VariantInit(&dst);
 	HRESULT hr = VariantChangeType(&dst,v,0, type );
 	if(FAILED(hr)) {
-		error(env,hr,"failed to change the variant type");
+		error(env,__FILE__,__LINE__,hr,"failed to change the variant type");
 		return;
 	}
 	VariantClear(v);
@@ -153,6 +153,6 @@ jobject VariantUnmarshaller::unmarshal( JNIEnv* env ) {
 	}
 
 	// the expected return type is something we can't handle
-	error(env,"The specified return type is not compatible with VARIANT");
+	error(env,__FILE__,__LINE__,"The specified return type is not compatible with VARIANT");
 	return NULL;
 }

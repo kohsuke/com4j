@@ -33,7 +33,7 @@ JNIEXPORT jstring JNICALL Java_com4j_tlbimp_Native_readRegKey(
 	long size = sizeof(w);
 	LONG r = RegQueryValueW(HKEY_CLASSES_ROOT,key,w,&size);
 	if(r!=0) {
-		error(env,r,"incorrect key name \"%s\"",static_cast<LPCSTR>(key));
+		error(env,__FILE__,__LINE__,r,"incorrect key name \"%s\"",static_cast<LPCSTR>(key));
 		return NULL;
 	}
 	return env->NewString(w,wcslen(w));
@@ -47,7 +47,7 @@ JNIEXPORT jobjectArray JNICALL Java_com4j_tlbimp_Native_enumRegKeys(
 	KeyHolder hKey;
 	LONG r = RegOpenKey(HKEY_CLASSES_ROOT,key,&hKey);
 	if(r!=0) {
-		error(env,r,"incorrect key name \"%s\"",static_cast<LPCSTR>(key));
+		error(env,__FILE__,__LINE__,r,"incorrect key name \"%s\"",static_cast<LPCSTR>(key));
 		return NULL;
 	}
 

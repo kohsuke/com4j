@@ -134,7 +134,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 			case cvPVOID:
 				pv = env->GetDirectBufferAddress(arg);
 				if(pv==NULL) {
-					error(env,"the given Buffer object is not a direct buffer");
+					error(env,__FILE__,__LINE__,"the given Buffer object is not a direct buffer");
 					return NULL;
 				}
 				_asm push pv;
@@ -207,7 +207,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 			case cvSAFEARRAY:
 				psa = safearray::SafeArrayXducer::toNative(env,(jarray)arg);
 				if(psa==NULL) {
-					error(env,"unable to convert the given array to SAFEARRAY");
+					error(env,__FILE__,__LINE__,"unable to convert the given array to SAFEARRAY");
 					return NULL;
 				}
 				add( new SAFEARRAYCleanUp(psa) );
@@ -216,7 +216,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				
 
 			default:
-				error(env,"unexpected conversion type: %d",convs[i]);
+				error(env,__FILE__,__LINE__,"unexpected conversion type: %d",convs[i]);
 				return NULL;
 			}
 		}
@@ -225,7 +225,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 			if(retIsInOut) {
 				// reuse the current unmarshaller
 				if(unm==NULL) {
-					error(env,"in/out return value must be passed by ref");
+					error(env,__FILE__,__LINE__,"in/out return value must be passed by ref");
 					return NULL;
 				}
 				retUnm = unm;
@@ -257,6 +257,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 					break;
 
 				case cvDouble:
+				case cvDATE:
 					retUnm = new DoubleUnmarshaller(env,NULL);
 					break;
 
@@ -269,7 +270,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 					break;
 
 				default:
-					error(env,"unexpected conversion type: %d",retConv);
+					error(env,__FILE__,__LINE__,"unexpected conversion type: %d",retConv);
 					return NULL;
 				}
 

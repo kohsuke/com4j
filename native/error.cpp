@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "com4j.h"
 
-void error( JNIEnv* env, HRESULT hr, const char* msg ... ) {
+void error( JNIEnv* env, const char* file, int line, HRESULT hr, const char* msg ... ) {
 	// format the message
 	char w[1024];
 	va_list va;
@@ -9,10 +9,10 @@ void error( JNIEnv* env, HRESULT hr, const char* msg ... ) {
 	vsprintf(w,msg,va);
 
 	env->ExceptionClear();
-	env->Throw( (jthrowable)comexception_new_hr( env, env->NewStringUTF(w), hr ) );
+	env->Throw( (jthrowable)comexception_new_hr( env, env->NewStringUTF(w), hr, file, line ) );
 }
 
-void error( JNIEnv* env, const char* msg ... ) {
+void error( JNIEnv* env, const char* file, int line, const char* msg ... ) {
 	// format the message
 	char w[1024];
 	va_list va;
@@ -20,5 +20,5 @@ void error( JNIEnv* env, const char* msg ... ) {
 	vsprintf(w,msg,va);
 
 	env->ExceptionClear();
-	env->Throw( (jthrowable)comexception_new( env, env->NewStringUTF(w) ) );
+	env->Throw( (jthrowable)comexception_new( env, env->NewStringUTF(w), file, line ) );
 }

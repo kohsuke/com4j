@@ -47,7 +47,7 @@ JNIEXPORT void JNICALL Java_com4j_Native_init( JNIEnv* env, jclass __unused__ ) 
 
 	HRESULT hr = CoInitialize(NULL);
 	if(FAILED(hr)) {
-		error(env,hr,"failed to initialize COM");
+		error(env,__FILE__,__LINE__,hr,"failed to initialize COM");
 		return;
 	}
 }
@@ -88,7 +88,7 @@ JNIEXPORT jint JNICALL Java_com4j_Native_createInstance(
 	hr = CLSIDFromProgID(progId,&clsid);
 	if(FAILED(hr)) {
 		if(FAILED(CLSIDFromString( const_cast<LPOLESTR>(LPCOLESTR(progId)),&clsid))) {
-			error(env,hr,"Unrecognized CLSID");
+			error(env,__FILE__,__LINE__,hr,"Unrecognized CLSID");
 			return 0;
 		}
 	}
@@ -96,7 +96,7 @@ JNIEXPORT jint JNICALL Java_com4j_Native_createInstance(
 	void* p;
 	hr = CoCreateInstance(clsid,NULL,CLSCTX_ALL,iid,&p);
 	if(FAILED(hr)) {
-		error(env,hr,"CoCreateInstance failed");
+		error(env,__FILE__,__LINE__,hr,"CoCreateInstance failed");
 		return 0;
 	}
 	return reinterpret_cast<jint>(p);
@@ -127,7 +127,7 @@ JNIEXPORT jint JNICALL Java_com4j_Native_loadTypeLibrary(
 
 	HRESULT hr = LoadTypeLib(name,&pLib);
 	if(FAILED(hr)) {
-		error(env,hr,"LoadTypeLib failed");
+		error(env,__FILE__,__LINE__,hr,"LoadTypeLib failed");
 		return 0;
 	}
 	
@@ -139,7 +139,7 @@ JNIEXPORT void JNICALL Java_com4j_Native_coInitialize(
 
 	HRESULT hr = CoInitialize(NULL);
 	if(FAILED(hr)) {
-		error(env,hr,"CoInitialize failed");
+		error(env,__FILE__,__LINE__,hr,"CoInitialize failed");
 	}	
 }
 
