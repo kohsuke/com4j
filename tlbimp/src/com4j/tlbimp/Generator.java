@@ -226,6 +226,13 @@ public final class Generator {
 
             printJavadoc(t.getHelpString(), o);
 
+            boolean hasEnum = false;
+            for( int j=0; j<t.countMethods() && !hasEnum; j++ ) {
+                IMethod m = t.getMethod(j);
+                hasEnum = isEnum(m);
+            }
+
+
             o.printf("@IID(\"%1s\")",t.getGUID());
             o.println();
             o.printf("public interface %1s",typeName);
@@ -245,6 +252,10 @@ public final class Generator {
                     if(baseName.equals("IUnknown") || baseName.equals("IDispatch"))
                         baseName = "Com4jObject";
                     o.print(baseName);
+                }
+                if(hasEnum) {
+                    o.comma();
+                    o.print("Iterable<Com4jObject>");
                 }
                 o.endCommaMode();
             }
@@ -418,6 +429,12 @@ public final class Generator {
             o.printf("@VTID(%1d)",
                 method.getVtableIndex());
             o.println();
+
+            if(isEnum(method)) {
+                // this is an enumerator. handle it differently.
+                o.println("java.util.Iterator<Com4jObject> iterator();");
+                return;
+            }
 
             declareReturnType(o);
 
@@ -874,4 +891,9 @@ public final class Generator {
         reservedMethods.add("toString");
         reservedMethods.add("wait");
     }
+
+    private static boolean isEnum(IMethod m) {
+        return m.getName().equals("_NewEnum");
+    }
+
 }
