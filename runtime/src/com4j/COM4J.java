@@ -177,6 +177,7 @@ public abstract class COM4J {
 
     static {
         loadNativeLibrary();
+        Native.init();
     }
 
     private static void loadNativeLibrary() {

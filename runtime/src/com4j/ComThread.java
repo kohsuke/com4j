@@ -77,6 +77,7 @@ final class ComThread extends Thread {
     }
 
     public synchronized void run() {
+        // TODO: we need to run Windows message pump
         while(!canExit()) {
             try {
                 wait(1000);

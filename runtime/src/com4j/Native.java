@@ -13,7 +13,7 @@ class Native {
     /**
      * Initializes the native code.
      */
-    private static native void init();
+    static native void init();
 
     /**
      * Creates a COM object and returns its pointer.
@@ -38,9 +38,4 @@ class Native {
      * Loads a type library from a given file, wraps it, and returns its IUnknown.
      */
     static native int loadTypeLibrary(String name);
-
-    static {
-        init();
-    }
-
 }
