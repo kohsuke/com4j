@@ -79,9 +79,11 @@ public:
 
 template <VARTYPE vt, class XDUCER>
 class VariantHandlerImpl : public VariantHandler {
+protected:
 	inline XDUCER::NativeType& addr(VARIANT* v) {
 		return *reinterpret_cast<XDUCER::NativeType*>(&v->boolVal);
 	}
+public:
 	void set( JNIEnv* env, jobject o, VARIANT* v ) {
 		v->vt = vt;
 		addr(v) = XDUCER::toNative(
@@ -94,6 +96,20 @@ class VariantHandlerImpl : public VariantHandler {
 		jobject o = XDUCER::toJava(env, addr(v));
 		VariantClear(&dst);
 		return o;
+	}
+};
+
+class ComObjectVariandHandlerImpl : public VariantHandlerImpl<VT_DISPATCH,xducer::Com4jObjectXducer> {
+	void set( JNIEnv* env, jobject o, VARIANT* v ) {
+		ComObjectVariandHandlerImpl::set(env,o,v);
+		IDispatch* pDisp = NULL;
+		HRESULT hr = addr(v)->QueryInterface(&pDisp);
+		if(SUCCEEDED(hr)) {
+			// if possible, use VT_DISPATCH.
+			addr(v)->Release();
+			addr(v) = pDisp;
+			v->vt = VT_DISPATCH;
+		} // otherwise use VT_UNKNOWN. See java.net issue 2.
 	}
 };
 
@@ -110,7 +126,8 @@ static SetterEntry setters[] = {
 	{ &javaLangShort,		new VariantHandlerImpl<VT_I2,		xducer::BoxedShortXducer>() },
 	{ &javaLangInteger,		new VariantHandlerImpl<VT_I4,		xducer::BoxedIntXducer>() },
 	{ &javaLangLong,		new VariantHandlerImpl<VT_I8,		xducer::BoxedLongXducer>() },
-	{ &com4j_Com4jObject,	new VariantHandlerImpl<VT_UNKNOWN,	xducer::Com4jObjectXducer>() },
+	// see issue 2 on java.net. I used to convert a COM object to VT_UNKNOWN
+	{ &com4j_Com4jObject,	new VariantHandlerImpl<VT_DISPATCH,	xducer::Com4jObjectXducer>() },
 	{ NULL,					NULL }
 };
 
