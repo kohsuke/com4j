@@ -5,6 +5,7 @@ import com4j.ComException;
 import com4j.tlbimp.def.IWTypeLib;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.Project;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,6 +40,7 @@ public class AntTaskImpl extends Task {
             throw new BuildException("@destDir is missing");
 
         try {
+            log("Generating definitions from "+source, Project.MSG_INFO);
             IWTypeLib tlb = COM4J.loadTypeLibrary(source).queryInterface(IWTypeLib.class);
             CodeWriter cw = new FileCodeWriter(destDir);
             Generator.generate(tlb,cw,packageName);

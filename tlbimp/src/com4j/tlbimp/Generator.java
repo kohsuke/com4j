@@ -135,16 +135,12 @@ public final class Generator {
 //                    ITypedefDecl alias = t.queryInterface(ITypedefDecl.class);
 //                    System.out.printf("typedef %1s %2s", alias.getName(),
 //                        getTypeString(alias.getDefinition()));
-                    System.out.println();
                     break;
                 }
             case COCLASS:
                 // we handle all co-classes later
                 if( t.queryInterface(ICoClassDecl.class).isCreatable() )
                     hasCoClass = true;
-                break;
-            default:
-                System.out.println( t.getKind() );
                 break;
             }
             t.release();
@@ -375,7 +371,7 @@ public final class Generator {
     private void generateHeader(IndentingWriter o) {
         o.println("// GENERATED. DO NOT MODIFY");
         if(packageName.length()!=0) {
-            o.printf("package %1s",packageName);
+            o.printf("package %1s;",packageName);
             o.println();
             o.println();
         }
@@ -470,9 +466,9 @@ public final class Generator {
                     throw new BindingException(Messages.RETVAL_MUST_BY_REFERENCE.format());
                 VariableBinding vb = bind(pt.getPointedAtType());
 
-                // add @ReturnType if necessary
+                // add @ReturnValue if necessary
                 if(!vb.isDefault || params[r].isIn() || r!=params.length-1 ) {
-                    o.print("@ReturnType(");
+                    o.print("@ReturnValue(");
                     o.beginCommaMode();
                     if(!vb.isDefault) {
                         o.comma();
