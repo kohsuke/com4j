@@ -115,6 +115,7 @@ public class Main implements ErrorListener {
             try {
                 IWTypeLib mainLib = COM4J.loadTypeLibrary(typeLibFileName).queryInterface(IWTypeLib.class);
                 Driver driver = new Driver();
+                driver.setPackageName(packageName.value);
                 for( Ref r : refs )
                     driver.addRef(r);
                 driver.run(mainLib,cw,this);
