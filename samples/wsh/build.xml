@@ -7,14 +7,15 @@
     <pathelement path="${java.class.path}"/><!-- this line is just to allow the sample inside the workspace -->
   </path>
   
-  <taskdef name="tlbimp" classname="com4j.tlbimp.AntTaskImpl">
+  <taskdef resource="/com4j/tlbimp/ant.properties">
     <classpath refid="com4j" />
   </taskdef>
   
   
   <target name="tlbimp">
     <mkdir dir="build/src"/>
-    <tlbimp source="c:/windows/system32/wshom.ocx"
+    <!-- compile wshom.ocx -->
+    <tlbimp libid="F935DC20-1CF0-11D0-ADB9-00C04FD58A0B"
       destdir="build/src" package="wsh" />
   </target>
   

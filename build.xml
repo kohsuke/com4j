@@ -25,10 +25,12 @@
     </javadoc>
   </target>
   
-  <target name="dist" depends="jar,javadoc">
+  <target name="dist" depends="clean,jar,javadoc">
     <tstamp/>
     <delete dir="dist"/>
     <mkdir dir="dist"/>
+    
+    <ant dir="samples" target="compile"/>
     
     <ant dir="native" target="release"/>
     

@@ -32,7 +32,7 @@
   </target>
   
   <target name="run" depends="compile">
-    <java classname="excel.Main" fork="true">
+    <java classname="speech.Main" fork="true">
       <classpath>
         <path refid="com4j"/>
       </classpath>

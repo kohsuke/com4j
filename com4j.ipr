@@ -10,6 +10,7 @@
   <component name="CompilerConfiguration">
     <option name="DEFAULT_COMPILER" value="Javac" />
     <option name="CLEAR_OUTPUT_DIRECTORY" value="false" />
+    <option name="DEPLOY_AFTER_MAKE" value="0" />
     <resourceExtensions>
       <entry name=".+\.(properties|xml|html|dtd|tld)" />
       <entry name=".+\.(gif|png|jpeg|jpg)" />
@@ -260,6 +261,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/samples/jnlp/jnlp.iml" filepath="$PROJECT_DIR$/samples/jnlp/jnlp.iml" />
       <module fileurl="file://$PROJECT_DIR$/runtime/runtime.iml" filepath="$PROJECT_DIR$/runtime/runtime.iml" />
+      <module fileurl="file://$PROJECT_DIR$/samples/speech/speech.iml" filepath="$PROJECT_DIR$/samples/speech/speech.iml" />
       <module fileurl="file://$PROJECT_DIR$/tlbimp/tlbimp.iml" filepath="$PROJECT_DIR$/tlbimp/tlbimp.iml" />
       <module fileurl="file://$PROJECT_DIR$/samples/wsh/wsh.iml" filepath="$PROJECT_DIR$/samples/wsh/wsh.iml" />
     </modules>
