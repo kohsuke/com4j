@@ -21,6 +21,11 @@ class Native {
     static native int createInstance( String clsid, long iid1, long iid2 );
 
     /**
+     * Calls <tt>AddRef</tt>.
+     */
+    static native void addRef( int pComObject );
+
+    /**
      * Calls <tt>Release</tt>.
      */
     static native void release( int pComObject );

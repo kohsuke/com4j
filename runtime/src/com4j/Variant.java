@@ -1,5 +1,7 @@
 package com4j;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 
 /**
@@ -27,7 +29,7 @@ public final class Variant extends Number {
     /**
      * The memory image of the VARIANT.
      */
-    private final long[] image = new long[2];
+    final ByteBuffer image = ByteBuffer.allocateDirect(16);
 
     /**
      * VARIANT type.
@@ -76,6 +78,7 @@ public final class Variant extends Number {
      * Creates an empty {@link Variant}.
      */
     public Variant() {
+        image.order(ByteOrder.LITTLE_ENDIAN);
     }
 
     /**
@@ -88,10 +91,7 @@ public final class Variant extends Number {
      * you should first clear it.
      */
     public void clear() {
-        if(image[0]!=0) {
-            clear0(image[0],image[1]);
-            image[0] = image[1] = 0;
-        }
+        clear0(image);
     }
 
     /**
@@ -104,24 +104,24 @@ public final class Variant extends Number {
     /**
      * Calls <tt>VariantClear</tt> method.
      */
-    private static native void clear0( long image0, long image1 );
+    private static native void clear0( ByteBuffer image );
 
     /**
      * Sets the type of the variant.
      */
     public void setType( Type t ) {
-        image[0] = t.comEnumValue();
+        image.putLong(0,t.comEnumValue());
     }
 
     /**
      * Gets the type of the variant.
      */
     public Type getType() {
-        return EnumDictionary.get(Type.class).constant((int)image[0]);
+        return EnumDictionary.get(Type.class).constant((int)image.getLong(0));
     }
 
 
-    private static native void changeType0( int type, long[] image );
+    private static native void changeType0( int type, ByteBuffer image );
 
     /**
      * Changes the variant type to the specified one.
@@ -132,7 +132,7 @@ public final class Variant extends Number {
 
     public int intValue() {
         changeType(Type.VT_I4);
-        return (int)(image[1] & 0xFFFFFFFF);
+        return image.getInt(8);
     }
 
     public long longValue() {
@@ -141,23 +141,20 @@ public final class Variant extends Number {
     }
 
     public float floatValue() {
-        return castToFloat0(image);
+        changeType(Type.VT_R4);
+        return image.getFloat(8);
     }
 
     public double doubleValue() {
-        return castToDouble0(image);
+        changeType(Type.VT_R8);
+        return image.getDouble(8);
     }
 
-    /**
-     * Changes the variant type to {@link Type.VT_R4} and
-     * returns its float value.
-     */
-    private static native float castToFloat0( long[] image );
-
-    /**
-     * Changes the variant type to {@link Type.VT_R8} and
-     * returns its double value.
-     */
-    private static native double castToDouble0( long[] image );
-
+    public <T extends Com4jObject> T object( Class<T> type ) {
+        changeType(Type.VT_UNKNOWN);
+        int ptr = image.getInt(8);
+        if(ptr==0)  return null;
+        Native.addRef(ptr);
+        return Wrapper.create(type,ptr);
+    }
 }

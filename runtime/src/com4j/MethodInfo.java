@@ -1,14 +1,11 @@
 package com4j;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.lang.reflect.ParameterizedType;
 import java.lang.annotation.Annotation;
-import java.util.Map;
-import java.util.Collections;
-import java.util.WeakHashMap;
-import java.util.concurrent.ConcurrentHashMap;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.nio.Buffer;
+import java.util.Iterator;
 
 /**
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
@@ -25,6 +22,7 @@ final class MethodInfo {
     final boolean returnIsInOut;
     final NativeType returnConv;
     final Class<?>[] paramTypes;
+    final Type[] genericParamTypes;
 
     MethodInfo( Method m ) {
         method = m;
@@ -61,6 +59,7 @@ final class MethodInfo {
         Type[] javaParamTypes = m.getGenericParameterTypes();
 
         paramTypes = m.getParameterTypes();
+        genericParamTypes = m.getGenericParameterTypes();
         paramConvs = new int[paramLen];
         params = new NativeType[paramLen];
         for( int i=0; i<paramLen; i++ ) {
@@ -84,10 +83,10 @@ final class MethodInfo {
         try {
             Object r = Native.invoke( ptr, vtIndex, args, paramConvs,
                 method.getReturnType(), returnIndex, returnIsInOut, returnConv.code );
-            return returnConv.unmassage(method.getReturnType(),r);
+            return returnConv.unmassage(method.getReturnType(), method.getGenericReturnType(), r);
         } finally {
             for( int i=0; i<args.length; i++ )
-                args[i] = params[i].unmassage(paramTypes[i],args[i]);
+                args[i] = params[i].unmassage(paramTypes[i], genericParamTypes[i], args[i]);
         }
     }
 
@@ -103,6 +102,8 @@ final class MethodInfo {
                 return NativeType.ComObject;
             if(Enum.class.isAssignableFrom(c))
                 return NativeType.Int32;
+            if(Iterator.class==t)
+                return NativeType.ComObject;
             if(GUID.class==t)
                 return NativeType.GUID;
             if(Integer.TYPE==t)
@@ -115,7 +116,7 @@ final class MethodInfo {
                 return NativeType.BSTR;
             if(Boolean.TYPE==t)
                 return NativeType.VariantBool;
-            if(Object.class==t)
+            if(Object.class==t || Variant.class==t)
                 return NativeType.VARIANT_ByRef;
             if(Buffer.class.isAssignableFrom(c))
                 return NativeType.PVOID;
@@ -132,6 +133,9 @@ final class MethodInfo {
                     return NativeType.BSTR_ByRef;
                 if(Integer.class==v)
                     return NativeType.Int32_ByRef;
+            }
+            if( p.getRawType()==Iterator.class ) {
+                return NativeType.ComObject;
             }
         }
 

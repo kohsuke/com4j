@@ -5,9 +5,12 @@ import static com4j.Const.BYREF;
 import sun.nio.ch.DirectBuffer;
 
 import java.util.Calendar;
+import java.util.Iterator;
 import java.nio.Buffer;
 import java.nio.CharBuffer;
 import java.nio.ByteBuffer;
+import java.lang.reflect.Type;
+import java.lang.reflect.ParameterizedType;
 
 import static com4j.Const.*;
 
@@ -118,7 +121,7 @@ public enum NativeType {
             return param;
         }
 
-        Object unmassage(Class<?> type,Object param) {
+        Object unmassage(Class<?> type, Type genericSignature, Object param) {
             if( Enum.class.isAssignableFrom(type) ) {
                 return EnumDictionary.get((Class<? extends Enum>)type).constant((Integer)param);
             }
@@ -200,8 +203,18 @@ public enum NativeType {
             return COM4J.unwrap((Com4jObject)param).getPtr();
         }
 
-        Object unmassage(Class<?> type,Object param) {
+        Object unmassage(Class<?> type, Type genericSignature, Object param) {
             if(param==null)     return null;
+            if(type==Iterator.class) {
+                Class itemType = Object.class;
+                if(genericSignature instanceof ParameterizedType) {
+                    ParameterizedType pt = (ParameterizedType) genericSignature;
+                    Type it = pt.getActualTypeArguments()[0];
+                    if(it instanceof Class)
+                        itemType = (Class)it;
+                }
+                return new ComCollection(itemType,Wrapper.create(IEnumVARIANT.class, (Integer)param ));
+            }
             return Wrapper.create( (Class<? extends Com4jObject>)type, (Integer)param );
         }
 
@@ -224,7 +237,7 @@ public enum NativeType {
             h.value = ComObject.massage(h.value);
             return h;
         }
-        Object unmassage(Class<?> type,Object param) {
+        Object unmassage(Class<?> type, Type genericSignature, Object param) {
             Holder h = (Holder)param;
             h.value = ComObject.massage(h.value);
             return h;
@@ -248,7 +261,7 @@ public enum NativeType {
             GUID g = (GUID)param;
             return g.v;
         }
-        Object unmassage(Class<?> signature, Object param) {
+        Object unmassage(Class<?> signature, Type genericSignature, Object param) {
             if(param==null)     return null;
             return new GUID( (long[])param );
         }
@@ -316,7 +329,7 @@ public enum NativeType {
             return disp;
         }
 
-        Object unmassage(Class<?> type,Object param) {
+        Object unmassage(Class<?> type, Type genericSignature, Object param) {
             if(param==null)     return null;
             int disp = (Integer)param;
             if(disp==0)      return null;
@@ -457,10 +470,13 @@ public enum NativeType {
      * The opposite of {@link #massage(java.lang.Object)}. Only useful for
      * BYREFs.
      *
+     * @param signature
+     *      the parameter type in its raw form.
+     * @param genericSignature
+     *      the parameter type in its generified form.
      * @param param
-     *      can be null.
      */
-    Object unmassage(Class<?> signature, Object param) {
+    Object unmassage(Class<?> signature, Type genericSignature, Object param) {
         return param;
     }
 
