@@ -1,8 +1,7 @@
 package com4j.tlbimp;
 
-import com4j.NativeType;
-import com4j.Variant;
 import com4j.Com4jObject;
+import com4j.NativeType;
 import com4j.tlbimp.def.IConstant;
 import com4j.tlbimp.def.IDispInterfaceDecl;
 import com4j.tlbimp.def.IEnumDecl;
@@ -21,10 +20,10 @@ import com4j.tlbimp.def.VarType;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Date;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Date;
 
 /**
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
@@ -105,7 +104,10 @@ public final class Generator {
 
 
     private File getPackageDir() {
-        return new File(packageName.replace('.',File.separatorChar));
+        if(packageName.equals(""))
+            return new File(".");
+        else
+            return new File(packageName.replace('.',File.separatorChar));
     }
 
     private void _generate() throws IOException, BindingException {
@@ -127,8 +129,8 @@ public final class Generator {
             case ALIAS:
                 {
                     ITypedefDecl alias = t.queryInterface(ITypedefDecl.class);
-                    System.out.printf("typedef %1s %2s", alias.getName(),
-                        getTypeString(alias.getDefinition()));
+//                    System.out.printf("typedef %1s %2s", alias.getName(),
+//                        getTypeString(alias.getDefinition()));
                     System.out.println();
                     break;
                 }
@@ -146,7 +148,7 @@ public final class Generator {
         o.printf("<h2>%1s</h2>",lib.getName());
         o.printf("<p>%1s</p>",lib.getHelpString());
         o.println("</html></body>");
-//        o.close();    // TODO: close
+        o.close();
     }
 
 
@@ -170,7 +172,7 @@ public final class Generator {
 
         // generate the prolog
         String typeName = getTypeName(t);
-        IndentingWriter o = writer.create( new File(getPackageDir(),typeName ) );
+        IndentingWriter o = writer.create( new File(getPackageDir(),typeName+".java" ) );
         generateHeader(o);
 
         printJavadoc(t.getHelpString(), o);
@@ -210,13 +212,13 @@ public final class Generator {
         for( IConstant con : cons)
             con.release();
 
-//        o.close();    // TODO: close
+        o.close();
     }
 
     private void generate( IInterfaceDecl t ) throws IOException, BindingException {
         try {
             String typeName = getTypeName(t);
-            IndentingWriter o = writer.create( new File(getPackageDir(),typeName ) );
+            IndentingWriter o = writer.create( new File(getPackageDir(),typeName+".java" ) );
             generateHeader(o);
 
             printJavadoc(t.getHelpString(), o);
@@ -248,7 +250,7 @@ public final class Generator {
             o.out();
             o.println("}");
 
-            // o.close(); // TODO:
+            o.close();
         } catch( BindingException e ) {
             throw new BindingException(
                 Messages.FAILED_TO_BIND.format(t.getName()),

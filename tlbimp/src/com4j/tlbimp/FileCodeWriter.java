@@ -16,7 +16,7 @@ public class FileCodeWriter implements CodeWriter {
 
     public IndentingWriter create(File file) throws IOException {
         file = new File(outDir,file.getPath());
-        file.mkdirs();
+        file.getParentFile().mkdirs();
         // TODO: proper escaping
         return new IndentingWriter(new FileWriter(file));
     }

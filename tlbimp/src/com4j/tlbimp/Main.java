@@ -1,6 +1,7 @@
 package com4j.tlbimp;
 
 import com4j.COM4J;
+import com4j.ComException;
 import com4j.tlbimp.def.IWTypeLib;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -53,17 +54,20 @@ public class Main {
         else
             cw = new FileCodeWriter(outDir.value);
 
-        try {
-            for( String file : files ) {
-                File typeLibFileName = new File(file);
+        for( String file : files ) {
+            File typeLibFileName = new File(file);
+            System.err.println("Processing "+typeLibFileName);
+            try {
                 IWTypeLib tlb = COM4J.loadTypeLibrary(typeLibFileName).queryInterface(IWTypeLib.class);
                 Generator.generate(tlb,cw,packageName.value);
                 tlb.release();
+            } catch( ComException e ) {
+                return handleException(e);
+            } catch( IOException e ) {
+                return handleException(e);
+            } catch( BindingException e ) {
+                return handleException(e);
             }
-        } catch( IOException e ) {
-            return handleException(e);
-        } catch( BindingException e ) {
-            return handleException(e);
         }
 
         return 0;

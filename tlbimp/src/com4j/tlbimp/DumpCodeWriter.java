@@ -8,16 +8,18 @@ import java.io.OutputStreamWriter;
 
 /**
  * {@link CodeWriter} that dumps to stdout. For debugging.
- * 
+ *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
 public class DumpCodeWriter implements CodeWriter {
     public IndentingWriter create(File file) {
-        return new IndentingWriter(new FilterWriter(new OutputStreamWriter(System.out)) {
+        IndentingWriter w = new IndentingWriter(new FilterWriter(new OutputStreamWriter(System.out)) {
             public void close() throws IOException {
                 flush();
                 // don't close ignore
             }
-        });
+        }, true);
+        w.printf("------ %1s ---------\n",file.getPath());
+        return w;
     }
 }
