@@ -8,9 +8,9 @@ import com4j.VTID;
  */
 @IID("{C99EBD48-0DF6-453d-94A8-BC004F69330F}")
 public interface IEnumDecl extends ITypeDecl {
-    @VTID(3)
+    @VTID(6)
     int countConstants();
 
-    @VTID(4)
+    @VTID(7)
     IConstant getConstant(int index);
 }

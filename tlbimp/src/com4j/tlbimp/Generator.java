@@ -11,6 +11,8 @@ import com4j.tlbimp.def.IParam;
 import com4j.tlbimp.def.IInterfaceDecl;
 import com4j.tlbimp.def.IInterface;
 import com4j.tlbimp.def.VarType;
+import com4j.tlbimp.def.IEnumDecl;
+import com4j.tlbimp.def.IConstant;
 import com4j.NativeType;
 
 import java.io.File;
@@ -66,7 +68,11 @@ public class Generator {
                 generate( t.queryInterface(IDispInterfaceDecl.class) );
                 break;
             case INTERFACE:
-                generate( t.queryInterface(IInterfaceDecl.class) );
+                // TODO: temporarily removed to test the enum support
+//                generate( t.queryInterface(IInterfaceDecl.class) );
+                break;
+            case ENUM:
+                generate( t.queryInterface(IEnumDecl.class) );
                 break;
             default:
                 System.out.println( t.getKind() );
@@ -82,23 +88,44 @@ public class Generator {
         o.printf("<h2>%1s</h2>",lib.getName());
         o.printf("<p>%1s</p>",lib.getHelpString());
         o.println("</html></body>");
-        o.flush();
-//        o.close();
+//        o.close();    // TODO: close
+    }
+
+
+    private void generate( IEnumDecl t ) throws IOException {
+        String typeName = t.getName();
+        IndentingWriter o = createWriter( new File(getPackageDir(),typeName ) );
+        generateHeader(o);
+
+        printJavadoc(t.getHelpString(), o);
+
+        o.printf("enum %1s {",typeName);
+        o.println();
+        o.in();
+
+        int len = t.countConstants();
+        for( int i=0; i<len; i++ ) {
+            IConstant con = t.getConstant(i);
+
+            o.printf("%1s %2d",
+                con.getName(),
+                con.getValue());
+            o.println();
+
+            con.release();
+        }
+
+        o.out();
+        o.println("}");
+
+//        o.close();    // TODO: close
     }
 
     private void generate( IInterface t ) throws IOException, BindingException {
         try {
             String typeName = t.getName();
             IndentingWriter o = createWriter( new File(getPackageDir(),typeName ) );
-            o.println("// GENERATED. DO NOT MODIFY");
-            if(packageName.length()!=0) {
-                o.printf("package %1s",packageName);
-                o.println();
-                o.println();
-            }
-
-            o.println("import com4j.*;");
-            o.println();
+            generateHeader(o);
 
             printJavadoc(t.getHelpString(), o);
 
@@ -117,12 +144,24 @@ public class Generator {
             o.out();
             o.println("}");
 
-            o.flush();
+            // o.close(); // TODO:
         } catch( BindingException e ) {
             throw new BindingException(
                 Messages.FAILED_TO_BIND.format(t.getName()),
                 e );
         }
+    }
+
+    private void generateHeader(IndentingWriter o) {
+        o.println("// GENERATED. DO NOT MODIFY");
+        if(packageName.length()!=0) {
+            o.printf("package %1s",packageName);
+            o.println();
+            o.println();
+        }
+
+        o.println("import com4j.*;");
+        o.println();
     }
 
     /**
