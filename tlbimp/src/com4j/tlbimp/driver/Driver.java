@@ -45,8 +45,11 @@ final class Driver {
                 if( refs.containsKey(libid) )
                     return refs.get(libid).packageName;
 
+                if( libid.equals(GUID_STDOLE))
+                    return "";  // don't generate STDOLE. That's done by com4j runtime.
+
                 if( libsToGen.add(lib) )
-                    el.warning(Messages.REFERENCED_TYPELIB_GENERATED.format(lib.getName()));
+                    el.warning(Messages.REFERENCED_TYPELIB_GENERATED.format(lib.getName(),packageName));
 
                 return packageName;
             }
@@ -61,11 +64,15 @@ final class Driver {
         while(!generatedLibs.containsAll(libsToGen) ) {
             Set<IWTypeLib> s = new HashSet<IWTypeLib>(libsToGen);
             s.removeAll(generatedLibs);
-            for( IWTypeLib lib : s )
+            for( IWTypeLib lib : s ) {
                 generator.generate(lib);
+                generatedLibs.add(lib);
+            }
         }
 
         // wrap up
         generator.finish();
     }
+
+    private static final GUID GUID_STDOLE = new GUID("{00020430-0000-0000-C000-000000000046}");
 }

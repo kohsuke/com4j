@@ -445,7 +445,7 @@ public final class Generator {
          * Declares a parameter.
          */
         private void declare( IParam p, IndentingWriter o ) throws BindingException {
-            VariableBinding vb = bind(p.getType());
+            VariableBinding vb = bind(p.getType(),p.getName());
             if(!vb.isDefault) {
                 o.printf("@MarshalAs(NativeType.%1s) ",vb.nativeType.name());
             }
@@ -475,7 +475,7 @@ public final class Generator {
                 IPtrType pt = params[retParam].getType().queryInterface(IPtrType.class);
                 if(pt==null)
                     throw new BindingException(Messages.RETVAL_MUST_BY_REFERENCE.format());
-                VariableBinding vb = bind(pt.getPointedAtType());
+                VariableBinding vb = bind(pt.getPointedAtType(),null);
 
                 // add @ReturnValue if necessary
                 if(!vb.isDefault || params[retParam].isIn() || retParam!=params.length-1 ) {
@@ -565,7 +565,7 @@ public final class Generator {
                     ITypeDecl def = typedef.getDefinition().queryInterface(ITypeDecl.class);
                     if(def!=null) {
 //                    System.out.println(def.getName()+" -> "+typedef.getName());
-                        aliases.put( def, prefix+typedef.getName() );
+                        aliases.put( def, typedef.getName() );
                     }
                 }
                 t.dispose();
@@ -637,6 +637,26 @@ public final class Generator {
             this.nativeType = nativeType;
             this.isDefault = isDefault;
         }
+
+        public VariableBinding createByRef() {
+            String t = javaType;
+            if(boxTypeMap.containsKey(t))
+                t = boxTypeMap.get(t);
+            return new VariableBinding( "Holder<"+t+">", nativeType.byRef(), isDefault );
+        }
+
+        private static final Map<String,String> boxTypeMap = new HashMap<String,String>();
+
+        static {
+            boxTypeMap.put("byte","Byte");
+            boxTypeMap.put("short","Short");
+            boxTypeMap.put("int","Integer");
+            boxTypeMap.put("long","Long");
+            boxTypeMap.put("float","Float");
+            boxTypeMap.put("double","Double");
+            boxTypeMap.put("boolean","Boolean");
+            boxTypeMap.put("char","Character");
+        }
     }
 
     /**
@@ -674,10 +694,20 @@ public final class Generator {
         primitiveTypeBindings.put(vt,new VariableBinding(c,n,isDefault));
     }
 
+    private static final boolean isPsz( String hint ) {
+        if(hint==null)  return false;
+        return hint.startsWith("psz") || hint.startsWith("lpsz");
+    }
+
     /**
      * Binds the native type to a Java type and its conversion.
+     *
+     * @param nameHint
+     *      Optional parameter name of the type. If non-null,
+     *      this is used to disambiguate common mistake
+     *      like declaring LPWSTR as "ushort*", etc.
      */
-    private VariableBinding bind( IType t ) throws BindingException {
+    private VariableBinding bind( IType t, String nameHint ) throws BindingException {
         IPrimitiveType pt = t.queryInterface(IPrimitiveType.class);
         if(pt!=null) {
             // primitive
@@ -697,6 +727,12 @@ public final class Generator {
                 return new VariableBinding( getTypeName(compDecl), NativeType.ComObject, true );
             }
 
+            IDispInterfaceDecl dispDecl = comp.queryInterface(IDispInterfaceDecl.class);
+            if( dispDecl!=null ) {
+                // t = T* where T is a declared interface
+                return new VariableBinding( getTypeName(dispDecl), NativeType.ComObject,  true );
+            }
+
             IPrimitiveType compPrim = comp.queryInterface(IPrimitiveType.class);
             if( compPrim!=null ) {
                 if( compPrim.getVarType()==VarType.VT_VARIANT ) {
@@ -707,12 +743,28 @@ public final class Generator {
                     // T = void*
                     return new VariableBinding(Buffer.class,  NativeType.PVOID, true );
                 }
+                if( compPrim.getVarType()==VarType.VT_UI2 ) {
+                    // T = ushort*
+                    if( isPsz(nameHint) )
+                        // this is a common mistake
+                        return new VariableBinding( String.class, NativeType.Unicode, false );
+                }
+            }
+
+            // a few other random checks
+            String name = getTypeString(ptrt);
+            if( name.equals("_RemotableHandle*") ) {
+                // marshal as the raw pointer value
+                return new VariableBinding( Integer.TYPE, NativeType.Int32,  true );
+            }
+            if(name.equals("GUID*")) {
+                return new VariableBinding( "GUID", NativeType.GUID, true );
             }
 
             // otherwise use a holder
-            VariableBinding b = bind(comp);
+            VariableBinding b = bind(comp,null);
             if(b!=null && b.nativeType.byRef()!=null )
-                return new VariableBinding( "Holder<"+b.javaType+">", b.nativeType.byRef(), b.isDefault );
+                return b.createByRef();
         }
 
         ISafeArrayType at = t.queryInterface(ISafeArrayType.class);
@@ -731,7 +783,7 @@ public final class Generator {
         // T = typedef
         ITypedefDecl typedef = t.queryInterface(ITypedefDecl.class);
         if(typedef!=null) {
-            return bind(typedef.getDefinition());
+            return bind(typedef.getDefinition(),nameHint);
         }
 
         // T = enum
@@ -746,9 +798,6 @@ public final class Generator {
         if(declt!=null) {
             // TODO: not clear how we should handle this
             String name = declt.getName();
-            if(name.equals("GUID")) {
-                return new VariableBinding( "GUID", NativeType.GUID, true );
-            }
             throw new BindingException(Messages.UNSUPPORTED_TYPE.format(getTypeString(t)));
         }
 

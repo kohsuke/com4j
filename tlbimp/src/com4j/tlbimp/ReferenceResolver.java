@@ -8,5 +8,9 @@ import com4j.tlbimp.def.IWTypeLib;
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
 public interface ReferenceResolver {
+    /**
+     * @return
+     *      the package name in which this given type library is.
+     */
     String resolve(IWTypeLib lib) throws BindingException;
 }

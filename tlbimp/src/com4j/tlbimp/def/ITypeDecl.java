@@ -8,7 +8,7 @@ import com4j.VTID;
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
 @IID("{AF7CC95D-EC5C-4904-B2ED-E1E8838A4377}")
-public interface ITypeDecl extends Com4jObject {
+public interface ITypeDecl extends Com4jObject, IType {
     @VTID(3)
     String getName();
 
