@@ -146,7 +146,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
     public <T extends Com4jObject> boolean is( Class<T> comInterface ) {
         try {
             GUID iid = COM4J.getIID(comInterface);
-            return new QITestTask(iid).execute()!=0;
+            return new QITestTask(iid).execute(thread)!=0;
         } catch( ComException e ) {
             return false;
         }
@@ -161,7 +161,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
                     return null;    // failed to cast
                 return create( comInterface, nptr );
             }
-        }.execute();
+        }.execute(thread);
     }
 
     public String toString() {
@@ -171,7 +171,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
     public final int hashCode() {
         if(hashCode==0) {
             if(ptr!=0) {
-                hashCode = new QITestTask(COM4J.IID_IUnknown).execute();
+                hashCode = new QITestTask(COM4J.IID_IUnknown).execute(thread);
             } else {
                 hashCode = 0;
             }
