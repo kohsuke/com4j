@@ -288,6 +288,7 @@ public:
 	}
 	STDMETHOD(raw_getValue)(int* pValue) {
 		VARIANT r;
+		VariantInit(&r);
 		HRESULT hr = VariantChangeType(&r, m_pDesc->lpvarValue,0,VT_I4);
 		if(FAILED(hr))	return hr;
 		*pValue = r.intVal;
