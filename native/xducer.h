@@ -36,8 +36,7 @@ namespace xducer {
 
 
 	// transducer between Java boxed type and native primitive type
-	template < class NT, JStaticMethodID* parseMethod, JMethodID* printMethod,
-		NT (JNICALL JNIEnv::* jnifunc)(jobject,jmethodID,...) >
+	template < class NT, JStaticMethodID* parseMethod, JMethodID<NT>* printMethod >
 	class BoxXducer {
 	public:
 		typedef jobject JavaType;
@@ -47,7 +46,7 @@ namespace xducer {
 			return env->CallStaticObjectMethod( parseMethod->getClazz(), *parseMethod, i );
 		}
 		static NativeType toNative( JNIEnv* env, JavaType i ) {
-			return (env->*jnifunc)(i,*printMethod);
+			return (*printMethod)(env,i);
 		}
 	};
 
@@ -60,7 +59,7 @@ namespace xducer {
 			return env->CallStaticObjectMethod( javaLangBoolean, javaLangBoolean_valueOf, (i!=0)?JNI_TRUE:JNI_FALSE );
 		}
 		static NativeType toNative( JNIEnv* env, JavaType i ) {
-			jboolean b = env->CallBooleanMethod(i,javaLangBoolean_booleanValue);
+			jboolean b = javaLangBoolean_booleanValue(env,i);
 			if(b==0)	return 0;	// false
 			else		return -1;	// true
 		}
@@ -75,7 +74,7 @@ namespace xducer {
 			return env->CallStaticObjectMethod( javaLangBoolean, javaLangBoolean_valueOf, (i!=0)?JNI_TRUE:JNI_FALSE );
 		}
 		static NativeType toNative( JNIEnv* env, JavaType i ) {
-			jboolean b = env->CallBooleanMethod(i,javaLangBoolean_booleanValue);
+			jboolean b = javaLangBoolean_booleanValue(env,i);
 			if(b==0)	return VARIANT_FALSE;
 			else		return VARIANT_TRUE;
 		}
@@ -101,18 +100,40 @@ namespace xducer {
 		}
 	};
 
-	typedef BoxXducer<float,&javaLangFloat_valueOf, &javaLangNumber_floatValue, JNIEnv::CallFloatMethod >
+	typedef BoxXducer<float,&javaLangFloat_valueOf, &javaLangNumber_floatValue >
 		BoxedFloatXducer;
 
-	typedef BoxXducer<double,&javaLangDouble_valueOf, &javaLangNumber_doubleValue, JNIEnv::CallDoubleMethod >
+	typedef BoxXducer<double,&javaLangDouble_valueOf, &javaLangNumber_doubleValue >
 		BoxedDoubleXducer;
 
-	typedef BoxXducer<short, &javaLangShort_valueOf, &javaLangNumber_shortValue, JNIEnv::CallShortMethod >
+	typedef BoxXducer<short, &javaLangShort_valueOf, &javaLangNumber_shortValue >
 		BoxedShortXducer;
 
-	typedef BoxXducer< long/*32bit*/, &javaLangInteger_valueOf, &javaLangNumber_intValue, JNIEnv::CallIntMethod>
+	typedef BoxXducer< long/*32bit*/, &javaLangInteger_valueOf, &javaLangNumber_intValue >
 		BoxedIntXducer;
 
-	typedef BoxXducer< INT64, &javaLangLong_valueOf, &javaLangNumber_longValue, JNIEnv::CallLongMethod>
+	typedef BoxXducer< INT64, &javaLangLong_valueOf, &javaLangNumber_longValue >
 		BoxedLongXducer;
+
+
+	// Com4jObject <-> IUnknown*.
+	class Com4jObjectXducer {
+	public:
+		typedef IUnknown* NativeType;
+		typedef jobject JavaType;
+
+		static inline NativeType toNative( JNIEnv* env, JavaType value ) {
+			if(value==NULL)		return NULL;
+
+			NativeType ptr;
+
+			ptr->AddRef();
+			return ptr;
+		}
+
+		static inline JavaType toJava( JNIEnv* env, NativeType value ) {
+			if(value==NULL)	return NULL;
+			return com4jWrapper_new(env,reinterpret_cast<int>(value));
+		}
+	};
 }

@@ -37,7 +37,7 @@ JNIEXPORT jint JNICALL JVM_OnLoad(JavaVM* jvm, const char* options, void* reserv
 
 JNIEXPORT void JNICALL Java_com4j_Native_init( JNIEnv* env, jclass __unused__ ) {
 	JClassID::runInit(env);
-	JMethodID::runInit(env);
+	JMethodID_Base::runInit(env);
 	com4j_Holder_value = env->GetFieldID(com4j_Holder,"value","Ljava/lang/Object;");
 
 	HRESULT hr = CoInitialize(NULL);

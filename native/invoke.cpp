@@ -91,21 +91,19 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 
 			case cvINT8:
 				_ASSERT( sizeof(INT8)==sizeof(jbyte) );
-				int8 = env->CallByteMethod(arg,
-					env->GetMethodID(javaLangNumber,"byteValue","()B"));
+				int8 = javaLangNumber_byteValue(env,arg);
 				_asm push int8;
 				break;
 
 			case cvINT16:
 				_ASSERT( sizeof(INT16)==sizeof(jshort) );
-				int16 = env->CallByteMethod(arg,
-					env->GetMethodID(javaLangNumber,"shortValue","()S"));
+				int16 = javaLangNumber_shortValue(env,arg);
 				_asm push int16;
 
 			case cvINT32:
 			case cvComObject:
 				_ASSERT( sizeof(INT32)==sizeof(jint) );
-				int32 = env->CallIntMethod(arg,javaLangNumber_intValue);
+				int32 = javaLangNumber_intValue(env,arg);
 				_asm push int32;
 				break;
 
@@ -123,7 +121,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 			case cvDATE:
 			case cvDouble:
 				// TODO: check if this is correct
-				d = env->CallDoubleMethod( arg, javaLangNumber_doubleValue );
+				d = javaLangNumber_doubleValue(env,arg);
 				f = reinterpret_cast<float*>(&d)[1];
 				_asm push f;
 				f = reinterpret_cast<float*>(&d)[0];
@@ -131,12 +129,12 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				break;
 
 			case cvFloat:
-				f = env->CallFloatMethod( arg, javaLangNumber_floatValue );
+				f = javaLangNumber_floatValue(env,arg);
 				_asm push f;
 				break;
 
 			case cvBool:
-				if(env->CallBooleanMethod( arg, javaLangBoolean_booleanValue )) {
+				if(javaLangBoolean_booleanValue(env,arg)) {
 					int32 = TRUE;
 				} else {
 					int32 = FALSE;
@@ -145,7 +143,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				break;
 
 			case cvVariantBool:
-				if(env->CallBooleanMethod( arg, javaLangBoolean_booleanValue )) {
+				if(javaLangBoolean_booleanValue(env,arg)) {
 					vbool = VARIANT_TRUE;
 				} else {
 					vbool = VARIANT_FALSE;
@@ -301,7 +299,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 			LocalFree(pmsg);
 		}
 		
-		env->Throw( (jthrowable)env->NewObject( comexception, comexception_new, str, (jint)hr ) );
+		env->Throw( (jthrowable)comexception_new(env, str, (jint)hr ) );
 	}
 
 	if(retUnm==NULL)	return NULL;

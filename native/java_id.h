@@ -1,4 +1,5 @@
 #pragma once
+#include "op.h"
 //
 // helper classes to cache jclass/jmethodID/jfieldID
 //
@@ -75,12 +76,21 @@ public:
 	}
 };
 
+template < class JavaReturnType >
 class JMethodID : public JMethodID_Base {
 public:
 	JMethodID( JClassID& _clazz, const char* _name, const char* _sig ) : JMethodID_Base(_clazz,_name,_sig) {};
 protected:
 	void setup( JNIEnv* env ) {
 		id = env->GetMethodID( clazz, name, sig );
+	}
+public:
+	JavaReturnType operator () ( JNIEnv* env ... ) {
+        va_list args;
+		va_start(args,env);
+		JavaReturnType r = op::Op<JavaReturnType>::invokeV(env,clazz,id,args);
+		va_end(args);
+		return r;
 	}
 };
 
@@ -93,18 +103,31 @@ protected:
 	}
 };
 
+class JConstructorID : public JMethodID<jobject> {
+public:
+	JConstructorID( JClassID& _clazz, const char* _sig ) : JMethodID<jobject>(_clazz,"<init>",_sig) {};
+
+	jobject operator () ( JNIEnv* env ... ) {
+        va_list args;
+		va_start(args,env);
+		jobject r = env->NewObjectV(clazz,id,args);
+		va_end(args);
+		return r;
+	}
+};
+
 
 
 extern JClassID javaLangNumber;
-extern JMethodID javaLangNumber_byteValue;
-extern JMethodID javaLangNumber_shortValue;
-extern JMethodID javaLangNumber_intValue;
-extern JMethodID javaLangNumber_longValue;
-extern JMethodID javaLangNumber_floatValue;
-extern JMethodID javaLangNumber_doubleValue;
+extern JMethodID<jbyte> javaLangNumber_byteValue;
+extern JMethodID<jshort> javaLangNumber_shortValue;
+extern JMethodID<jint> javaLangNumber_intValue;
+extern JMethodID<jlong> javaLangNumber_longValue;
+extern JMethodID<jfloat> javaLangNumber_floatValue;
+extern JMethodID<jdouble> javaLangNumber_doubleValue;
 
 extern JClassID javaLangInteger;
-extern JMethodID javaLangInteger_new;
+extern JConstructorID javaLangInteger_new;
 extern JStaticMethodID javaLangInteger_valueOf;
 
 extern JClassID javaLangShort;
@@ -120,13 +143,19 @@ extern JClassID javaLangDouble;
 extern JStaticMethodID javaLangDouble_valueOf;
 
 extern JClassID javaLangBoolean;
-extern JMethodID javaLangBoolean_booleanValue;
+extern JMethodID<jboolean> javaLangBoolean_booleanValue;
 extern JStaticMethodID javaLangBoolean_valueOf;
 
 extern JClassID javaLangString;
 
+extern JClassID com4j_COM4J;
+extern JMethodID<jint> com4j_COM4J_getPtr;
+
 // reference to org.kohsuke.com4j.comexception
 extern JClassID comexception;
-extern JMethodID comexception_new;
+extern JConstructorID comexception_new;
 extern JClassID com4j_Holder;
 extern jfieldID com4j_Holder_value;
+
+extern JClassID com4jWrapper;
+extern JConstructorID com4jWrapper_new;

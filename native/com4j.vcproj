@@ -170,6 +170,9 @@
 				RelativePath="jstring.h">
 			</File>
 			<File
+				RelativePath="op.h">
+			</File>
+			<File
 				RelativePath="resource.h">
 			</File>
 			<File
