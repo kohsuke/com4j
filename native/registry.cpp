@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "com4j_tlbimp_Native.h"
 #include "com4j.h"
 #include "jstring.h"
 
@@ -24,25 +25,29 @@ public:
 };
 
 JNIEXPORT jstring JNICALL Java_com4j_tlbimp_Native_readRegKey(
-	JNIEnv* env, jclass clazz, jstring key ) {
+	JNIEnv* env, jclass clazz, jstring _key ) {
+
+	JString key(env,_key);
 	
 	wchar_t w[256];
 	long size = sizeof(w);
-	LONG r = RegQueryValueW(HKEY_CLASSES_ROOT,JString(env,key),w,&size);
+	LONG r = RegQueryValueW(HKEY_CLASSES_ROOT,key,w,&size);
 	if(r!=0) {
-		error(env,r,"incorrect key name");
+		error(env,r,"incorrect key name \"%s\"",static_cast<LPCSTR>(key));
 		return NULL;
 	}
 	return env->NewString(w,wcslen(w));
 }
 
 JNIEXPORT jobjectArray JNICALL Java_com4j_tlbimp_Native_enumRegKeys(
-	JNIEnv* env, jclass clazz, jstring key ) {
+	JNIEnv* env, jclass clazz, jstring _key ) {
 	
+	JString key(env,_key);
+
 	KeyHolder hKey;
-	LONG r = RegOpenKey(HKEY_CLASSES_ROOT,JString(env,key),&hKey);
+	LONG r = RegOpenKey(HKEY_CLASSES_ROOT,key,&hKey);
 	if(r!=0) {
-		error(env,r,"incorrect LIBID");
+		error(env,r,"incorrect key name \"%s\"",static_cast<LPCSTR>(key));
 		return NULL;
 	}
 
