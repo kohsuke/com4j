@@ -207,6 +207,8 @@ final class Wrapper implements InvocationHandler, Com4jObject {
                 return NativeType.Int8;
             if(String.class==t)
                 return NativeType.BSTR;
+            if(Boolean.TYPE==t)
+                return NativeType.Bool;
         }
 
         if( t instanceof ParameterizedType ) {
