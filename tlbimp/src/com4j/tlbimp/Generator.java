@@ -296,7 +296,7 @@ public final class Generator {
 
         public void declare( IndentingWriter o ) throws BindingException {
             printJavadoc(method.getHelpString(), o);
-            o.println("// "+method.getKind());
+//            o.println("// "+method.getKind());
             o.printf("@VTID(%1d)",
                 method.getVtableIndex());
             o.println();
@@ -309,7 +309,38 @@ public final class Generator {
                 name = Character.toLowerCase(name.charAt(0))+name.substring(1);
             }
             o.print(name);
-            o.println('(');
+            o.print('(');
+            o.in();
+
+            boolean first = true;
+            // declare parameters
+            for( IParam p : params ) {
+                if( p.isRetval() && !p.isIn() )
+                    continue;   // skip, cause it's showing up as the return value
+                if(!first)
+                    o.println(',');
+                else
+                    o.println();
+                first = false;
+                declare(p,o);
+            }
+            o.out();
+            o.println(");");
+        }
+
+        /**
+         * Declares a parameter.
+         */
+        private void declare( IParam p, IndentingWriter o ) throws BindingException {
+            VariableBinding vb = bind(p.getType());
+            if(!vb.isDefault) {
+                o.printf("@MarshalAs(NativeType.%1s) ",vb.nativeType.name());
+            }
+            o.print(vb.javaType);
+            o.print(' ');
+            String name = p.getName();
+            if(name==null)  name="rhs";
+            o.print(name);
         }
 
         /**
@@ -332,7 +363,7 @@ public final class Generator {
                     o.beginCommaMode();
                     if(!vb.isDefault) {
                         o.comma();
-                        o.print("type="+vb.nativeType.name());
+                        o.print("type=NativeType."+vb.nativeType.name());
                     }
                     if(params[r].isIn()) {
                         o.comma();
@@ -383,6 +414,12 @@ public final class Generator {
         pbind( VarType.VT_I2, Short.TYPE, NativeType.Int16, true );
         pbind( VarType.VT_I4, Integer.TYPE, NativeType.Int32, true );
         pbind( VarType.VT_BSTR, String.class, NativeType.BSTR, false );
+        // TODO: is it OK to map UI2 to short?
+        pbind( VarType.VT_UI2, Short.TYPE, NativeType.Int16, true );
+        pbind( VarType.VT_UI4, Integer.TYPE, NativeType.Int32, true );
+        pbind( VarType.VT_INT, Integer.TYPE, NativeType.Int32, true );
+        pbind( VarType.VT_UINT, Integer.TYPE, NativeType.Int32, true );
+        pbind( VarType.VT_BOOL, Boolean.TYPE, NativeType.VariantBool, true );
         // TODO
 //        pbind( VarType.VT_R4, Float.TYPE, NativeType.Float );
 //        pbind( VarType.VT_R8, Double.TYPE, NativeType.Double );
@@ -415,12 +452,31 @@ public final class Generator {
                 return new VariableBinding( getTypeName(compDecl), NativeType.ComObject, true );
 
             // TODO
-            throw new UnsupportedOperationException();
+            throw new UnsupportedOperationException(getTypeString(t));
+        }
+
+        // T = typedef
+        ITypedefDecl typedef = t.queryInterface(ITypedefDecl.class);
+        if(typedef!=null) {
+            return bind(typedef.getDefinition());
+        }
+
+        // T = enum
+        IEnumDecl enumdef = t.queryInterface(IEnumDecl.class);
+        if(enumdef!=null) {
+            // TODO: we should probably check the size of the enum.
+            // there's no guarantee it's 32 bit.
+            return new VariableBinding( getTypeName(enumdef), NativeType.Int32, true );
         }
 
         ITypeDecl declt = t.queryInterface(ITypeDecl.class);
         if(declt!=null) {
-            throw new UnsupportedOperationException("other decl");
+            // TODO: not clear how we should handle this
+            String name = declt.getName();
+            if(name.equals("GUID")) {
+                return new VariableBinding( "GUID", NativeType.GUID, true );
+            }
+            throw new UnsupportedOperationException("other decl "+declt.getKind());
         }
 
         throw new BindingException(Messages.UNSUPPORTED_TYPE.format());
