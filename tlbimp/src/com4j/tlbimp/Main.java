@@ -11,15 +11,20 @@ import org.kohsuke.args4j.opts.StringOption;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
-public class Main {
+public class Main implements ErrorListener {
     public FileOption outDir = new FileOption("-o",new File("-"));
     public StringOption packageName = new StringOption("-p","");
     public BooleanOption debug = new BooleanOption("-debug");
+    public BooleanOption verbose = new BooleanOption("-v");
+
+    public StringOption libid = new StringOption("-libid");
+    public StringOption libVersion = new StringOption("-libver");
 
     public static void main(String[] args) {
         System.exit(new Main().doMain(args));
@@ -42,16 +47,42 @@ public class Main {
         }
 
         List<String> files = (List<String>)parser.getArguments();
-        if(files.size()<1) {
-            System.err.println(Messages.NO_FILE_NAME);
-            usage();
-            return -1;
+
+        if(libid.value!=null) {
+            if( !parser.getArguments().isEmpty() ) {
+                System.err.println(Messages.CANT_SPECIFY_LIBID_AND_FILENAME);
+                usage();
+                return -1;
+            }
+            try {
+                TypeLibInfo tli = TypeLibInfo.locate(libid.value,libVersion.value);
+                if(verbose.isOn())
+                    System.err.printf("Found %1s <%2s>\n",tli.libName,tli.version);
+
+                files = Arrays.asList(tli.typeLibrary.toString());
+            } catch( BindingException e ) {
+                error(e);
+                return -1;
+            }
+        } else {
+            // expect type library file names in the command line.
+            if(files.size()<1) {
+                System.err.println(Messages.NO_FILE_NAME);
+                usage();
+                return -1;
+            }
         }
 
         CodeWriter cw;
-        if(outDir.value.getPath().equals("-"))
-            cw = new DumpCodeWriter();
-        else
+        if(outDir.value.getPath().equals("-")) {
+            if(debug.isOn())
+                cw = new DumpCodeWriter();
+            else {
+                System.err.println(Messages.NO_OUTPUT_DIR);
+                usage();
+                return -1;
+            }
+        } else
             cw = new FileCodeWriter(outDir.value);
 
         for( String file : files ) {
@@ -59,7 +90,7 @@ public class Main {
             System.err.println("Processing "+typeLibFileName);
             try {
                 IWTypeLib tlb = COM4J.loadTypeLibrary(typeLibFileName).queryInterface(IWTypeLib.class);
-                Generator.generate(tlb,cw,packageName.value,new ErrorListenerImpl());
+                Generator.generate(tlb,cw,packageName.value,this);
                 tlb.dispose();
             } catch( ComException e ) {
                 return handleException(e);
@@ -81,10 +112,7 @@ public class Main {
         }
     }
 
-    private class ErrorListenerImpl implements ErrorListener {
-        public void error(BindingException e) {
-            handleException(e);
-        }
+    public void error(BindingException e) {
+        handleException(e);
     }
-
 }

@@ -15,11 +15,14 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
-public class AntTaskImpl extends Task {
+public class AntTaskImpl extends Task implements ErrorListener {
 
     private File destDir;
     private String packageName="";
     private File source;
+
+    private String libid;
+    private String libver;
 
     public void setDestDir(File destDir) {
         this.destDir = destDir;
@@ -29,28 +32,48 @@ public class AntTaskImpl extends Task {
         this.packageName = packageName;
     }
 
-    public void setSource(File source) {
+    public void setFile(File source) {
         this.source = source;
     }
 
+    public void setLibid(String libid) {
+        this.libid = libid;
+    }
+
+    public void setLibver(String libver) {
+        this.libver = libver;
+    }
+
     public void execute() throws BuildException {
-        if( source==null )
-            throw new BuildException("@source is missing");
         if( destDir==null )
             throw new BuildException("@destDir is missing");
+        if( source==null ) {
+            if( libid==null )
+                throw new BuildException("both @file and @libid is missing");
+            try {
+                TypeLibInfo tli = TypeLibInfo.locate(libid,libver);
+                log("The type library is "+tli.libName+" <"+tli.version+">", Project.MSG_INFO);
+                source = tli.typeLibrary;
+            } catch (BindingException e) {
+                error(e);
+                return;
+            }
+        }
 
         try {
             log("Generating definitions from "+source, Project.MSG_INFO);
             IWTypeLib tlb = COM4J.loadTypeLibrary(source).queryInterface(IWTypeLib.class);
             CodeWriter cw = new FileCodeWriter(destDir);
-            Generator.generate(tlb,cw,packageName);
+            Generator.generate(tlb,cw,packageName,this);
             tlb.dispose();
         } catch( ComException e ) {
             throw new BuildException(e);
         } catch( IOException e ) {
             throw new BuildException(e);
-        } catch( BindingException e ) {
-            throw new BuildException(e);
         }
+    }
+
+    public void error(BindingException e) {
+        log(e.getMessage(),Project.MSG_ERR);
     }
 }

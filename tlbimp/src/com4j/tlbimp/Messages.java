@@ -16,6 +16,12 @@ enum Messages {
     FAILED_TO_BIND,
     USAGE,
     NO_FILE_NAME,
+    NO_OUTPUT_DIR,
+    CANT_SPECIFY_LIBID_AND_FILENAME,
+    INVALID_LIBID,
+    NO_VERSION_AVAILABLE,
+    INVALID_VERSION,
+    NO_WIN32_TYPELIB
     ;
 
     private static final ResourceBundle rb = ResourceBundle.getBundle(Messages.class.getName());
