@@ -63,7 +63,6 @@ JNIEXPORT jint JNICALL Java_com4j_Native_queryInterface( JNIEnv* env, jclass __u
 	void* p;
 	HRESULT hr = toComObject(pComObject)->QueryInterface(iid,&p);
 	if(FAILED(hr)) {
-		error(env,hr,"failed to query interface");
 		return 0;
 	}
 	return reinterpret_cast<jint>(p);
@@ -123,5 +122,5 @@ JNIEXPORT jint JNICALL Java_com4j_Native_loadTypeLibrary(
 		return 0;
 	}
 	
-	return reinterpret_cast<jint>(CTypeLib::create(pLib));
+	return reinterpret_cast<jint>(typelib::CTypeLib::create(pLib));
 }
