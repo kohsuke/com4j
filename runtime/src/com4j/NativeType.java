@@ -337,7 +337,25 @@ public enum NativeType {
      *      direct {@link Buffer}s ({@link Buffer}s created from methods like
      *      {@link ByteBuffer#allocateDirect(int)}
      */
-    PVOID(304),
+    PVOID(304) {
+        public NativeType byRef() {
+            return PVOID_ByRef;
+        }
+    },
+
+
+    /**
+     * <tt>void**</tt>.
+     *
+     * <p>
+     * The assumed semantics is that you receive a buffer.
+     *
+     * <p>
+     * Expected Java type:
+     *      {@link Holder}&lt;{@link Buffer}> ({@link Buffer}s created from methods like
+     *      {@link ByteBuffer#allocateDirect(int)}
+     */
+    PVOID_ByRef(304|BYREF),
 
     /**
      * <tt>DATE</tt>.
