@@ -7,6 +7,9 @@ import com4j.tlbimp.def.ITypeLib;
 import com4j.tlbimp.def.ITypeInfo;
 import com4j.tlbimp.def.IWTypeLib;
 import com4j.tlbimp.def.IWType;
+import com4j.tlbimp.def.TypeKind;
+import com4j.tlbimp.def.IWDispInterface;
+import com4j.tlbimp.def.IWMethod;
 
 import java.io.File;
 
@@ -16,7 +19,6 @@ import java.io.File;
 public class Main {
     public static void main(String[] args) {
         File typeLibFileName = new File(args[0]);
-
         IWTypeLib tlb = COM4J.loadTypeLibrary(typeLibFileName).queryInterface(IWTypeLib.class);
 //        System.out.println(tlb.count());
         System.out.println(tlb.getName());
@@ -26,7 +28,21 @@ public class Main {
         for( int i=0; i<len; i++ ) {
             IWType t = tlb.getType(i);
             System.out.println(t.getName());
+            System.out.println(t.getKind());
+            if(t.getKind()==TypeKind.DISPATCH) {
+                IWDispInterface t2 = t.queryInterface(IWDispInterface.class);
+                System.out.println(t2.getGUID());
+                System.out.println("# of methods: "+t2.countMethods());
+                for( int j=0; j<t2.countMethods(); j++ ) {
+                    IWMethod m = t2.getMethod(j);
+                    System.out.println("  "+m.getName());
+                    m.release();
+                }
+                t2.release();
+            }
             System.out.println(t.getHelpString());
+            System.out.println();
+            t.release();
         }
     }
 
