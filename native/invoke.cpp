@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "com4j.h"
 #include "unmarshaller.h"
-
+#include "safearray.h"
 
 
 
@@ -21,8 +21,8 @@ Environment::~Environment() {
 static int invocationCount = 0;
 #endif
 
-jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray args, jint* convs,
-	jclass retType, int retIndex, bool retIsInOut, jint retConv ) {
+jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray args, ConvSpec* convs,
+	jclass retType, int retIndex, bool retIsInOut, ConvSpec retConv ) {
 	// list of clean up actions
 
 	int i;
@@ -42,6 +42,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 		double d;
 		float f;
 		void*	pv;
+		SAFEARRAY* psa;
 		VARIANT_BOOL vbool;
 //	};
 
@@ -60,7 +61,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 		
 		if( i!=paramLen ) {
 			arg = env->GetObjectArrayElement(args,i);
-			switch( convs[i] ) {
+			switch( convs[i].major ) {
 			case cvBSTR:
 				bstr = toBSTR((jstring)arg);
 				_asm push bstr;
@@ -111,7 +112,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				if(arg==NULL) {
 					pv = NULL;
 				} else {
-					unm = new PrimitiveUnmarshaller<IntXducer>(env,arg);
+					unm = new IntUnmarshaller(env,arg);
 					add( new OutParamHandler( jholder(arg), unm ) );
 					pv = unm->addr();
 				}
@@ -158,6 +159,43 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				_asm push pv;
 				break;
 
+			case cvSAFEARRAY:
+				psa = NULL;
+				switch(convs[i].minor) {
+				case cvsaBoolean:
+					psa = safearray::PrimitiveArrayConverter<VT_BOOL,VARIANT_BOOL,jboolean>::toNative(env,(jarray)arg);
+					break;
+				case cvsaByte:
+					psa = safearray::PrimitiveArrayConverter<VT_UI1,byte,jbyte>::toNative(env,(jarray)arg);
+					break;
+				case cvsaChar:
+					psa = safearray::PrimitiveArrayConverter<VT_UI2,unsigned short,jchar>::toNative(env,(jarray)arg);
+					break;
+				case cvsaDouble:
+					psa = safearray::PrimitiveArrayConverter<VT_R8,double,jdouble>::toNative(env,(jarray)arg);
+					break;
+				case cvsaFloat:
+					psa = safearray::PrimitiveArrayConverter<VT_R4,float,jfloat>::toNative(env,(jarray)arg);
+					break;
+				case cvsaInt:
+					psa = safearray::PrimitiveArrayConverter<VT_I4,INT32,jint>::toNative(env,(jarray)arg);
+					break;
+				case cvsaLong:
+					psa = safearray::PrimitiveArrayConverter<VT_I8,INT64,jlong>::toNative(env,(jarray)arg);
+					break;
+				case cvsaShort:
+					psa = safearray::PrimitiveArrayConverter<VT_I2,short,jshort>::toNative(env,(jarray)arg);
+					break;
+				case cvsaString:
+					psa = safearray::BasicArrayConverter<VT_BSTR,xducer::StringXducer>::toNative(env,(jarray)arg);
+					break;
+				}
+				_ASSERT(psa!=NULL);
+				add( new SAFEARRAYCleanUp(psa) );
+				_asm push psa;
+				break;
+				
+
 			default:
 				error(env,"unexpected conversion type: %d",convs[i]);
 				return NULL;
@@ -173,7 +211,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				}
 				retUnm = unm;
 			} else {
-				switch(retConv) {
+				switch(retConv.major) {
 				case cvBSTR:
 					retUnm = new BSTRUnmarshaller(NULL);
 					break;
@@ -236,7 +274,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 
 	// if the caller wants the HRESULT as the return value,
 	// don't throw ComException
-	if(retConv==cvHRESULT) {
+	if(retConv.major==cvHRESULT) {
 		jclass javaLangInteger = env->FindClass("java/lang/Integer");
 		return env->NewObject(
 			javaLangInteger,

@@ -30,11 +30,10 @@ IType* createType( CTypeDecl* containingType, TYPEDESC& t ) {
 		return getRef( containingType, t.hreftype );
 
 	case VT_PTR:
-		return CComObject<CPtrType>::create(containingType,*t.lptdesc);
+		return static_cast<IPtrType*>(CComObject<CPtrType>::create(containingType,*t.lptdesc,true));
 	
 	case VT_SAFEARRAY:
-		// TODO: support array
-		return NULL;
+		return static_cast<ISafeArrayType*>(CComObject<CPtrType>::create(containingType,*t.lptdesc,false));
 
 	default:
 	{
@@ -57,6 +56,7 @@ CPrimitiveTypeImpl vti4(VT_I4,L"int");
 CPrimitiveTypeImpl vtr4(VT_R4,L"float");
 CPrimitiveTypeImpl vtr8(VT_R8,L"double");
 CPrimitiveTypeImpl vtbstr(VT_BSTR,L"BSTR");
+CPrimitiveTypeImpl vtlpwstr(VT_LPWSTR,L"LPWSTR");
 CPrimitiveTypeImpl vtbool(VT_BOOL,L"bool");
 CPrimitiveTypeImpl vtvoid(VT_VOID,L"void");
 CPrimitiveTypeImpl vtui2(VT_UI2,L"ushort");

@@ -96,13 +96,22 @@ protected:
 
 
 extern JClassID javaLangNumber;
+extern JMethodID javaLangNumber_byteValue;
+extern JMethodID javaLangNumber_shortValue;
 extern JMethodID javaLangNumber_intValue;
+extern JMethodID javaLangNumber_longValue;
 extern JMethodID javaLangNumber_floatValue;
 extern JMethodID javaLangNumber_doubleValue;
 
 extern JClassID javaLangInteger;
 extern JMethodID javaLangInteger_new;
 extern JStaticMethodID javaLangInteger_valueOf;
+
+extern JClassID javaLangShort;
+extern JStaticMethodID javaLangShort_valueOf;
+
+extern JClassID javaLangLong;
+extern JStaticMethodID javaLangLong_valueOf;
 
 extern JClassID javaLangFloat;
 extern JStaticMethodID javaLangFloat_valueOf;

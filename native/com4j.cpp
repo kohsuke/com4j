@@ -4,10 +4,7 @@
 #include "com4j_native.h"
 #include "jstring.h"
 #include "typelib.h"
-
-
-
-
+#include "safearray.h"
 
 JNIEXPORT jobject JNICALL Java_com4j_Native_invoke(JNIEnv* env,
 	jclass __unused,
@@ -25,7 +22,10 @@ JNIEXPORT jobject JNICALL Java_com4j_Native_invoke(JNIEnv* env,
 	jobject r = e.invoke(
 		reinterpret_cast<void*>(pComObject),
 		(*reinterpret_cast<VTable*>(pComObject))[pFuncIndex],
-		args, convs, returnType, returnIndex, returnIsInOut!=0, returnConv );
+		args,
+		reinterpret_cast<ConvSpec*>(convs),
+		returnType, returnIndex, returnIsInOut!=0,
+		*reinterpret_cast<ConvSpec*>(&returnConv) );
 	env->ReleaseIntArrayElements(_convs,convs,0);
 	return r;
 }

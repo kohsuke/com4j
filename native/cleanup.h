@@ -28,6 +28,17 @@ public:
 	}
 };
 
+class SAFEARRAYCleanUp : public PostAction {
+	SAFEARRAY* psa;
+public:
+	SAFEARRAYCleanUp( SAFEARRAY* _psa ) {
+		psa = _psa;
+	}
+	void act( JNIEnv* env ) {
+		SafeArrayDestroy(psa);
+		psa = NULL;
+	}
+};
 
 template <class T>
 class DeleteCleanUp : public PostAction {

@@ -83,26 +83,29 @@ public:
 
 
 
-
+// reused for both IPtrType and ISafeArrayType
 class ATL_NO_VTABLE CPtrType :
 	public CComObjectRootEx<CComSingleThreadModel>,
 	public CComCoClass<CPtrType, &__uuidof(IPtrType)>,
-	public IPtrType
+	public IPtrType,
+	public ISafeArrayType
 {
 private:
 	ITypePtr m_pType;
+	bool isPtr;
 
 public:
-	void init( CTypeDecl* containingType, TYPEDESC& t ) {
+	void init( CTypeDecl* containingType, TYPEDESC& t, bool _isPtr ) {
 		m_pType = createType(containingType,t);
+		isPtr = _isPtr;
 		_ASSERT(m_pType!=NULL);
 	}
 
-	static CComObject<CPtrType>* create( CTypeDecl* containingType, TYPEDESC& t ) {
+	static CComObject<CPtrType>* create( CTypeDecl* containingType, TYPEDESC& t, bool _isPtr ) {
 		CComObject<CPtrType>* pObj = NULL;
 		CComObject<CPtrType>::CreateInstance(&pObj);
 		pObj->AddRef();
-		pObj->init(containingType,t);
+		pObj->init(containingType,t,_isPtr);
 		return pObj;
 	}
 
@@ -110,16 +113,34 @@ public:
 DECLARE_PROTECT_FINAL_CONSTRUCT()
 
 BEGIN_COM_MAP(CPtrType)
-	COM_INTERFACE_ENTRY(IUnknown)
-	COM_INTERFACE_ENTRY(IType)
-	COM_INTERFACE_ENTRY(IPtrType)
+	COM_INTERFACE_ENTRY2(IUnknown,IPtrType)
+	COM_INTERFACE_ENTRY2(IType,IPtrType)
+	COM_INTERFACE_ENTRY_FUNC_BLIND(0,castDynamic)
 END_COM_MAP()
+
+	static HRESULT WINAPI castDynamic(void* pv, REFIID riid, LPVOID* ppv, DWORD dw) {
+		CPtrType* pThis = static_cast<CPtrType*>(pv);
+		if( pThis->isPtr && riid==__uuidof(IPtrType) ) {
+			*ppv = static_cast<IPtrType*>(pThis);
+			pThis->AddRef();
+			return S_OK;
+		}
+		if( !pThis->isPtr && riid==__uuidof(ISafeArrayType) ) {
+			*ppv = static_cast<ISafeArrayType*>(pThis);
+			pThis->AddRef();
+			return S_OK;
+		}
+		return E_NOINTERFACE;
+	}
 
 public:
 	STDMETHOD(raw_getPointedAtType)( IType** ppType ) {
 		*ppType = m_pType;
 		m_pType.AddRef();	// for the pointer returned
 		return S_OK;
+	}
+	STDMETHOD(raw_getComponentType)( IType** ppType ) {
+		return raw_getPointedAtType(ppType);
 	}
 };
 

@@ -149,6 +149,9 @@
 			Name="ヘッダー ファイル"
 			Filter="h;hpp;hxx;hm;inl;inc">
 			<File
+				RelativePath="array.h">
+			</File>
+			<File
 				RelativePath="cleanup.h">
 			</File>
 			<File
@@ -170,6 +173,9 @@
 				RelativePath="resource.h">
 			</File>
 			<File
+				RelativePath="safearray.h">
+			</File>
+			<File
 				RelativePath="stdafx.h">
 			</File>
 			<File
@@ -177,6 +183,9 @@
 			</File>
 			<File
 				RelativePath="unmarshaller.h">
+			</File>
+			<File
+				RelativePath="xducer.h">
 			</File>
 		</Filter>
 		<Filter

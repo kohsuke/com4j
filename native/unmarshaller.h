@@ -5,6 +5,7 @@
 // 
 
 #include "cleanup.h"
+#include "xducer.h"
 
 extern jfieldID com4j_Holder_value;
 
@@ -64,10 +65,7 @@ public:
 	}
 
 	jobject unmarshal( JNIEnv* env ) {
-		if(bstr==NULL)
-			return NULL;
-
-		return env->NewString(bstr,SysStringLen(bstr));
+		return xducer::StringXducer::toJava(env,bstr);
 	}
 };
 
@@ -89,44 +87,33 @@ public:
 	}
 };
 
-class IntXducer {
-public:
-	typedef jobject JavaType;
-	typedef INT32 NativeType;
-	JavaType toJava( JNIEnv* env, NativeType i ) {
-		return env->CallStaticObjectMethod( javaLangInteger, javaLangInteger_valueOf, i );
-	}
-	NativeType fromJava( JNIEnv* env, JavaType i ) {
-		return env->CallIntMethod(i,javaLangNumber_intValue);
-	}
-};
-typedef PrimitiveUnmarshaller<IntXducer>	IntUnmarshaller;
+#define DEFINE_PRIMITIVE_UNMARSHALLER(Name,name) \
+	typedef PrimitiveUnmarshaller<xducer::BoxXducer< \
+		name, \
+		&javaLang##Name##_valueOf, \
+		&javaLangNumber_##name##Value, \
+		JNIEnv::Call##Name##Method> > \
+	##Name##Unmarshaller;
 
-class FloatXducer {
-public:
-	typedef jobject JavaType;
-	typedef float NativeType;
-	JavaType toJava( JNIEnv* env, NativeType i ) {
-		return env->CallStaticObjectMethod( javaLangFloat, javaLangFloat_valueOf, i );
-	}
-	NativeType fromJava( JNIEnv* env, JavaType i ) {
-		return env->CallBooleanMethod(i,javaLangNumber_floatValue);
-	}
-};
-typedef PrimitiveUnmarshaller<FloatXducer>	FloatUnmarshaller;
+DEFINE_PRIMITIVE_UNMARSHALLER(Short,short)
+DEFINE_PRIMITIVE_UNMARSHALLER(Float,float)
+DEFINE_PRIMITIVE_UNMARSHALLER(Double,double)
 
-class DoubleXducer {
-public:
-	typedef jobject JavaType;
-	typedef float NativeType;
-	JavaType toJava( JNIEnv* env, NativeType i ) {
-		return env->CallStaticObjectMethod( javaLangDouble, javaLangDouble_valueOf, i );
-	}
-	NativeType fromJava( JNIEnv* env, JavaType i ) {
-		return env->CallBooleanMethod(i,javaLangNumber_doubleValue);
-	}
-};
-typedef PrimitiveUnmarshaller<DoubleXducer>	DoubleUnmarshaller;
+typedef PrimitiveUnmarshaller<xducer::BoxXducer<
+	long/*32bit*/,
+	&javaLangInteger_valueOf,
+	&javaLangNumber_intValue,
+	JNIEnv::CallIntMethod> >
+IntUnmarshaller;
+
+typedef PrimitiveUnmarshaller<xducer::BoxXducer<
+	INT64,
+	&javaLangLong_valueOf,
+	&javaLangNumber_longValue,
+	JNIEnv::CallLongMethod> >
+LongUnmarshaller;
+
+
 
 class BoolXducer {
 public:
