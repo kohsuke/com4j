@@ -5,6 +5,9 @@
 #include "jstring.h"
 #include "typelib.h"
 #include "safearray.h"
+#include "event_sink.h"
+
+JavaVM* jvm;
 
 JNIEXPORT jobject JNICALL Java_com4j_Native_invoke(JNIEnv* env,
 	jclass __unused,
@@ -31,7 +34,8 @@ JNIEXPORT jobject JNICALL Java_com4j_Native_invoke(JNIEnv* env,
 }
 
 extern "C"
-JNIEXPORT jint JNICALL JVM_OnLoad(JavaVM* jvm, const char* options, void* reserved) {
+JNIEXPORT jint JNICALL JVM_OnLoad(JavaVM* _jvm, const char* options, void* reserved) {
+	jvm = _jvm;
 	return JNI_OK;
 }
 

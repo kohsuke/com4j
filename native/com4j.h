@@ -89,6 +89,7 @@ public:
 VARIANT* convertToVariant( JNIEnv* env, jobject o );
 
 
+extern JavaVM* jvm;
 
 
 struct MyGUID {

@@ -124,6 +124,9 @@
 				RelativePath="java_id.cpp">
 			</File>
 			<File
+				RelativePath="registry.cpp">
+			</File>
+			<File
 				RelativePath="safearray.cpp">
 			</File>
 			<File
@@ -165,6 +168,12 @@
 			</File>
 			<File
 				RelativePath="com4j_Variant.h">
+			</File>
+			<File
+				RelativePath="com4j_tlbimp_Native.h">
+			</File>
+			<File
+				RelativePath="event_sink.h">
 			</File>
 			<File
 				RelativePath="java_id.h">
