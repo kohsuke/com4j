@@ -71,64 +71,30 @@ public:
 
 template < class XDUCER >
 class PrimitiveUnmarshaller : public Unmarshaller {
-	XDUCER xducer;
 	XDUCER::NativeType value;
 public:
 	PrimitiveUnmarshaller( JNIEnv* env, XDUCER::JavaType i ) {
 		value = 0;
 		if(i!=NULL)
-			value = xducer.fromJava(env,i);
+			value = XDUCER::toNative(env,i);
 	}
 	
 	void* addr() { return &value; }
 
 	XDUCER::JavaType unmarshal( JNIEnv* env ) {
-		return xducer.toJava(env,value);
+		return XDUCER::toJava(env,value);
 	}
 };
 
-#define DEFINE_PRIMITIVE_UNMARSHALLER(Name,name) \
-	typedef PrimitiveUnmarshaller<xducer::BoxXducer< \
-		name, \
-		&javaLang##Name##_valueOf, \
-		&javaLangNumber_##name##Value, \
-		JNIEnv::Call##Name##Method> > \
-	##Name##Unmarshaller;
-
-DEFINE_PRIMITIVE_UNMARSHALLER(Short,short)
-DEFINE_PRIMITIVE_UNMARSHALLER(Float,float)
-DEFINE_PRIMITIVE_UNMARSHALLER(Double,double)
-
-typedef PrimitiveUnmarshaller<xducer::BoxXducer<
-	long/*32bit*/,
-	&javaLangInteger_valueOf,
-	&javaLangNumber_intValue,
-	JNIEnv::CallIntMethod> >
-IntUnmarshaller;
-
-typedef PrimitiveUnmarshaller<xducer::BoxXducer<
-	INT64,
-	&javaLangLong_valueOf,
-	&javaLangNumber_longValue,
-	JNIEnv::CallLongMethod> >
-LongUnmarshaller;
+typedef PrimitiveUnmarshaller<xducer::BoxedShortXducer>		ShortUnmarshaller;
+typedef PrimitiveUnmarshaller<xducer::BoxedIntXducer>		IntUnmarshaller;
+typedef PrimitiveUnmarshaller<xducer::BoxedLongXducer>		LongUnmarshaller;
+typedef PrimitiveUnmarshaller<xducer::BoxedFloatXducer>		FloatUnmarshaller;
+typedef PrimitiveUnmarshaller<xducer::BoxedDoubleXducer>	DoubleUnmarshaller;
 
 
 
-class BoolXducer {
-public:
-	typedef jobject JavaType;
-	typedef BOOL NativeType;
-	JavaType toJava( JNIEnv* env, NativeType i ) {
-		return env->CallStaticObjectMethod( javaLangBoolean, javaLangBoolean_valueOf, (i!=0)?JNI_TRUE:JNI_FALSE );
-	}
-	NativeType fromJava( JNIEnv* env, JavaType i ) {
-		jboolean b = env->CallBooleanMethod(i,javaLangBoolean_booleanValue);
-		if(b==0)	return 0;	// false
-		else		return -1;	// true
-	}
-};
-typedef PrimitiveUnmarshaller<BoolXducer>	BoolUnmarshaller;
+typedef PrimitiveUnmarshaller<xducer::BoxedBoolXducer>	BoolUnmarshaller;
 
 
 

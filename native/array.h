@@ -8,8 +8,25 @@
 namespace array {
 
 
-template <class Primitive>
-class Array {};
+template <class Component>
+// for reference types like jobject or jstring. for primitive arrays, see the specializations later.
+class Array {
+public:
+	typedef jobjectArray ARRAY;
+	static ARRAY newArray(JNIEnv* env,jsize len) {
+		return env->NewObjectArray(len,JClass<Component>::clazz,NULL);
+	}
+	static Component* lock(JNIEnv* env,ARRAY a) {
+		int len = env->GetArrayLength(a);
+		Component* buf = new Component[len];
+		for( int i=0; i<len; i++ )
+			buf[i] = static_cast<Component>(env->GetObjectArrayElement(a,i));
+		return buf;
+	}
+	static void unlock(JNIEnv* env,ARRAY a,Component* buf) {
+		delete buf;
+	}
+};
 
 
 
@@ -124,7 +141,6 @@ public:
 		env->ReleaseDoubleArrayElements(a,buf,0);
 	}
 };
-
 
 
 }

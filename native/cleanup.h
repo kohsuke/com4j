@@ -28,6 +28,18 @@ public:
 	}
 };
 
+// deallocate VARIANT by using VariantClear & delete
+class VARIANTCleanUp : public PostAction {
+	VARIANT* pvar;
+public:
+	VARIANTCleanUp( VARIANT* _pvar ) : pvar(_pvar) {}
+	void act( JNIEnv* env ) {
+		VariantClear(pvar);
+		delete pvar;
+		pvar = NULL;
+	}
+};
+
 class SAFEARRAYCleanUp : public PostAction {
 	SAFEARRAY* psa;
 public:

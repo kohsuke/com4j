@@ -8,9 +8,11 @@
 
 	class XDUCER {
 	public:
-		// used to support VARIANT and SAFEARRAY.
-		// specifies the VARTYPE that this XDUCER works with.
-		static const VARTYPE vt = VT_***;
+		typedef ... NativeType;	// the native type
+		typedef ... JavaType;   // the java type
+		
+		static NativeType toNative( JNIEnv* env, JavaType value ) {}
+		static JavaType toJava( JNIEnv* env, JavaType value ) {}
 	}
 */
 
@@ -44,8 +46,38 @@ namespace xducer {
 		static JavaType toJava( JNIEnv* env, NativeType i ) {
 			return env->CallStaticObjectMethod( parseMethod->getClazz(), *parseMethod, i );
 		}
-		static NativeType fromJava( JNIEnv* env, JavaType i ) {
+		static NativeType toNative( JNIEnv* env, JavaType i ) {
 			return (env->*jnifunc)(i,*printMethod);
+		}
+	};
+
+	// java.lang.Boolean <-> BOOL (int)
+	class BoxedBoolXducer {
+	public:
+		typedef jobject JavaType;
+		typedef BOOL NativeType;
+		static JavaType toJava( JNIEnv* env, NativeType i ) {
+			return env->CallStaticObjectMethod( javaLangBoolean, javaLangBoolean_valueOf, (i!=0)?JNI_TRUE:JNI_FALSE );
+		}
+		static NativeType toNative( JNIEnv* env, JavaType i ) {
+			jboolean b = env->CallBooleanMethod(i,javaLangBoolean_booleanValue);
+			if(b==0)	return 0;	// false
+			else		return -1;	// true
+		}
+	};
+
+	// java.lang.Boolean <-> VARIANT_BOOL (short) VARIANT_TRUE/VARIANT_FALSE
+	class BoxedVariantBoolXducer {
+	public:
+		typedef jobject JavaType;
+		typedef VARIANT_BOOL NativeType;
+		static JavaType toJava( JNIEnv* env, NativeType i ) {
+			return env->CallStaticObjectMethod( javaLangBoolean, javaLangBoolean_valueOf, (i!=0)?JNI_TRUE:JNI_FALSE );
+		}
+		static NativeType toNative( JNIEnv* env, JavaType i ) {
+			jboolean b = env->CallBooleanMethod(i,javaLangBoolean_booleanValue);
+			if(b==0)	return VARIANT_FALSE;
+			else		return VARIANT_TRUE;
 		}
 	};
 
@@ -69,5 +101,18 @@ namespace xducer {
 		}
 	};
 
+	typedef BoxXducer<float,&javaLangFloat_valueOf, &javaLangNumber_floatValue, JNIEnv::CallFloatMethod >
+		BoxedFloatXducer;
 
+	typedef BoxXducer<double,&javaLangDouble_valueOf, &javaLangNumber_doubleValue, JNIEnv::CallDoubleMethod >
+		BoxedDoubleXducer;
+
+	typedef BoxXducer<short, &javaLangShort_valueOf, &javaLangNumber_shortValue, JNIEnv::CallShortMethod >
+		BoxedShortXducer;
+
+	typedef BoxXducer< long/*32bit*/, &javaLangInteger_valueOf, &javaLangNumber_intValue, JNIEnv::CallIntMethod>
+		BoxedIntXducer;
+
+	typedef BoxXducer< INT64, &javaLangLong_valueOf, &javaLangNumber_longValue, JNIEnv::CallLongMethod>
+		BoxedLongXducer;
 }

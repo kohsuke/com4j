@@ -6,11 +6,13 @@ namespace safearray {
 	
 
 	template < VARTYPE vt, class XDUCER >
-	class BasicArrayConverter {
+	class BasicArrayXducer {
 	public:
 		typedef array::Array<XDUCER::JavaType> JARRAY;
+		typedef SAFEARRAY* NativeType;
+		typedef jarray JavaType;
 
-		static SAFEARRAY* toNative( JNIEnv* env, jarray javaArray ) {
+		static NativeType toNative( JNIEnv* env, JavaType javaArray ) {
 
 			const int length = env->GetArrayLength(javaArray);
 
@@ -34,7 +36,7 @@ namespace safearray {
 			return psa;
 		}
 
-		static jarray toJava( JNIEnv* env, SAFEARRAY* psa ) {
+		static JavaType toJava( JNIEnv* env, NativeType psa ) {
 			XDUCER::NativeType* pSrc;
 
 			long lbound,ubound;
@@ -59,7 +61,7 @@ namespace safearray {
 
 	// convert between SAFEARRAY and Java primitive array
 	template < VARTYPE vt, class NT, class JT >
-	class PrimitiveArrayConverter : public BasicArrayConverter< vt, xducer::IdentityXducer<NT,JT> > {
+	class PrimitiveArrayXducer : public BasicArrayXducer< vt, xducer::IdentityXducer<NT,JT> > {
 	};
 
 }

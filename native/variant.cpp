@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "com4j.h"
 #include "com4j_variant.h"
+#include "xducer.h"
 
 // used to map two jlongs to the memory image of VARIANT.
 class VARIANT_T : public VARIANT {
@@ -61,4 +62,56 @@ JNIEXPORT jdouble JNICALL Java_com4j_Variant_castToDouble0(JNIEnv* env, jclass, 
 	VariantChangeType( env, &v, VT_R8 );
 	v.writeTo(env,image);
 	return v.dblVal;
+}
+
+
+
+
+
+
+
+
+
+template <VARTYPE vt, class XDUCER>
+void setVariant( JNIEnv* env, jobject o, VARIANT* v ) {
+	v->vt = vt;
+	*reinterpret_cast<XDUCER::NativeType*>(&v->boolVal) = XDUCER::toNative(
+		env, static_cast<XDUCER::JavaType>(o) );
+}
+
+struct SetterEntry {
+	JClassID* cls;
+	void (* setter)(JNIEnv*,jobject,VARIANT*);
+};
+
+static SetterEntry setters[] = {
+	{ &javaLangBoolean,		setVariant<VT_BOOL,	xducer::BoxedVariantBoolXducer> },
+	{ &javaLangString,		setVariant<VT_BSTR,	xducer::StringXducer> },
+	{ &javaLangFloat,		setVariant<VT_R4,	xducer::BoxedFloatXducer> },
+	{ &javaLangDouble,		setVariant<VT_R8,	xducer::BoxedDoubleXducer> },
+	{ &javaLangShort,		setVariant<VT_I2,	xducer::BoxedShortXducer> },
+	{ &javaLangInteger,		setVariant<VT_I4,	xducer::BoxedIntXducer> },
+	{ &javaLangLong,		setVariant<VT_I8,	xducer::BoxedLongXducer> },
+	{ NULL,					NULL }
+};
+
+// convert a java object to a VARIANT based on the actual type of the Java object.
+// the caller should call VariantClear to clean up the data, then delete it.
+//
+// return NULL if fails to convert
+VARIANT* convertToVariant( JNIEnv* env, jobject o ) {
+	VARIANT* v = new VARIANT;
+	VariantInit(v);
+
+	jclass cls = env->GetObjectClass(o);
+	
+	for( SetterEntry* p = setters; p->cls!=NULL; p++ ) {
+		if( env->IsAssignableFrom( cls, *(p->cls) ) ) {
+			(p->setter)(env,o,v);
+			return v;
+		}
+	}
+
+	delete v;
+	return NULL;
 }

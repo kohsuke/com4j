@@ -43,6 +43,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 		float f;
 		void*	pv;
 		SAFEARRAY* psa;
+		VARIANT* pvar;
 		VARIANT_BOOL vbool;
 //	};
 
@@ -159,36 +160,45 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				_asm push pv;
 				break;
 
+			case cvVARIANT_byRef:
+				pvar = convertToVariant(env,arg);
+				add(new VARIANTCleanUp(pvar));
+				_asm push pvar;
+				break;
+
 			case cvSAFEARRAY:
 				psa = NULL;
 				switch(convs[i].minor) {
 				case cvsaBoolean:
-					psa = safearray::PrimitiveArrayConverter<VT_BOOL,VARIANT_BOOL,jboolean>::toNative(env,(jarray)arg);
+					psa = safearray::PrimitiveArrayXducer<VT_BOOL,VARIANT_BOOL,jboolean>::toNative(env,(jarray)arg);
 					break;
 				case cvsaByte:
-					psa = safearray::PrimitiveArrayConverter<VT_UI1,byte,jbyte>::toNative(env,(jarray)arg);
+					psa = safearray::PrimitiveArrayXducer<VT_UI1,byte,jbyte>::toNative(env,(jarray)arg);
 					break;
 				case cvsaChar:
-					psa = safearray::PrimitiveArrayConverter<VT_UI2,unsigned short,jchar>::toNative(env,(jarray)arg);
+					psa = safearray::PrimitiveArrayXducer<VT_UI2,unsigned short,jchar>::toNative(env,(jarray)arg);
 					break;
 				case cvsaDouble:
-					psa = safearray::PrimitiveArrayConverter<VT_R8,double,jdouble>::toNative(env,(jarray)arg);
+					psa = safearray::PrimitiveArrayXducer<VT_R8,double,jdouble>::toNative(env,(jarray)arg);
 					break;
 				case cvsaFloat:
-					psa = safearray::PrimitiveArrayConverter<VT_R4,float,jfloat>::toNative(env,(jarray)arg);
+					psa = safearray::PrimitiveArrayXducer<VT_R4,float,jfloat>::toNative(env,(jarray)arg);
 					break;
 				case cvsaInt:
-					psa = safearray::PrimitiveArrayConverter<VT_I4,INT32,jint>::toNative(env,(jarray)arg);
+					psa = safearray::PrimitiveArrayXducer<VT_I4,INT32,jint>::toNative(env,(jarray)arg);
 					break;
 				case cvsaLong:
-					psa = safearray::PrimitiveArrayConverter<VT_I8,INT64,jlong>::toNative(env,(jarray)arg);
+					psa = safearray::PrimitiveArrayXducer<VT_I8,INT64,jlong>::toNative(env,(jarray)arg);
 					break;
 				case cvsaShort:
-					psa = safearray::PrimitiveArrayConverter<VT_I2,short,jshort>::toNative(env,(jarray)arg);
+					psa = safearray::PrimitiveArrayXducer<VT_I2,short,jshort>::toNative(env,(jarray)arg);
 					break;
 				case cvsaString:
-					psa = safearray::BasicArrayConverter<VT_BSTR,xducer::StringXducer>::toNative(env,(jarray)arg);
+					psa = safearray::BasicArrayXducer<VT_BSTR,xducer::StringXducer>::toNative(env,(jarray)arg);
 					break;
+//				case cvsaVariant:
+					// to convert each item, we need to find out each type individually.
+					// if we have that functionality, there's no need for receiving convspec.minor!
 				}
 				_ASSERT(psa!=NULL);
 				add( new SAFEARRAYCleanUp(psa) );

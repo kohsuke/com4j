@@ -123,6 +123,8 @@ extern JClassID javaLangBoolean;
 extern JMethodID javaLangBoolean_booleanValue;
 extern JStaticMethodID javaLangBoolean_valueOf;
 
+extern JClassID javaLangString;
+
 // reference to org.kohsuke.com4j.comexception
 extern JClassID comexception;
 extern JMethodID comexception_new;

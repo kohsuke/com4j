@@ -26,6 +26,7 @@ enum Conv {
 	cvComObject = 300,
 	cvComObject_byRef = 300|BYREF,
 	cvGUID = 301,
+	cvVARIANT_byRef = 302|BYREF,
 
 	cvDATE = 400,
 
@@ -99,6 +100,14 @@ public:
 
 	BSTR toBSTR( jstring s );
 };
+
+
+// convert a java object to a VARIANT based on the actual type of the Java object.
+// the caller should call VariantClear to clean up the data, then delete it.
+//
+// return NULL if fails to convert
+VARIANT* convertToVariant( JNIEnv* env, jobject o );
+
 
 
 
