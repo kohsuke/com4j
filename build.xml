@@ -28,7 +28,11 @@
   <target name="dist" depends="clean,jar,javadoc">
     <delete dir="dist"/>
     <mkdir dir="dist"/>
+    
+    <ant dir="native" target="release"/>
+    
     <copy todir="dist" file="../www/LICENSE.txt"/>
+    <copy todir="dist" file="native/Release/com4j.dll"/>
     <copy todir="dist" file="runtime/build/com4j.jar"/>
     <copy todir="dist" file="runtime/build/com4j-src.zip"/>
     <copy todir="dist" file="tlbimp/build/tlbimp.jar"/>
@@ -45,5 +49,6 @@
   <target name="-exec-target">
     <ant dir="runtime" target="${target}"/>
     <ant dir="tlbimp" target="${target}"/>
+    <ant dir="native" target="${target}"/>
   </target>
 </project>
