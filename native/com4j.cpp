@@ -126,5 +126,20 @@ JNIEXPORT jint JNICALL Java_com4j_Native_loadTypeLibrary(
 		return 0;
 	}
 	
-	return reinterpret_cast<jint>(typelib::CTypeLib::create(pLib));
+	return reinterpret_cast<jint>(typelib::CTypeLib::get(pLib));
+}
+
+JNIEXPORT void JNICALL Java_com4j_Native_coInitialize(
+	JNIEnv* env, jclass _) {
+
+	HRESULT hr = CoInitialize(NULL);
+	if(FAILED(hr)) {
+		error(env,hr,"CoInitialize failed");
+	}	
+}
+
+JNIEXPORT void JNICALL Java_com4j_Native_coUninitialize(
+	JNIEnv* env, jclass _) {
+
+	CoUninitialize();
 }

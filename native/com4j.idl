@@ -55,7 +55,7 @@ library com4j
 		HRESULT getCount([out,retval] int* pCount);
 		
 		[helpstring("gets the GUID of this type library")]
-		HRESULT getGUID([out,retval] GUID* pValue);
+		HRESULT getLibid([out,retval] GUID* pValue);
 		
 		HRESULT getName([out,retval] BSTR* pName);
 
@@ -122,6 +122,7 @@ library com4j
 		HRESULT getName([out,retval] BSTR* pName);
 		HRESULT getHelpString([out,retval] BSTR* pHelpString);
 		HRESULT getKind([out,retval] TypeKind* kind);
+		HRESULT getParent([out,retval] ITypeLibrary** ppParent );
 	};
 
 	[

@@ -6,6 +6,7 @@ namespace typelib {
 
 class CTypeLib;
 class CTypeDecl;
+class CTypeInfo;
 class CMethod;
 
 _COM_SMARTPTR_TYPEDEF(CTypeLib, __uuidof(ITypeLibrary));
@@ -487,6 +488,8 @@ public:
 		*reinterpret_cast<TYPEKIND*>(out) = m_pAttr->typekind;
 		return S_OK;
 	}
+	STDMETHOD(raw_getParent)(ITypeLibrary** ppParent );
+
 	STDMETHOD(raw_getGUID)( GUID* out ) {
 		*out = m_pAttr->guid;
 		return S_OK;
@@ -605,12 +608,18 @@ class ATL_NO_VTABLE CTypeLib :
 public:
 	ITypeLibPtr	m_pTypeLib;
 	TLIBATTR* m_pAttr;
-	// child objects.
+	// child CTypeDecls inside this library.
 	typedef map<ITypeInfo*,CTypeDecl*> childrenT;
 	childrenT children;
 
+	// currently active CTypeLibs.
+	typedef map<ITypeLib*,CTypeLib*> LibMap;
+	static LibMap libraries;
+
 	CTypeLib() {}
 	~CTypeLib() {
+		int cnt = libraries.erase(m_pTypeLib);
+		_ASSERT(cnt==1);
 		m_pTypeLib->ReleaseTLibAttr(m_pAttr);
 		m_pTypeLib=NULL;
 	}
@@ -618,14 +627,38 @@ public:
 	void init( ITypeLib* pTypeLib ) {
 		m_pTypeLib = pTypeLib;
 		pTypeLib->GetLibAttr(&m_pAttr);
+		_ASSERT(libraries.find(m_pTypeLib)==libraries.end());
+		libraries[m_pTypeLib] = this;
 	}
 
-	static CComObject<CTypeLib>* create( ITypeLib* pTypeLib ) {
-		CComObject<CTypeLib>* pObj = NULL;
-		CComObject<CTypeLib>::CreateInstance(&pObj);
-		pObj->AddRef();
-		pObj->init(pTypeLib);
-		return pObj;
+	static CTypeLib* get( ITypeLib* pTypeLib ) {
+		LibMap::const_iterator itr = libraries.find(pTypeLib);
+		if(itr==libraries.end()) {
+			// create a new one
+			CComObject<CTypeLib>* pLib = NULL;
+			CComObject<CTypeLib>::CreateInstance(&pLib);
+			pLib->AddRef();
+			pLib->init(pTypeLib);
+			return pLib;
+		} else {
+			// get the existing one
+			CTypeLib* pLib = itr->second;
+			pLib->AddRef();
+			return pLib;
+		}
+	}
+
+	CTypeDecl* getChild( ITypeInfo* pType ) {
+		childrenT::iterator itr = children.find(pType);
+		if(itr!=children.end()) {
+			// reuse
+			CTypeDecl* r = itr->second;
+			r->AddRef();
+			return r;
+		} else {
+			// create a new one
+			return CTypeDecl::create( this, pType );
+		}
 	}
 
 // DECLARE_REGISTRY_RESOURCEID(...)
@@ -651,7 +684,7 @@ public:
 		return m_pTypeLib->GetDocumentation( -1, NULL, pHelpString, NULL, NULL );
 	}
 
-	STDMETHOD(raw_getGUID)(GUID* pGuid) {
+	STDMETHOD(raw_getLibid)(GUID* pGuid) {
 		*pGuid = m_pAttr->guid;
 		return S_OK;
 	}
@@ -661,15 +694,7 @@ public:
 		hr = m_pTypeLib->GetTypeInfo(nIndex,&p);
 		if(FAILED(hr))		return hr;
 
-		childrenT::const_iterator itr = children.find(p);
-		CTypeDecl* pT;
-		if( itr!=children.end() ) {
-			pT = (*itr).second;
-			pT->AddRef();
-		} else {
-			pT = CTypeDecl::create(this,p);
-		}
-		*ppType = static_cast<IInterfaceDecl*>(pT);
+		*ppType = static_cast<IInterfaceDecl*>(getChild(p));
 		return hr;
 	}
 };

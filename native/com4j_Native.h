@@ -55,6 +55,22 @@ JNIEXPORT jint JNICALL Java_com4j_Native_queryInterface
 JNIEXPORT jint JNICALL Java_com4j_Native_loadTypeLibrary
   (JNIEnv *, jclass, jstring);
 
+/*
+ * Class:     com4j_Native
+ * Method:    coInitialize
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_com4j_Native_coInitialize
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     com4j_Native
+ * Method:    coUninitialize
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_com4j_Native_coUninitialize
+  (JNIEnv *, jclass);
+
 #ifdef __cplusplus
 }
 #endif

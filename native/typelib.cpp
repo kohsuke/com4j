@@ -8,22 +8,13 @@ ITypeDecl* getRef( CTypeDecl* pTypeInfo, HREFTYPE href ) {
 	if(FAILED(pTypeInfo->m_pType->GetRefTypeInfo( href, &pRefType )))
 		return NULL;
 
-	ITypeLibPtr unused;
+	ITypeLibPtr pLib;
 	UINT index;
-	if(FAILED(pRefType->GetContainingTypeLib(&unused,&index)))
+	if(FAILED(pRefType->GetContainingTypeLib(&pLib,&index)))
 		return NULL;
 	
 	// if we already have CTypeDecl for this pRefType, return it.
-	CTypeLib* pLib = pTypeInfo->m_pParent;
-	CTypeLib::childrenT::iterator itr = pLib->children.find(pRefType);
-	if(itr!=pLib->children.end()) {
-		// reuse
-		CTypeDecl* r = (*itr).second;
-		r->AddRef();
-		return static_cast<IInterfaceDecl*>(r);
-	}
-
-	return static_cast<IInterfaceDecl*>( CTypeDecl::create( pLib, pRefType ) );
+	return static_cast<IInterfaceDecl*>(CTypeLib::get(pLib)->getChild(pRefType));
 }
 
 IType* createType( CTypeDecl* containingType, TYPEDESC& t ) {
@@ -57,6 +48,7 @@ CPrimitiveTypeImpl vti2(VT_I2,L"short");
 CPrimitiveTypeImpl vti4(VT_I4,L"int");
 CPrimitiveTypeImpl vtr4(VT_R4,L"float");
 CPrimitiveTypeImpl vtr8(VT_R8,L"double");
+CPrimitiveTypeImpl vtcy(VT_CY,L"Currency");
 CPrimitiveTypeImpl vtbstr(VT_BSTR,L"BSTR");
 CPrimitiveTypeImpl vtlpstr(VT_LPSTR,L"LPSTR");
 CPrimitiveTypeImpl vtlpwstr(VT_LPWSTR,L"LPWSTR");
@@ -65,6 +57,8 @@ CPrimitiveTypeImpl vtvoid(VT_VOID,L"void");
 CPrimitiveTypeImpl vtui1(VT_UI1,L"byte");
 CPrimitiveTypeImpl vtui2(VT_UI2,L"ushort");
 CPrimitiveTypeImpl vtui4(VT_UI4,L"uint");
+CPrimitiveTypeImpl vti8(VT_I8,L"long");
+CPrimitiveTypeImpl vtui8(VT_UI8,L"ulong");
 CPrimitiveTypeImpl vtint(VT_INT,L"int");
 CPrimitiveTypeImpl vtuint(VT_UINT,L"uint");
 CPrimitiveTypeImpl vtdispatch(VT_DISPATCH,L"(IDISPATCH)");
@@ -72,6 +66,8 @@ CPrimitiveTypeImpl vtunknown(VT_UNKNOWN,L"(IUNKNOWN)");
 CPrimitiveTypeImpl vtvariant(VT_VARIANT,L"Variant");
 CPrimitiveTypeImpl vtdate(VT_DATE,L"Date");
 CPrimitiveTypeImpl vthresult(VT_HRESULT,L"HRESULT");
+
+CTypeLib::LibMap CTypeLib::libraries;
 
 
 CMethod::~CMethod() {
@@ -152,6 +148,12 @@ void CTypeDecl::init( CTypeLib* pParent, ITypeInfo* pType ) {
 	// register this to the parent
 	_ASSERT( pParent->children.find(pType)==pParent->children.end() );
 	pParent->children[pType] = this;
+}
+
+STDMETHODIMP CTypeDecl::raw_getParent(ITypeLibrary** ppParent ) {
+	m_pParent->AddRef();
+	*ppParent = m_pParent;
+	return S_OK;
 }
 
 
