@@ -3,6 +3,10 @@ package com4j;
 /**
  * Signals a failure in the COM method invocation.
  *
+ * <p>
+ * Calling a wrapped COM method throws this exception
+ * when the underlying COM method returns a failure HRESULT code.
+ *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
 public class ComException extends RuntimeException {

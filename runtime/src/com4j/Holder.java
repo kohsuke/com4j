@@ -8,9 +8,15 @@ package com4j;
 public class Holder<T> {
     public T value;
 
+    /**
+     * Initializes {@link #value} to <tt>null</tt>.
+     */
     public Holder() {
     }
     
+    /**
+     * Initializes {@link #value} by the given value.
+     */
     public Holder(T value) {
         this.value = value;
     }

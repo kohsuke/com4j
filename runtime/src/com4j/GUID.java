@@ -3,7 +3,7 @@ package com4j;
 
 
 /**
- * Represents 128-bit GUID.
+ * Immutable representation of 128-bit COM GUID.
  *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
@@ -20,7 +20,7 @@ public final class GUID {
     }
 
     /**
-     * Parses the string representation "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}".
+     * Parses the string representation "<tt>{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}</tt>".
      */
     public GUID( String str ) {
         if(str.length()!=32+6)
@@ -45,6 +45,9 @@ public final class GUID {
         return Long.parseLong(s.substring(idx,idx+len),16);
     }
 
+    /**
+     * Returns true if two {@link GUID} objects have the same bit representation.
+     */
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof GUID)) return false;
@@ -64,6 +67,9 @@ public final class GUID {
         return result;
     }
 
+    /**
+     * Returns the GUID in the "<tt>{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}</tt>" format.
+     */
     public String toString() {
         StringBuffer buf = new StringBuffer(38);
         buf.append('{');

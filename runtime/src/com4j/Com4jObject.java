@@ -3,11 +3,20 @@ package com4j;
 /**
  * Root of all the com4j interfaces.
  *
+ * <p>
+ * Java interfaces mapped from COM interfaces always derive from this
+ * interface directly/indirectly. This interface provides methods
+ * that are common to all the COM interfaces.
+ *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
 public interface Com4jObject {
     /**
      * Tests the identity of two COM objects.
+     *
+     * <p>
+     * This consists of doing <tt>IUnknown::QueryInterface</tt> on
+     * two interfaces and test the bit image of the resulting <tt>IUnknown*</tt>.
      *
      * <p>
      * If one COM object implements two interfaces, in Java

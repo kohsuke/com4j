@@ -6,8 +6,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Designates how a parameter should be marshalled
+ * Controls how a Java parameter should be marshalled
  * to a native type.
+ *
+ * <p>
+ * This annotation is used on parameters of wrapped COM methods
+ * to control the conversion to the native types.
  *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */

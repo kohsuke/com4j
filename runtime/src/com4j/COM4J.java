@@ -4,9 +4,15 @@ import java.io.File;
 import java.lang.reflect.Proxy;
 
 /**
+ * The root of the COM4J library.
+ *
+ * <p>
+ * Provides various global services that don't fit into the rest of classes.
+ *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
-public class COM4J {
+public abstract class COM4J {
+    private COM4J() {} // no instanciation allowed
 
     public static<T extends Com4jObject>
     T createInstance( Class<T> primaryInterface, GUID guid ) {
