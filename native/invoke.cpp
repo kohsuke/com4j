@@ -141,8 +141,6 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				switch(retConv) {
 				case cvBSTR:
 					retUnm = new BSTRUnmarshaller(NULL);
-					pv = retUnm->addr();
-					_asm push pv;
 					break;
 				
 				case cvHRESULT:
@@ -151,19 +149,24 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 
 				case cvComObject:
 					retUnm = new ComObjectUnmarshaller();
-					pv = retUnm->addr();
-					_asm push pv;
 					break;
 
 				case cvINT32:
 					retUnm = new PrimitiveUnmarshaller<IntXducer>(env,NULL);
-					pv = retUnm->addr();
-					_asm push pv;
+					break;
+
+				case cvGUID:
+					retUnm = new GUIDUnmarshaller();
 					break;
 
 				default:
 					error(env,"unexpected conversion type");
 					return NULL;
+				}
+
+				if(retUnm!=NULL) {
+					pv = retUnm->addr();
+					_asm push pv;
 				}
 			}
 		}

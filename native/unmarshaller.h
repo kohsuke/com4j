@@ -120,3 +120,19 @@ public:
 		return env->NewObject( javaLangInteger, javaLangInteger_new, reinterpret_cast<jint>(pv) );
 	}
 };
+
+
+// unmarshals a GUID into 2-length long array
+class GUIDUnmarshaller : public Unmarshaller {
+	GUID guid;
+public:
+	virtual jobject unmarshal( JNIEnv* env ) {
+		jlongArray r = env->NewLongArray(2);
+		_ASSERT(sizeof(GUID)==sizeof(jlong)*2);
+		env->SetLongArrayRegion(r,0,2, reinterpret_cast<jlong*>(&guid) );
+		return r;
+	}
+	virtual void* addr() {
+		return &guid;
+	}
+};
