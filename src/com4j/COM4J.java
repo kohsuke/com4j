@@ -65,7 +65,6 @@ public class COM4J {
     }
 
     static {
-        System.out.println("loading the native code");
         System.loadLibrary("com4j");
     }
 }
