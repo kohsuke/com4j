@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<project name="samples" default="dist">
+  
+  <target name="clean">
+    <antcall target="-exec-target">
+      <param name="target" value="clean"/>
+    </antcall>
+  </target>
+  
+  <target name="compile">
+    <antcall target="-exec-target">
+      <param name="target" value="compile"/>
+    </antcall>
+  </target>
+  
+  <target name="run">
+    <antcall target="-exec-target">
+      <param name="target" value="run"/>
+    </antcall>
+  </target>
+  
+  <target name="-exec-target">
+    <ant dir="jnlp" target="${target}"/>
+    <ant dir="speech" target="${target}"/>
+    <ant dir="wsh" target="${target}"/>
+    <ant dir="wmi" target="${target}"/>
+    <ant dir="iTunes" target="${target}"/>
+  </target>
+</project>

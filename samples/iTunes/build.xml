@@ -14,9 +14,9 @@
   
   <target name="tlbimp">
     <mkdir dir="build/src"/>
-    <!-- compile wbemdisp.tlb -->
-    <tlbimp libid="565783C6-CB41-11D1-8B02-00600806D9B6"
-      destdir="build/src" package="wmi" />
+    <!-- compile iTunes.exe -->
+    <tlbimp libid="9E93C96F-CF0D-43F6-8BA8-B807A3370712"
+      destdir="build/src" package="iTunes.def" />
   </target>
   
   <target name="compile" depends="tlbimp">
@@ -32,7 +32,7 @@
   </target>
   
   <target name="run" depends="compile">
-    <java classname="wmi.Main" fork="true">
+    <java classname="iTunes.Main" fork="true">
       <classpath>
         <path refid="com4j"/>
       </classpath>
