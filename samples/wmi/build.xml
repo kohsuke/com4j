@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<project name="wsh" default="run" basedir=".">
+<project name="wmi" default="run" basedir=".">
   
   <path id="com4j">
     <fileset dir="../.." includes="*.jar"/>
@@ -14,9 +14,9 @@
   
   <target name="tlbimp">
     <mkdir dir="build/src"/>
-    <!-- compile wshom.ocx -->
-    <tlbimp libid="F935DC20-1CF0-11D0-ADB9-00C04FD58A0B"
-      destdir="build/src" package="wsh" />
+    <!-- compile wbemdisp.tlb -->
+    <tlbimp libid="565783C6-CB41-11D1-8B02-00600806D9B6"
+      destdir="build/src" package="wmi" />
   </target>
   
   <target name="compile" depends="tlbimp">
@@ -33,7 +33,6 @@
   
   <target name="run" depends="compile">
     <java classname="Main" fork="true">
-      <arg value="c:/windows/system32/wshom.ocx"/>
       <classpath>
         <path refid="com4j"/>
       </classpath>

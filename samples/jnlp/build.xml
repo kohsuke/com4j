@@ -4,10 +4,9 @@
   <path id="com4j">
     <fileset dir="../.." includes="*.jar"/>
     <pathelement location="build/classes"/>
-    <pathelement path="${java.class.path}"/><!-- this line is just to allow the sample inside the workspace -->
   </path>
   
-  <taskdef resource="/com4j/tlbimp/ant.properties">
+  <taskdef resource="com4j/tlbimp/ant.properties">
     <classpath refid="com4j" />
   </taskdef>
   
