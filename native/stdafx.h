@@ -14,3 +14,11 @@
 #include <atlbase.h>
 extern CComModule _Module;
 #include <atlcom.h>
+
+#include <map>
+using namespace std;
+
+// smart pointer definitions
+#include <comdef.h>
+_COM_SMARTPTR_TYPEDEF(ITypeInfo, __uuidof(ITypeInfo));
+_COM_SMARTPTR_TYPEDEF(ITypeLib, __uuidof(ITypeLib));

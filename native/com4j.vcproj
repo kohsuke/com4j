@@ -33,13 +33,15 @@
 				Name="VCLinkerTool"
 				OutputFile="$(OutDir)/com4j.dll"
 				LinkIncremental="2"
+				TypeLibraryFile=""
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/com4j.pdb"
 				SubSystem="2"
 				ImportLibrary="$(OutDir)/com4j.lib"
 				TargetMachine="1"/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCMIDLTool"
+				TypeLibraryName="$(ProjectName).tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -78,6 +80,7 @@
 				Name="VCLinkerTool"
 				OutputFile="$(OutDir)/com4j.dll"
 				LinkIncremental="1"
+				TypeLibraryFile="$(IntDir)/$(ProjectName).tlb"
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -85,7 +88,8 @@
 				ImportLibrary="$(OutDir)/com4j.lib"
 				TargetMachine="1"/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCMIDLTool"
+				TypeLibraryName="$(ProjectName).tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -154,6 +158,9 @@
 				RelativePath="jstring.h">
 			</File>
 			<File
+				RelativePath="resource.h">
+			</File>
+			<File
 				RelativePath="stdafx.h">
 			</File>
 			<File
@@ -166,7 +173,13 @@
 		<Filter
 			Name="リソース ファイル"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
+			<File
+				RelativePath="com4j.rc">
+			</File>
 		</Filter>
+		<File
+			RelativePath="com4j.tlb">
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

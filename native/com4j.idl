@@ -10,81 +10,130 @@
 import "oaidl.idl";
 import "ocidl.idl";
 
-interface IWType;
-interface IWMethod;
-
-typedef enum {
-    TypeKind_ENUM	= 0,
-	TypeKind_RECORD	= 1,
-	TypeKind_MODULE	= 2,
-	TypeKind_INTERFACE	= 3,
-	TypeKind_DISPATCH	= 4,
-	TypeKind_COCLASS	= 5,
-	TypeKind_ALIAS	= 6,
-	TypeKind_UNION	= 7,
-	TypeKind_MAX	= 8
-} TypeKind;
 
 [
-	object,
-	uuid(2CC69AC1-D228-401b-83D9-7A7C42E5DBD9),
-	helpstring("Information about a type library"),
-	pointer_default(unique)
+	uuid(AEDD2B06-81EF-499d-A9D6-E32B3188B61A),
+	version(1.0),
+	helpstring("com4j type library")
 ]
-interface IWTypeLib : IUnknown
+library com4j
 {
-	[helpstring("gets the number of types in this library")]
-	HRESULT getCount([out,retval] int* pCount);
-	
-	[helpstring("gets the GUID of this type library")]
-	HRESULT getGUID([out,retval] GUID* pValue);
-	
-	HRESULT getName([out,retval] BSTR* pName);
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
 
-	HRESULT getHelpString([out,retval] BSTR* pHelpString);
 
-	[helpstring("gets the type in this library")]
-	HRESULT getType(int nIndex, [out, retval] IWType** ppType);
-};
+	interface IType;
+	interface IWTypeDecl;
+	interface IWMethod;
 
-[
-	object,
-	uuid(AF7CC95D-EC5C-4904-B2ED-E1E8838A4377),
-	helpstring("Information about a type"),
-	pointer_default(unique)
-]
-interface IWType : IUnknown
-{
-	HRESULT getName([out,retval] BSTR* pName);
-	HRESULT getHelpString([out,retval] BSTR* pHelpString);
-	HRESULT getKind([out,retval] TypeKind* kind);
-};
+	typedef enum {
+		TypeKind_ENUM	= 0,
+		TypeKind_RECORD	= 1,
+		TypeKind_MODULE	= 2,
+		TypeKind_INTERFACE	= 3,
+		TypeKind_DISPATCH	= 4,
+		TypeKind_COCLASS	= 5,
+		TypeKind_ALIAS	= 6,
+		TypeKind_UNION	= 7,
+		TypeKind_MAX	= 8
+	} TypeKind;
 
-[
-	object,
-	uuid(3BDCCFBF-B493-4d54-B1D0-4DE2FB1AFC78),
-	helpstring("Dispinterface. IWType can be casted to this when its kind is TypeKind_DISPATCH"),
-	pointer_default(unique)
-]
-interface IWDispInterface : IWType
-{
-	[helpstring("gets the GUID of this type")]
-	HRESULT getGUID([out,retval] GUID* pValue);
+	[
+		object,
+		uuid(2CC69AC1-D228-401b-83D9-7A7C42E5DBD9),
+		helpstring("Information about a type library"),
+		pointer_default(unique)
+	]
+	interface IWTypeLib : IUnknown
+	{
+		[helpstring("gets the number of types in this library")]
+		HRESULT getCount([out,retval] int* pCount);
+		
+		[helpstring("gets the GUID of this type library")]
+		HRESULT getGUID([out,retval] GUID* pValue);
+		
+		HRESULT getName([out,retval] BSTR* pName);
 
-	[helpstring("number of methods on this interface")]
-	HRESULT countMethods([out,retval] int* pValue);
+		HRESULT getHelpString([out,retval] BSTR* pHelpString);
 
-	[helpstring("method")]
-	HRESULT getMethod([in] int index, [out,retval] IWMethod** ppMethod );
-};
+		[helpstring("gets the type in this library")]
+		HRESULT getTypeDecl(int nIndex, [out, retval] IWTypeDecl** ppType);
+	};
 
-[
-	object,
-	uuid(7BF089F3-5C19-45f8-B95A-90D762580914),
-	helpstring("Method on a COM interface"),
-	pointer_default(unique)
-]
-interface IWMethod : IUnknown
-{
-	HRESULT getName([out,retval] BSTR* pName);
+	[
+		object,
+		uuid(ED0810B4-3662-4fe7-8FA7-446C465B2847),
+		helpstring("type"),
+		pointer_default(unique)
+	]
+	interface IType : IUnknown {
+	};
+
+	[
+		object,
+		uuid(EB8F889F-8944-4faf-80F2-6C2457C224C4),
+		helpstring("pointer type"),
+		pointer_default(unique)
+	]
+	interface IPtrType : IType {
+		[helpstring("'T' of 'T*'")]
+		HRESULT getPointedAtType( [out,retval] IType** ppType );
+	};
+
+
+	[
+		object,
+		uuid(BA8E1931-1249-4863-A436-332FA88F645B),
+		helpstring("primitive data type. singletons"),
+		pointer_default(unique)
+	]
+	interface IPrimitiveType : IType {
+		[helpstring("human readable name of this primitive type")]
+		HRESULT getName( [out,retval] BSTR* pName);
+	};
+
+	[
+		object,
+		uuid(AF7CC95D-EC5C-4904-B2ED-E1E8838A4377),
+		helpstring("type declared in this type library"),
+		pointer_default(unique)
+	]
+	interface IWTypeDecl : IType
+	{
+		HRESULT getName([out,retval] BSTR* pName);
+		HRESULT getHelpString([out,retval] BSTR* pHelpString);
+		HRESULT getKind([out,retval] TypeKind* kind);
+	};
+
+	[
+		object,
+		uuid(3BDCCFBF-B493-4d54-B1D0-4DE2FB1AFC78),
+		helpstring("Dispinterface. IWType can be casted to this when its kind is TypeKind_DISPATCH"),
+		pointer_default(unique)
+	]
+	interface IWDispInterfaceDecl : IWTypeDecl
+	{
+		[helpstring("gets the GUID of this type")]
+		HRESULT getGUID([out,retval] GUID* pValue);
+
+		[helpstring("number of methods on this interface")]
+		HRESULT countMethods([out,retval] int* pValue);
+
+		[helpstring("method")]
+		HRESULT getMethod([in] int index, [out,retval] IWMethod** ppMethod );
+	};
+
+	[
+		object,
+		uuid(7BF089F3-5C19-45f8-B95A-90D762580914),
+		helpstring("Method on a COM interface"),
+		pointer_default(unique)
+	]
+	interface IWMethod : IUnknown
+	{
+		HRESULT getName([out,retval] BSTR* pName);
+		HRESULT getKind([out,retval] INVOKEKIND* pKind);
+		HRESULT getHelpString([out,retval] BSTR* pHelpString);
+		HRESULT getReturnType([out,retval] IType** ppType);
+	};
 };
