@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<!--
+  The purpose of the demo is to show how you can use
+  Java Web Start to deploy your applications that use
+  com4j.
+-->
+<jnlp spec="1.0+" 
+    codebase="http://javadesktop.org/jdic/demo/FileExplorer"
+    href="com4j-jnlp-demo.jnlp">
+    <information>
+        <title>com4j WebStart demo</title>
+        <vendor>https://com4j.dev.java.net/</vendor>
+        <description>How to launch an application that use com4j with Web Start</description> 
+        <description kind="short">How to launch an application that use com4j with Web Start</description> 
+        <offline-allowed/> 
+    </information> 
+    <security> 
+        <all-permissions/>
+    </security> 
+    <resources>
+        <j2se version="1.5+"/>
+        <jar href="com4j-jnlp-demo.jar"/> 
+        <jar href="com4j.jar"/> 
+    </resources>
+    <resources os="Windows">
+        <nativelib href="com4j.dll.jar"/>
+    </resource>
+    <application-desc main-class="SwingDemo"/>
+</jnlp>
+

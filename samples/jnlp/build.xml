@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<project name="jnlp" default="run" basedir=".">
+  
+  <path id="com4j">
+    <fileset dir="../.." includes="*.jar"/>
+    <pathelement location="build/classes"/>
+    <pathelement path="${java.class.path}"/><!-- this line is just to allow the sample inside the workspace -->
+  </path>
+  
+  <taskdef name="tlbimp" classname="com4j.tlbimp.AntTaskImpl">
+    <classpath refid="com4j" />
+  </taskdef>
+  
+  
+  <target name="tlbimp">
+    <mkdir dir="build/src"/>
+    <tlbimp source="c:/windows/system32/wshom.ocx"
+      destdir="build/src" package="wsh" />
+  </target>
+  
+  <target name="compile" depends="tlbimp">
+    <mkdir dir="build/classes"/>
+    <javac srcdir="build/src" destdir="build/classes"
+           debug="on">
+      <classpath refid="com4j" />
+    </javac>
+    <javac srcdir="src" destdir="build/classes"
+           debug="on">
+      <classpath refid="com4j" />
+    </javac>
+  </target>
+  
+  <target name="jar" depends="compile">
+    <!-- prepare application jar -->
+    <jar file="build/com4j-jnlp-demo.jar">
+      <fileset dir="build/classes" />
+      <manifest>
+        <attribute name="Main-Class" value="SwingDemo" />
+        <attribute name="Class-Path" value="com4j.jar" />
+      </manifest>
+    </jar>
+    
+    <copy tofile="build/com4j.jar" file="../../runtime/build/com4j.jar"/>
+    <jar file="build/com4j.dll.jar">
+      <fileset dir="../../native/Release" includes="com4j.dll" />
+    </jar>
+    
+    <!-- sign jars -->
+    <signjar jar="build/com4j-jnlp-demo.jar"
+         storepass="keystore"
+         alias="mykey"
+         keystore="com4j.keystore"
+         keypass="keystore" />
+    <signjar jar="build/com4j.dll.jar"
+         storepass="keystore"
+         alias="mykey"
+         keystore="com4j.keystore"
+         keypass="keystore" />
+    
+    <signjar jar="build/com4j.jar"
+         storepass="keystore"
+         alias="mykey"
+         keystore="com4j.keystore"
+         keypass="keystore" />
+    
+  </target>
+  
+  <target name="run" depends="compile"
+    description="run the demo locally">
+    <java classname="SwingDemo" fork="true">
+      <classpath>
+        <path refid="com4j"/>
+      </classpath>
+    </java>
+  </target>
+  
+  <target name="deploy" depends="jar"
+    description="copy the contents into the www/demo folder">
+    <copy todir="../../../www/demo">
+      <fileset dir="build" includes="*.jar"/>
+      <fileset dir="." includes="*.jnlp"/>
+    </copy>
+  </target>
+  
+  <target name="clean">
+    <delete dir="build"/>
+  </target>
+</project>
