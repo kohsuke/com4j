@@ -53,10 +53,10 @@ public interface Com4jObject {
      * <p>
      * Since Java objects tend to live longer in memory until it's GC-ed,
      * and applications have generally no control over when it's GC-ed,
-     * calling the release method earlier enables applications to release
+     * calling the dispose method earlier enables applications to dispose
      * the COM objects deterministically.
      */
-    void release();
+    void dispose();
 
     /**
      * Checks if this COM object implements a given interface.

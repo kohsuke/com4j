@@ -3,6 +3,7 @@ package com4j;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -42,11 +43,41 @@ final class Wrapper implements InvocationHandler, Com4jObject {
     private Map<Method,MethodInfo> cache = Collections.synchronizedMap(
         new WeakHashMap<Method,MethodInfo>());
 
-    Wrapper(int ptr) {
+    private Wrapper(int ptr) {
+        if(ptr==0)   throw new IllegalArgumentException();
+        assert ComThread.isComThread();
+
         this.ptr = ptr;
         thread = ComThread.get();
-        thread.addLiveObject();
     }
+
+    /**
+     * Creates a new proxy object to a given COM pointer.
+     * <p>
+     * Must be run from a {@link ComThread}.
+     */
+    static <T extends Com4jObject>
+    T create( Class<T> primaryInterface, int ptr ) {
+        Wrapper w = new Wrapper(ptr);
+        T r = primaryInterface.cast(Proxy.newProxyInstance(
+            primaryInterface.getClassLoader(),
+            new Class<?>[]{primaryInterface},
+                w));
+        w.thread.addLiveObject(r);
+        return r;
+    }
+
+    /**
+     * Creates a new proxy object to a given COM pointer.
+     * <p>
+     * Must be run from a {@link ComThread}.
+     */
+    static Com4jObject create( int ptr ) {
+        Wrapper w = new Wrapper(ptr);
+        w.thread.addLiveObject(w);
+        return w;
+    }
+
 
     int getPtr() {
         return ptr;
@@ -91,11 +122,12 @@ final class Wrapper implements InvocationHandler, Com4jObject {
         return r;
     }
 
-    public void release() {
+    public void dispose() {
         if(ptr!=0) {
-            thread.execute(new Task() {
-                void run() {
+            thread.execute(new Task<Object>() {
+                public Object call() {
                     dispose0();
+                    return null;
                 }
             });
         }
@@ -104,27 +136,32 @@ final class Wrapper implements InvocationHandler, Com4jObject {
     /**
      * Called from {@link ComThread} to actually call IUnknown::Release.
      */
-    void dispose0() {
-        assert ptr!=0;
+    boolean dispose0() {
+        boolean r = ptr!=0;
         Native.release(ptr);
         ptr=0;
+        return r;
     }
 
     public <T extends Com4jObject> boolean is( Class<T> comInterface ) {
         try {
             GUID iid = COM4J.getIID(comInterface);
-            return new QITestTask(iid).invoke()!=0;
+            return new QITestTask(iid).execute()!=0;
         } catch( ComException e ) {
             return false;
         }
     }
 
-    public <T extends Com4jObject> T queryInterface( Class<T> comInterface ) {
-        GUID iid = COM4J.getIID(comInterface);
-        int nptr = new QITask(iid).invoke();
-        if(nptr==0)
-            return null;    // failed to cast
-        return COM4J.wrap( comInterface, nptr );
+    public <T extends Com4jObject> T queryInterface( final Class<T> comInterface ) {
+        return new Task<T>() {
+            public T call() {
+                GUID iid = COM4J.getIID(comInterface);
+                int nptr = Native.queryInterface(ptr,iid.v[0],iid.v[1]);
+                if(nptr==0)
+                    return null;    // failed to cast
+                return create( comInterface, nptr );
+            }
+        }.execute();
     }
 
     public String toString() {
@@ -134,7 +171,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
     public final int hashCode() {
         if(hashCode==0) {
             if(ptr!=0) {
-                hashCode = new QITestTask(COM4J.IID_IUnknown).invoke();
+                hashCode = new QITestTask(COM4J.IID_IUnknown).execute();
             } else {
                 hashCode = 0;
             }
@@ -151,11 +188,9 @@ final class Wrapper implements InvocationHandler, Com4jObject {
      * Used to pass parameters/return values between the host thread
      * and the peer {@link ComThread}.
      */
-    private class InvocationThunk extends Task {
+    private class InvocationThunk extends Task<Object> {
         private MethodInfo method;
         private Object[] args;
-        private Object returnValue;
-        private RuntimeException exception;
 
         /**
          * Invokes the method on the peer {@link ComThread} and returns
@@ -166,38 +201,22 @@ final class Wrapper implements InvocationHandler, Com4jObject {
             this.method = method;
             this.args = args;
 
-            thread.execute(this);
-
-            invCache = this;
-
-            if( exception!=null ) {
-                exception.fillInStackTrace();
-                RuntimeException e = exception;
-                exception = null;
-                throw e;
-            } else {
-                Object r = returnValue;
-                returnValue = null;
-                return r;
+            try {
+                return execute();
+            } finally {
+                invCache = this;
             }
         }
 
         /**
          * Called from {@link ComThread} to actually carry out the execution.
          */
-        public synchronized void run() {
-            try {
-                returnValue = method.invoke(ptr,args);
-                exception = null;
-            } catch( RuntimeException e ) {
-                exception = e;
-                returnValue = null;
-            }
+        public synchronized Object call() {
+            Object r = method.invoke(ptr,args);
             // clear fields that are no longer necessary
             method = null;
             args = null;
-            // let the caller thread know.
-            notify();
+            return r;
         }
     }
 
@@ -207,54 +226,23 @@ final class Wrapper implements InvocationHandler, Com4jObject {
     InvocationThunk invCache;
 
 
-    /**
-     * {@link Task} implementation that invokes QueryInterface.
-     *
-     * @author Kohsuke Kawaguchi (kk@kohsuke.org)
-     */
-    private final class QITask extends Task {
-        private final GUID iid;
-
-        /** the result. */
-        private int nptr;
-
-        public QITask(GUID iid) {
-            this.iid = iid;
-        }
-
-        int invoke() {
-            thread.execute(this);
-            return nptr;
-        }
-
-        void run() {
-            nptr = Native.queryInterface(ptr,iid.v[0],iid.v[1]);
-        }
-    }
 
     /**
      * Invokes QueryInterface but immediately releases that pointer.
      * Useful for checking if an object implements a particular interface.
      */
-    private final class QITestTask extends Task {
+    private final class QITestTask extends Task<Integer> {
         private final GUID iid;
-
-        /** the result. */
-        private int nptr;
 
         public QITestTask(GUID iid) {
             this.iid = iid;
         }
 
-        int invoke() {
-            thread.execute(this);
-            return nptr;
-        }
-
-        void run() {
-            nptr = Native.queryInterface(ptr,iid.v[0],iid.v[1]);
+        public Integer call() {
+            int nptr = Native.queryInterface(ptr,iid.v[0],iid.v[1]);
             if(nptr!=0)
                 Native.release(nptr);
+            return nptr;
         }
     }
 }

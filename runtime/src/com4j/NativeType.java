@@ -2,7 +2,12 @@ package com4j;
 
 import static com4j.Const.BYREF;
 
+import sun.nio.ch.DirectBuffer;
+
 import java.util.Calendar;
+import java.nio.Buffer;
+import java.nio.CharBuffer;
+import java.nio.ByteBuffer;
 
 import static com4j.Const.*;
 
@@ -60,7 +65,20 @@ public enum NativeType {
      */
     CSTR(3),
 
-    Int8(100),
+    /**
+     * <tt>INT8</tt> (byte).
+     *
+     * <p>
+     * Expected Java type:
+     *      byte
+     *      {@link Number}
+     */
+    Int8(100) {
+        public NativeType byRef() {
+            return Int8_ByRef;
+        }
+    },
+    Int8_ByRef(100|BYREF),
     /**
      * <tt>INT16</tt> (short).
      *
@@ -184,7 +202,7 @@ public enum NativeType {
 
         Object unmassage(Class<?> type,Object param) {
             if(param==null)     return null;
-            return COM4J.wrap( (Class<? extends Com4jObject>)type, (Integer)param );
+            return Wrapper.create( (Class<? extends Com4jObject>)type, (Integer)param );
         }
 
         public NativeType byRef() {
@@ -202,12 +220,12 @@ public enum NativeType {
     ComObject_ByRef(300|BYREF) {
         // the native code will see the raw pointer value as Integer
         Object massage(Object param) {
-            Holder<Object> h = (Holder<Object>)param;
+            Holder h = (Holder)param;
             h.value = ComObject.massage(h.value);
             return h;
         }
         Object unmassage(Class<?> type,Object param) {
-            Holder<Object> h = (Holder<Object>)param;
+            Holder h = (Holder)param;
             h.value = ComObject.massage(h.value);
             return h;
         }
@@ -306,6 +324,20 @@ public enum NativeType {
             return param;
         }
     },
+
+    /**
+     * <tt>PVOID</tt>.
+     *
+     * <p>
+     * The assumed semantics is that a region of buffer
+     * will be passed to the native method.
+     *
+     * <p>
+     * Expected Java type:
+     *      direct {@link Buffer}s ({@link Buffer}s created from methods like
+     *      {@link ByteBuffer#allocateDirect(int)}
+     */
+    PVOID(304),
 
     /**
      * <tt>DATE</tt>.

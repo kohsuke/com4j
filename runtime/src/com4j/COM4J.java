@@ -61,14 +61,37 @@ public abstract class COM4J {
     public static<T extends Com4jObject>
     T createInstance( Class<T> primaryInterface, String clsid ) throws ComException {
 
-        GUID iid = getIID(primaryInterface);
-
         // create instance
-        return wrap( primaryInterface, Native.createInstance(clsid,iid.v[0],iid.v[1]) );
+        return new CreateInstanceTask<T>(clsid,primaryInterface).execute();
+    }
+
+    private static class CreateInstanceTask<T extends Com4jObject> extends Task<T> {
+        private final String clsid;
+        private final Class<T> intf;
+
+        public CreateInstanceTask(String clsid, Class<T> intf) {
+            this.clsid = clsid;
+            this.intf = intf;
+        }
+
+        public T call() {
+            GUID iid = getIID(intf);
+            return Wrapper.create( intf, Native.createInstance(clsid,iid.v[0],iid.v[1]) );
+        }
     }
 
     /**
      * Gets the interface GUID associated with the given interface.
+     *
+     * <p>
+     * This method retrieves the associated {@link IID} annotation from the
+     * interface and return it.
+     *
+     * @throws IllegalArgumentException
+     *      if the interface doesn't have any {@link IID} annotation.
+     *
+     * @return
+     *      always return no-null valid {@link GUID} object.
      */
     public static GUID getIID( Class<? extends Com4jObject> _interface ) {
         IID iid = _interface.getAnnotation(IID.class);
@@ -79,9 +102,17 @@ public abstract class COM4J {
 
     /**
      * Loads a type library from a given file and returns its IUnknown.
+     *
+     * <p>
+     * Exposed for <tt>tlbimp</tt>.
      */
-    public static Com4jObject loadTypeLibrary( File typeLibraryFile ) {
-        return wrap(Com4jObject.class, Native.loadTypeLibrary(typeLibraryFile.getAbsolutePath()));
+    public static Com4jObject loadTypeLibrary( final File typeLibraryFile ) {
+        return new Task<Com4jObject>() {
+            public Com4jObject call() {
+                return Wrapper.create(
+                    Native.loadTypeLibrary(typeLibraryFile.getAbsolutePath()));
+            }
+        }.execute();
     }
 
     /**
@@ -95,12 +126,36 @@ public abstract class COM4J {
     public static final GUID IID_IDispatch = new GUID("{00020400-0000-0000-C000-000000000046}");
 
 
-    static <T>
-    T wrap( Class<T> primaryInterface, int ptr ) {
-        return primaryInterface.cast(Proxy.newProxyInstance(
-            primaryInterface.getClassLoader(),
-            new Class<?>[]{primaryInterface},
-            new Wrapper(ptr)));
+
+    /**
+     * Registers a {@link ComObjectListener} to the current thread.
+     *
+     * <p>
+     * The registered listener will receive a notification each time
+     * a new proxy is created.
+     *
+     * @throws IllegalArgumentException
+     *      If the listener is null or it is already registered.
+     *
+     * @see #removeListener(ComObjectListener)
+     */
+    public static void addListener( ComObjectListener listener ) {
+        ComThread.get().addListener(listener);
+    }
+
+    /**
+     * Removes a registered {@link ComObjectListener} from the current thread.
+     *
+     * @param listener
+     *      this listner has to be registered via {@link #addListener(ComObjectListener)}.
+     *
+     * @throws IllegalArgumentException
+     *      If the listener is not currently registered.
+     *
+     * @see #addListener(ComObjectListener) 
+     */
+    public static void removeListener( ComObjectListener listener ) {
+        ComThread.get().removeListener(listener);
     }
 
     static int queryInterface( int ptr, GUID iid ) {

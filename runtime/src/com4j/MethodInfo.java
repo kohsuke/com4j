@@ -8,12 +8,13 @@ import java.util.Map;
 import java.util.Collections;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.nio.Buffer;
 
 /**
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
 final class MethodInfo {
-    
+
     final Method method;
 
     final int vtIndex;
@@ -116,6 +117,8 @@ final class MethodInfo {
                 return NativeType.VariantBool;
             if(Object.class==t)
                 return NativeType.VARIANT_ByRef;
+            if(Buffer.class.isAssignableFrom(c))
+                return NativeType.PVOID;
         }
 
         if( t instanceof ParameterizedType ) {
