@@ -259,6 +259,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/com4j.iml" filepath="$PROJECT_DIR$/com4j.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tlbimp/tlbimp.iml" filepath="$PROJECT_DIR$/tlbimp/tlbimp.iml" />
     </modules>
   </component>
   <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="true" project-jdk-name="JDK1.5" />
