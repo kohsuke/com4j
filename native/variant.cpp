@@ -5,37 +5,21 @@
 #include "unmarshaller.h"
 
 // used to map two jlongs to the memory image of VARIANT.
-class VARIANT_T : public VARIANT {
-public:
-	VARIANT_T() {
-		VariantInit(this);
-	}
-	VARIANT_T( jlong a, jlong b ) {
-		jlong* pThis = reinterpret_cast<jlong*>(this);
-		pThis[0] = a;
-		pThis[1] = b;
-	}
-	VARIANT_T( JNIEnv* env, jlongArray array ) {
-		env->GetLongArrayRegion(array,0,2,reinterpret_cast<jlong*>(this));
-	}
-	
-	// write back to the jlongarray
-	void writeTo( JNIEnv* env, jlongArray array ) {
-		env->GetLongArrayRegion(array,0,2,reinterpret_cast<jlong*>(this));
-	}
-};
+static VARIANT* getVariantImage( JNIEnv* env, jobject buffer ) {
+	return reinterpret_cast<VARIANT*>(env->GetDirectBufferAddress(buffer));
+}
 
 
-JNIEXPORT void JNICALL Java_com4j_Variant_clear0(JNIEnv* env, jclass, jlong image0, jlong image1) {
-	VARIANT_T v(image0,image1);
-	HRESULT hr = VariantClear(&v);
+JNIEXPORT void JNICALL Java_com4j_Variant_clear0(JNIEnv* env, jclass, jobject image) {
+	HRESULT hr = VariantClear(getVariantImage(env,image));
 	if(FAILED(hr))
 		error(env,hr,"failed to clear variant");
 }
 
 // change the variant type in the same place
 void VariantChangeType( JNIEnv* env, VARIANT* v, VARTYPE type ) {
-	VARIANT_T dst;
+	VARIANT dst;
+	VariantInit(&dst);
 	HRESULT hr = VariantChangeType(&dst,v,0, type );
 	if(FAILED(hr)) {
 		error(env,hr,"failed to change the variant type");
@@ -45,24 +29,8 @@ void VariantChangeType( JNIEnv* env, VARIANT* v, VARTYPE type ) {
 	*v = dst;
 }
 
-JNIEXPORT void JNICALL Java_com4j_Variant_changeType0(JNIEnv* env, jclass, jint type, jlongArray image) {
-	VARIANT_T v(env,image);
-	VariantChangeType( env, &v, (VARTYPE)type );
-	v.writeTo(env,image);
-}
-
-JNIEXPORT jfloat JNICALL Java_com4j_Variant_castToFloat0(JNIEnv* env, jclass, jlongArray image) {
-	VARIANT_T v(env,image);
-	VariantChangeType( env, &v, VT_R4 );
-	v.writeTo(env,image);
-	return v.fltVal;
-}
-
-JNIEXPORT jdouble JNICALL Java_com4j_Variant_castToDouble0(JNIEnv* env, jclass, jlongArray image) {
-	VARIANT_T v(env,image);
-	VariantChangeType( env, &v, VT_R8 );
-	v.writeTo(env,image);
-	return v.dblVal;
+JNIEXPORT void JNICALL Java_com4j_Variant_changeType0(JNIEnv* env, jclass, jint type, jobject image) {
+	VariantChangeType( env, getVariantImage(env,image), (VARTYPE)type );
 }
 
 
@@ -73,7 +41,8 @@ JNIEXPORT jdouble JNICALL Java_com4j_Variant_castToDouble0(JNIEnv* env, jclass, 
 
 class VariantHandler {
 public:
-	virtual void set( JNIEnv* env, jobject src, VARIANT* dst ) = 0;
+	// returnss VARIANT allocated by 'new'
+	virtual VARIANT* set( JNIEnv* env, jobject src ) = 0;
 	virtual jobject get( JNIEnv* env, VARIANT* v ) = 0;
 };
 
@@ -84,10 +53,13 @@ protected:
 		return *reinterpret_cast<XDUCER::NativeType*>(&v->boolVal);
 	}
 public:
-	void set( JNIEnv* env, jobject o, VARIANT* v ) {
+	VARIANT* set( JNIEnv* env, jobject o ) {
+		VARIANT* v = new VARIANT();
+		VariantInit(v);
 		v->vt = vt;
 		addr(v) = XDUCER::toNative(
 			env, static_cast<XDUCER::JavaType>(o) );
+		return v;
 	}
 	jobject get( JNIEnv* env, VARIANT* v ) {
 		VARIANT dst;
@@ -100,8 +72,8 @@ public:
 };
 
 class ComObjectVariandHandlerImpl : public VariantHandlerImpl<VT_DISPATCH,xducer::Com4jObjectXducer> {
-	void set( JNIEnv* env, jobject o, VARIANT* v ) {
-		ComObjectVariandHandlerImpl::set(env,o,v);
+	VARIANT* set( JNIEnv* env, jobject o) {
+		VARIANT* v = ComObjectVariandHandlerImpl::set(env,o);
 		IDispatch* pDisp = NULL;
 		HRESULT hr = addr(v)->QueryInterface(&pDisp);
 		if(SUCCEEDED(hr)) {
@@ -110,6 +82,7 @@ class ComObjectVariandHandlerImpl : public VariantHandlerImpl<VT_DISPATCH,xducer
 			addr(v) = pDisp;
 			v->vt = VT_DISPATCH;
 		} // otherwise use VT_UNKNOWN. See java.net issue 2.
+		return v;
 	}
 };
 
@@ -136,19 +109,15 @@ static SetterEntry setters[] = {
 //
 // return NULL if fails to convert
 VARIANT* convertToVariant( JNIEnv* env, jobject o ) {
-	VARIANT* v = new VARIANT;
-	VariantInit(v);
-
 	jclass cls = env->GetObjectClass(o);
 	
 	for( SetterEntry* p = setters; p->cls!=NULL; p++ ) {
 		if( env->IsAssignableFrom( cls, *(p->cls) ) ) {
-			p->handler->set(env,o,v);
+			VARIANT* v = p->handler->set(env,o);
 			return v;
 		}
 	}
 
-	delete v;
 	return NULL;
 }
 

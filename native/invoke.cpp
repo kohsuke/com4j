@@ -192,8 +192,13 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				break;
 
 			case cvVARIANT_byRef:
-				pvar = convertToVariant(env,arg);
-				add(new VARIANTCleanUp(pvar));
+				if(env->IsSameObject(env->GetObjectClass(arg),com4j_Variant)) {
+					jobject img = env->GetObjectField(arg,com4j_Variant_image);
+					pvar = (VARIANT*)env->GetDirectBufferAddress(img);
+				} else {
+					pvar = convertToVariant(env,arg);
+					add(new VARIANTCleanUp(pvar));
+				}
 				_asm push pvar;
 				break;
 
@@ -300,11 +305,13 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 
 	// otherwise check the HRESULT first
 	if(FAILED(hr)) {
-		wchar_t* pmsg;
+		wchar_t* pmsg = NULL;
 		jobject str = NULL;
 		if(!FAILED(FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM, NULL, hr, 0, (LPWSTR)&pmsg, 0, NULL ))) {
-			str = env->NewString(pmsg,wcslen(pmsg));
-			LocalFree(pmsg);
+			if(pmsg!=NULL) {
+				str = env->NewString(pmsg,wcslen(pmsg));
+				LocalFree(pmsg);
+			}
 		}
 		env->Throw( (jthrowable)comexception_new_hr(env, str, (jint)hr ) );
 	}

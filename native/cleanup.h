@@ -32,7 +32,9 @@ public:
 class VARIANTCleanUp : public PostAction {
 	VARIANT* pvar;
 public:
-	VARIANTCleanUp( VARIANT* _pvar ) : pvar(_pvar) {}
+	VARIANTCleanUp( VARIANT* _pvar ) : pvar(_pvar) {
+		_ASSERT(pvar!=NULL);
+	}
 	void act( JNIEnv* env ) {
 		VariantClear(pvar);
 		delete pvar;

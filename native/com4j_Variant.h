@@ -12,34 +12,18 @@ extern "C" {
 /*
  * Class:     com4j_Variant
  * Method:    clear0
- * Signature: (JJ)V
+ * Signature: (Ljava/nio/ByteBuffer;)V
  */
 JNIEXPORT void JNICALL Java_com4j_Variant_clear0
-  (JNIEnv *, jclass, jlong, jlong);
+  (JNIEnv *, jclass, jobject);
 
 /*
  * Class:     com4j_Variant
  * Method:    changeType0
- * Signature: (I[J)V
+ * Signature: (ILjava/nio/ByteBuffer;)V
  */
 JNIEXPORT void JNICALL Java_com4j_Variant_changeType0
-  (JNIEnv *, jclass, jint, jlongArray);
-
-/*
- * Class:     com4j_Variant
- * Method:    castToFloat0
- * Signature: ([J)F
- */
-JNIEXPORT jfloat JNICALL Java_com4j_Variant_castToFloat0
-  (JNIEnv *, jclass, jlongArray);
-
-/*
- * Class:     com4j_Variant
- * Method:    castToDouble0
- * Signature: ([J)D
- */
-JNIEXPORT jdouble JNICALL Java_com4j_Variant_castToDouble0
-  (JNIEnv *, jclass, jlongArray);
+  (JNIEnv *, jclass, jint, jobject);
 
 #ifdef __cplusplus
 }

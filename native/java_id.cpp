@@ -49,6 +49,9 @@ jfieldID com4j_Holder_value;
 
 JClassID com4j_Com4jObject("com4j/Com4jObject");
 
+JClassID com4j_Variant("com4j/Variant");
+jfieldID com4j_Variant_image;
+
 JClassID com4jWrapper("com4j/Wrapper");
 JConstructorID com4jWrapper_new(com4jWrapper,"(I)V");
 

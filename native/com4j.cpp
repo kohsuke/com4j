@@ -43,6 +43,7 @@ JNIEXPORT void JNICALL Java_com4j_Native_init( JNIEnv* env, jclass __unused__ ) 
 	JClassID::runInit(env);
 	JMethodID_Base::runInit(env);
 	com4j_Holder_value = env->GetFieldID(com4j_Holder,"value","Ljava/lang/Object;");
+	com4j_Variant_image = env->GetFieldID(com4j_Variant,"image","Ljava/nio/ByteBuffer;");
 
 	HRESULT hr = CoInitialize(NULL);
 	if(FAILED(hr)) {
@@ -54,6 +55,10 @@ JNIEXPORT void JNICALL Java_com4j_Native_init( JNIEnv* env, jclass __unused__ ) 
 extern "C"
 static IUnknown* toComObject( jint pComObject ) {
 	return reinterpret_cast<IUnknown*>(pComObject);
+}
+
+JNIEXPORT void JNICALL Java_com4j_Native_addRef( JNIEnv* env, jclass __unused__, jint pComObject ) {
+	toComObject(pComObject)->AddRef();
 }
 
 JNIEXPORT void JNICALL Java_com4j_Native_release( JNIEnv* env, jclass __unused__, jint pComObject ) {

@@ -40,6 +40,23 @@ public:
 };
 
 
+
+//template < class JavaReturnType >
+//class JFieldID {
+//protected:
+//	jfieldID id;
+//	JClassID& clazz;
+//	const char* name;
+//	const char* sig;
+//
+//	void steup( JNIEnv* env ) {
+//		env->GetFieldID(clazz,name,sig);
+//	}
+//
+//public:
+//	void set( 
+//};
+
 class JMethodID_Base {
 protected:
 	jmethodID id;
@@ -173,6 +190,9 @@ extern JClassID com4j_Holder;
 extern jfieldID com4j_Holder_value;
 
 extern JClassID com4j_Com4jObject;
+
+extern JClassID com4j_Variant;
+extern jfieldID com4j_Variant_image;
 
 extern JClassID com4jWrapper;
 extern JConstructorID com4jWrapper_new;
