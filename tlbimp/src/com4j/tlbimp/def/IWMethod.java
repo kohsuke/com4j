@@ -11,4 +11,13 @@ import com4j.Com4jObject;
 public interface IWMethod extends Com4jObject {
     @VTID(3)
     String getName();
+
+    @VTID(4)
+    InvokeKind getKind();
+
+    @VTID(5)
+    String getHelpString();
+
+    @VTID(6)
+    IType getReturnType();
 }

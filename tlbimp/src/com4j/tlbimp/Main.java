@@ -12,15 +12,21 @@ import com4j.tlbimp.def.IWDispInterface;
 import com4j.tlbimp.def.IWMethod;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         File typeLibFileName = new File(args[0]);
         IWTypeLib tlb = COM4J.loadTypeLibrary(typeLibFileName).queryInterface(IWTypeLib.class);
-//        System.out.println(tlb.count());
+        new Generator(new File(".")).generate(tlb);
+//        dump(tlb);
+    }
+
+    private static void dump(IWTypeLib tlb) {
+        System.out.println(tlb.count());
         System.out.println(tlb.getName());
         System.out.println(tlb.getHelpString());
 
@@ -35,7 +41,7 @@ public class Main {
                 System.out.println("# of methods: "+t2.countMethods());
                 for( int j=0; j<t2.countMethods(); j++ ) {
                     IWMethod m = t2.getMethod(j);
-                    System.out.println("  "+m.getName());
+                    System.out.println("  "+m.getKind()+" "+m.getName());
                     m.release();
                 }
                 t2.release();

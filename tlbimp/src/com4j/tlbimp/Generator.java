@@ -1,12 +1,16 @@
 package com4j.tlbimp;
 
-import com4j.tlbimp.def.IWTypeLib;
+import com4j.tlbimp.def.IWDispInterface;
+import com4j.tlbimp.def.IWMethod;
 import com4j.tlbimp.def.IWType;
+import com4j.tlbimp.def.IWTypeLib;
+import com4j.tlbimp.def.IType;
+import com4j.tlbimp.def.IPtrType;
+import com4j.tlbimp.def.IPrimitiveType;
 
 import java.io.File;
-import java.io.PrintWriter;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
@@ -50,7 +54,11 @@ public class Generator {
         int len = lib.count();
         for( int i=0; i<len; i++ ) {
             IWType t = lib.getType(i);
-            generate(t);
+            switch(t.getKind()) {
+            case DISPATCH:
+                generate( t.queryInterface(IWDispInterface.class) );
+                break;
+            }
             t.release();
         }
     }
@@ -58,18 +66,19 @@ public class Generator {
     private void generatePackageHtml(IWTypeLib lib) throws IOException {
         PrintWriter o = createWriter( new File(getPackageDir(),"package.html" ) );
         o.println("<html><body>");
-        o.printf("<h2>{0}</h2>",lib.getName());
-        o.printf("<p>{0}</p>",lib.getHelpString());
+        o.printf("<h2>%1s</h2>",lib.getName());
+        o.printf("<p>%1s</p>",lib.getHelpString());
         o.println("</html></body>");
-        o.close();
+        o.flush();
+//        o.close();
     }
 
-    private void generate( IWType t ) throws IOException {
+    private void generate( IWDispInterface t ) throws IOException {
         String typeName = t.getName();
         PrintWriter o = createWriter( new File(getPackageDir(),typeName ) );
         o.println("// GENERATED. DO NOT MODIFY");
         if(packageName.length()!=0) {
-            o.printf("package {0}",packageName);
+            o.printf("package %1s",packageName);
             o.println();
             o.println();
         }
@@ -78,9 +87,51 @@ public class Generator {
         o.println();
 
 
-        o.printf("@IID(\"{0}\")",t.getGUID());
+        o.printf("@IID(\"%1s\")",t.getGUID());
         o.println();
-        o.printf("interface {0} '{'",typeName);
+        o.printf("interface %1s {",typeName);
         o.println();
+
+        for( int j=0; j<t.countMethods(); j++ ) {
+            IWMethod m = t.getMethod(j);
+            generate(m,o);
+            m.release();
+        }
+
+        o.println("}");
+
+        o.flush();
+    }
+
+    private void generate(IWMethod m, PrintWriter o) {
+        String doc = m.getHelpString();
+        if(doc!=null) {
+            o.println("\t/**");
+            o.println("\t * "+doc);
+            o.println("\t */");
+        }
+        o.println("\t"+m.getKind());
+        o.println("\t"+getTypeString(m.getReturnType())+' '+m.getName());
+        o.println();
+        o.flush();
+    }
+
+    private String getTypeString(IType t) {
+        if(t==null)
+            return "null";
+
+        IPtrType pt = t.queryInterface(IPtrType.class);
+        if(pt!=null)
+            return getTypeString(pt.getPointedAtType())+"*";
+
+        IPrimitiveType prim = t.queryInterface(IPrimitiveType.class);
+        if(prim!=null)
+            return prim.getName();
+
+        IWType decl = t.queryInterface(IWType.class);
+        if(decl!=null)
+            return decl.getName();
+        
+        return "N/A";
     }
 }
