@@ -25,24 +25,22 @@
     </javadoc>
   </target>
   
-  <target name="dist" depends="clean,jar,javadoc">
+  <target name="dist" depends="jar,javadoc">
+    <tstamp/>
     <delete dir="dist"/>
     <mkdir dir="dist"/>
     
     <ant dir="native" target="release"/>
     
-    <copy todir="dist" file="../www/LICENSE.txt"/>
-    <copy todir="dist" file="native/Release/com4j.dll"/>
-    <copy todir="dist" file="runtime/build/com4j.jar"/>
-    <copy todir="dist" file="runtime/build/com4j-src.zip"/>
-    <copy todir="dist" file="tlbimp/build/tlbimp.jar"/>
-    <copy todir="dist" file="tlbimp/build/tlbimp-src.zip"/>
-    <copy todir="dist">
-      <fileset dir="tlbimp/lib" includes="*.jar, *.zip"/>
-    </copy>
-    <copy todir="dist/javadoc">
-      <fileset dir="build/javadoc"/>
-    </copy>
+    <zip file="dist/com4j-${DSTAMP}.zip">
+      <fileset dir="../www" includes="LICENSE.txt" />
+      <fileset dir="native/Release" includes="com4j.dll" />
+      <fileset dir="runtime/build" includes="com4j.jar, com4j-src.zip"/>
+      <fileset dir="tlbimp/build" includes="tlbimp.jar, tlbimp-src.zip"/>
+      <fileset dir="tlbimp/lib" includes="args4j-1.0.jar"/>
+      <fileset dir="build" includes="javadoc/**/*"/>
+      <fileset dir="." includes="samples/**/*" excludes="**/CVS"/>
+    </zip>
   </target>
   
   
