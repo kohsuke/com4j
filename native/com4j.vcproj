@@ -115,6 +115,9 @@
 				RelativePath="com4j.idl">
 			</File>
 			<File
+				RelativePath="error.cpp">
+			</File>
+			<File
 				RelativePath="invoke.cpp">
 			</File>
 			<File
@@ -138,6 +141,9 @@
 			<File
 				RelativePath="typelib.cpp">
 			</File>
+			<File
+				RelativePath="variant.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="ヘッダー ファイル"
@@ -150,6 +156,9 @@
 			</File>
 			<File
 				RelativePath="com4j_Native.h">
+			</File>
+			<File
+				RelativePath="com4j_Variant.h">
 			</File>
 			<File
 				RelativePath="java_id.h">

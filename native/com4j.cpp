@@ -5,14 +5,6 @@
 #include "jstring.h"
 #include "typelib.h"
 
-void error( JNIEnv* env, HRESULT hr, const char* msg ) {
-	env->Throw( (jthrowable)
-		env->NewObject( comexception,
-			env->GetMethodID(comexception,"<init>","(Ljava/lang/String;I)V"),
-			env->NewStringUTF(msg),
-			hr )
-	);
-}
 
 
 

@@ -3,6 +3,7 @@ package com4j;
 import static com4j.Const.*;
 
 import java.lang.reflect.Field;
+import java.util.Calendar;
 
 /**
  * Native method type.
@@ -113,6 +114,26 @@ public enum NativeType {
     VariantBool(104),
 
     /**
+     * <tt>float</tt>.
+     *
+     * <p>
+     * Expected Java type:
+     *      boolean
+     *      {@link Number}
+     */
+    Float(120),
+
+    /**
+     * <tt>double</tt>.
+     *
+     * <p>
+     * Expected Java type:
+     *      boolean
+     *      {@link Number}
+     */
+    Double(121),
+
+    /**
      * Used only with {@link ReturnValue} for returning
      * HRESULT of the method invocation as "int".
      */
@@ -186,8 +207,80 @@ public enum NativeType {
             if(param==null)     return null;
             return new GUID( (long[])param );
         }
-    }
+    },
 
+    /**
+     * <tt>VARIANT*</tt>.
+     *
+     * <p>
+     * Expected Java type:
+     *      {@link Variant}
+     *      {@link Object} // TODO: explain the semantics better
+     */
+    VARIANT_ByRef(302|BYREF),
+
+    /**
+     * <tt>IDispatch*</tt>
+     *
+     * <p>
+     * Expected Java type:
+     *      {@link Com4jObject}
+     */
+    Dispatch(303) {
+        // the native code will see the raw pointer value as Integer
+        Object massage(Object param) {
+            int ptr = COM4J.unwrap((Com4jObject)param).getPtr();
+            int disp = COM4J.queryInterface( ptr, COM4J.IID_IDispatch );
+            return disp;
+        }
+
+        Object unmassage(Class<?> type,Object param) {
+            if(param==null)     return null;
+            int disp = (Integer)param;
+            if(disp==0)      return null;
+            Native.release( disp );
+            return param;
+        }
+    },
+
+    /**
+     * <tt>DATE</tt>.
+     *
+     * See http://msdn.microsoft.com/library/default.asp?url=/library/en-us/vccore/html/_core_The_DATE_Type.asp
+     * <p>
+     * Expected Java type:
+     *      {@link java.util.Date}
+     *      {@link Calendar}
+     */
+    Date(400) {
+        // the native code will see the raw pointer value as Integer
+        Object massage(Object param) {
+            java.util.Date dt;
+            if( param instanceof Calendar ) {
+                dt = ((Calendar)param).getTime();
+            } else {
+                dt = (java.util.Date)param;
+            }
+
+            // the number of milliseconds since January 1, 1970, 00:00:00 GMT
+            long t = dt.getTime();
+            // the number of milliseconds since January 1, 1970, 00:00:00 Local Time
+            t  -= dt.getTimezoneOffset()*60*1000;
+
+            // the number of milliseconds since December 30, 1899, 00:00:00 Local Time
+            t += 2209132800000L;
+
+            // DATE is an offset from "30 December 1899"
+            long MSPD = 24*60*60*1000;
+            if(t<0) {
+                // -0.3 -> -0.7
+                long offset = -(t%MSPD);    // TODO: check
+                t = t-MSPD+offset;
+            }
+            double d = ((double)t)/MSPD;
+            return d;
+        }
+    },
 
     ;
 

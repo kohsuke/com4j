@@ -18,12 +18,16 @@ enum Conv {
 	cvINT32_byRef = 102|BYREF,
 	cvBool = 103,
 	cvVariantBool = 104,
+	cvFloat = 120,
+	cvDouble = 121,
 
 	cvHRESULT = 200,
 
 	cvComObject = 300,
 	cvComObject_byRef = 300|BYREF,
 	cvGUID = 301,
+
+	cvDATE = 400,
 };
 
 
@@ -82,5 +86,10 @@ public:
 
 	operator const GUID&() const { return *reinterpret_cast<const GUID*>(this); }
 };
+
+
+// throw a Java ComException
+void error( JNIEnv* env, const char* msg ... );
+void error( JNIEnv* env, HRESULT hr, const char* msg ... );
 
 

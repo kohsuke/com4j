@@ -8,6 +8,8 @@ JMethodID_Base* JMethodID_Base::init = NULL;
 
 JClassID javaLangNumber("java/lang/Number");
 JMethodID javaLangNumber_intValue(javaLangNumber,"intValue","()I");
+JMethodID javaLangNumber_floatValue(javaLangNumber,"floatValue","()F");
+JMethodID javaLangNumber_doubleValue(javaLangNumber,"doubleValue","()D");
 
 JClassID javaLangInteger("java/lang/Integer");
 JMethodID javaLangInteger_new(javaLangInteger,"<init>","(I)V");

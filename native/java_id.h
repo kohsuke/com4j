@@ -97,6 +97,8 @@ protected:
 
 extern JClassID javaLangNumber;
 extern JMethodID javaLangNumber_intValue;
+extern JMethodID javaLangNumber_floatValue;
+extern JMethodID javaLangNumber_doubleValue;
 
 extern JClassID javaLangInteger;
 extern JMethodID javaLangInteger_new;

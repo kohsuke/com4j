@@ -115,8 +115,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
             throw new IllegalStateException("COM object is already disposed");
 
         if(hashCode==0) {
-            long[] v = COM4J.IID_IUnknown.v;
-            hashCode = Native.queryInterface( ptr, v[0], v[1] );
+            hashCode = COM4J.queryInterface( ptr, COM4J.IID_IUnknown );
             Native.release(hashCode);
         }
         return hashCode;
@@ -230,6 +229,8 @@ final class Wrapper implements InvocationHandler, Com4jObject {
                 return NativeType.BSTR;
             if(Boolean.TYPE==t)
                 return NativeType.VariantBool;
+            if(Object.class==t)
+                return NativeType.VARIANT_ByRef;
         }
 
         if( t instanceof ParameterizedType ) {

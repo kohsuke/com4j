@@ -2,17 +2,6 @@
 #include "com4j.h"
 #include "unmarshaller.h"
 
-// throws an error
-void error( JNIEnv* env, const char* msg ... ) {
-	// format the message
-	char w[1024];
-	va_list va;
-	va_start(va,msg);
-	vsprintf(w,msg,va);
-	
-	jclass iae = env->FindClass("java/lang/IllegalArgumentException");
-	env->ThrowNew(iae,w);
-}
 
 
 
@@ -50,6 +39,8 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 		INT8	int8;
 		INT16	int16;
 		INT32	int32;
+		double d;
+		float f;
 		void*	pv;
 		VARIANT_BOOL vbool;
 //	};
@@ -125,6 +116,21 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 					pv = unm->addr();
 				}
 				_asm push pv;
+				break;
+
+			case cvDATE:
+			case cvDouble:
+				// TODO: check if this is correct
+				d = env->CallDoubleMethod( arg, javaLangNumber_doubleValue );
+				f = reinterpret_cast<float*>(&d)[1];
+				_asm push f;
+				f = reinterpret_cast<float*>(&d)[0];
+				_asm push f;
+				break;
+
+			case cvFloat:
+				f = env->CallFloatMethod( arg, javaLangNumber_floatValue );
+				_asm push f;
 				break;
 
 			case cvBool:
