@@ -421,7 +421,10 @@ public final class Generator {
 
             declareReturnType(o);
 
-            o.print(escape(camelize(method.getName())));
+            String name = escape(camelize(method.getName()));
+            if(reservedMethods.contains(name))
+                name += '_';
+            o.print(name);
             o.print('(');
             o.in();
 
@@ -859,5 +862,17 @@ public final class Generator {
 
     private static String escape(String s) {
         return Escape.escape(s);
+    }
+
+    private static final Set<String> reservedMethods = new HashSet<String>();
+
+    static {
+        reservedMethods.add("equals");
+        reservedMethods.add("getClass");
+        reservedMethods.add("hashCode");
+        reservedMethods.add("notify");
+        reservedMethods.add("notifyAll");
+        reservedMethods.add("toString");
+        reservedMethods.add("wait");
     }
 }
