@@ -15,7 +15,7 @@
     <tstamp/>
     <jar file="build/tlbimp.jar">
       <manifest>
-        <attribute name="Main-Class" value="com4j.tlbimp.Main"/>
+        <attribute name="Main-Class" value="com4j.tlbimp.driver.Main"/>
         <attribute name="Build-Date" value="${DSTAMP}" />
         <attribute name="Class-Path" value="com4j.jar args4j-1.0.jar" />
       </manifest>

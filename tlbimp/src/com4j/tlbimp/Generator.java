@@ -27,133 +27,62 @@ import java.util.Date;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 import java.nio.Buffer;
 
 /**
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
 public final class Generator {
-    /**
-     * Type library.
-     */
-    private final IWTypeLib lib;
-
     private final CodeWriter writer;
 
-    /**
-     * Package to produce the output.
-     * Can be empty, but never be null.
-     */
-    private final String packageName;
+    private final ReferenceResolver referenceResolver;
 
-    private final Map<ITypeDecl,String> aliases
-        = new HashMap<ITypeDecl,String>();
     private final ErrorListener el;
 
     /**
-     *
-     * @param packageName
-     *      Package to produce the output. Can be empty, but never be null.
+     * {@link IWTypeLib}s specified to the {@link #generate(IWTypeLib)} method.
      */
-    public static void generate( IWTypeLib lib, CodeWriter writer, String packageName, ErrorListener el ) throws IOException {
-        new Generator(lib,writer,packageName,el)._generate();
-    }
+    private final Set<TypeLibInfo> generatedTypeLibs = new HashSet<TypeLibInfo>();
 
-
-    private Generator( IWTypeLib lib, CodeWriter writer, String packageName, ErrorListener el ) {
-        this.lib = lib;
+    public Generator( CodeWriter writer, ReferenceResolver resolver, ErrorListener el ) {
         this.el = el;
         this.writer = writer;
-        this.packageName = packageName;
-
-        buildSimpleAliasTable();
+        this.referenceResolver = resolver;
     }
 
     /**
-     * MIDL often produces typedefs of the form "typedef A B" where
-     * B is an enum declaration, and A is the name given by the user in IDL.
-     *
-     * <p>
-     * I don't know why MIDL behaves in this way, but in this case
-     * it's usually desirable as a binding if we use A everywhere in place of B.
-     *
-     * <p>
-     * We build this map B -> A to simply this.
+     * Call this method repeatedly to generate classes from each type library.
      */
-    private void buildSimpleAliasTable() {
-        int len = lib.count();
-        for( int i=0; i<len; i++ ) {
-            ITypeDecl t = lib.getType(i);
-            if(t.getKind()==TypeKind.ALIAS) {
-                ITypedefDecl typedef = t.queryInterface(ITypedefDecl.class);
-                ITypeDecl def = typedef.getDefinition().queryInterface(ITypeDecl.class);
-                if(def!=null) {
-//                    System.out.println(def.getName()+" -> "+typedef.getName());
-                    aliases.put( def, typedef.getName() );
-                }
-            }
-            t.dispose();
-        }
+    public void generate( IWTypeLib lib ) throws BindingException, IOException {
+        TypeLibInfo tli = getTypeLibInfo(lib);
+        if(generatedTypeLibs.add(tli))
+            new PackageBinder(tli).generate();
     }
 
     /**
-     * Gets the type name for the given declaration.
+     * Finally call this method to wrap things up.
+     *
      * <p>
-     * This takes the aliases into account.
+     * In particular this generates the ClassFactory class.
      */
-    private String getTypeName(ITypeDecl decl) {
-        if(aliases.containsKey(decl))
-            return aliases.get(decl);
-        else
-            return decl.getName();
-    }
-
-
-    private File getPackageDir() {
-        if(packageName.equals(""))
-            return new File(".");
-        else
-            return new File(packageName.replace('.',File.separatorChar));
-    }
-
-    private void _generate() throws IOException {
-        generatePackageHtml(lib);
-
-        boolean hasCoClass = false;
-
-        int len = lib.count();
-        for( int i=0; i<len; i++ ) {
-            ITypeDecl t = lib.getType(i);
-            switch(t.getKind()) {
-            case DISPATCH:
-                generate( t.queryInterface(IDispInterfaceDecl.class) );
-                break;
-            case INTERFACE:
-                generate( t.queryInterface(IInterfaceDecl.class) );
-                break;
-            case ENUM:
-                generate( t.queryInterface(IEnumDecl.class) );
-                break;
-            case ALIAS:
-                {
-//                    ITypedefDecl alias = t.queryInterface(ITypedefDecl.class);
-//                    System.out.printf("typedef %1s %2s", alias.getName(),
-//                        getTypeString(alias.getDefinition()));
-                    break;
-                }
-            case COCLASS:
-                // we handle all co-classes later
-                if( t.queryInterface(ICoClassDecl.class).isCreatable() )
-                    hasCoClass = true;
-                break;
-            }
-            t.dispose();
+    public void finish() throws IOException {
+        Map<String,Set<TypeLibInfo>> byPackage = new HashMap<String,Set<TypeLibInfo>>();
+        for( TypeLibInfo tli : generatedTypeLibs ) {
+            Set<TypeLibInfo> s = byPackage.get(tli.packageName);
+            if(s==null)
+                byPackage.put(tli.packageName,s=new HashSet<TypeLibInfo>());
+            s.add(tli);
         }
 
-        if(hasCoClass) {
+        for( Map.Entry<String,Set<TypeLibInfo>> e : byPackage.entrySet() ) {
+            TypeLibInfo lib1 = e.getValue().iterator().next();
+            PackageBinder pb = new PackageBinder(lib1);
+
             // generate ClassFactory
-            IndentingWriter o = writer.create(new File(getPackageDir(),"ClassFactory.java"));
-            generateHeader(o);
+            IndentingWriter o = writer.create(new File(lib1.getPackageDir(),"ClassFactory.java"));
+            pb.generateHeader(o);
 
             printJavadoc("Defines methods to create COM objects",o);
             o.println("public abstract class ClassFactory {");
@@ -162,13 +91,16 @@ public final class Generator {
             o.println("private ClassFactory() {} // instanciation is not allowed");
             o.println();
 
-            for( int i=0; i<len; i++ ) {
-                ICoClassDecl t = lib.getType(i).queryInterface(ICoClassDecl.class);
-                if(t==null)     continue;
-                if(!t.isCreatable())    continue;
+            for( TypeLibInfo lib : e.getValue() ) {
+                int len = lib.lib.count();
+                for( int i=0; i<len; i++ ) {
+                    ICoClassDecl t = lib.lib.getType(i).queryInterface(ICoClassDecl.class);
+                    if(t==null)     continue;
+                    if(!t.isCreatable())    continue;
 
-                declareFactoryMethod(o, t);
-                t.dispose();
+                    declareFactoryMethod(o, t);
+                    t.dispose();
+                }
             }
 
             o.out();
@@ -177,9 +109,193 @@ public final class Generator {
         }
     }
 
-//    private Com4jObject createFoo() {
-//        COM4J.createInstance( primaryT, clsid );
-//    }
+
+    private class PackageBinder {
+        private final TypeLibInfo lib;
+
+        public PackageBinder(TypeLibInfo lib) {
+            this.lib = lib;
+        }
+
+        public void generate() throws IOException {
+            IWTypeLib tlib = lib.lib;
+            generatePackageHtml();
+
+            int len = tlib.count();
+            for( int i=0; i<len; i++ ) {
+                ITypeDecl t = tlib.getType(i);
+                switch(t.getKind()) {
+                case DISPATCH:
+                    generate( t.queryInterface(IDispInterfaceDecl.class) );
+                    break;
+                case INTERFACE:
+                    generate( t.queryInterface(IInterfaceDecl.class) );
+                    break;
+                case ENUM:
+                    generate( t.queryInterface(IEnumDecl.class) );
+                    break;
+                case ALIAS:
+                    {
+//                    ITypedefDecl alias = t.queryInterface(ITypedefDecl.class);
+//                    System.out.printf("typedef %1s %2s", alias.getName(),
+//                        getTypeString(alias.getDefinition()));
+                        break;
+                    }
+                }
+                t.dispose();
+            }
+        }
+
+
+        private void generatePackageHtml() throws IOException {
+            PrintWriter o = writer.create( new File(lib.getPackageDir(),"package.html" ) );
+            o.println("<html><body>");
+            o.printf("<h2>%1s</h2>",lib.lib.getName());
+            o.printf("<p>%1s</p>",lib.lib.getHelpString());
+            o.println("</html></body>");
+            o.close();
+        }
+
+        private void generate( IEnumDecl t ) throws IOException {
+
+            // load all the constants first
+            int len = t.countConstants();
+            IConstant[] cons = new IConstant[len];
+
+            for( int i=0; i<len; i++ )
+                cons[i] = t.getConstant(i);
+
+            // check if we need to use ComEnum
+            boolean needComEnum = false;
+            for( int i=0; i<len; i++ ) {
+                if( cons[i].getValue()!=i ) {
+                    needComEnum = true;
+                    break;
+                }
+            }
+
+            // generate the prolog
+            String typeName = lib.getTypeName(t);
+            IndentingWriter o = writer.create( new File(lib.getPackageDir(),typeName+".java" ) );
+            generateHeader(o);
+
+            printJavadoc(t.getHelpString(), o);
+
+            o.printf("public enum %1s ",typeName);
+            if(needComEnum)
+                o.print("implements ComEnum ");
+            o.println("{");
+            o.in();
+
+            // generate constants
+            for( IConstant con : cons ) {
+                printJavadoc(con.getHelpString(),o);
+                o.print(con.getName());
+                if(needComEnum) {
+                    o.printf("(%1d),",con.getValue());
+                } else {
+                    o.print(", // ");
+                    o.print(con.getValue());
+                }
+                o.println();
+            }
+
+            if(needComEnum) {
+                // the rest of the boiler-plate code
+                o.println(";");
+                o.println();
+                o.println("private final int value;");
+                o.println(typeName+"(int value) { this.value=value; }");
+                o.println("public int comEnumValue() { return value; }");
+            }
+
+            o.out();
+            o.println("}");
+
+            // clean up
+            for( IConstant con : cons)
+                con.dispose();
+
+            o.close();
+        }
+
+        private void generate( IInterfaceDecl t ) throws IOException {
+            String typeName = lib.getTypeName(t);
+            IndentingWriter o = writer.create( new File(lib.getPackageDir(),typeName+".java" ) );
+            generateHeader(o);
+
+            printJavadoc(t.getHelpString(), o);
+
+            o.printf("@IID(\"%1s\")",t.getGUID());
+            o.println();
+            o.printf("public interface %1s",typeName);
+            if(t.countBaseInterfaces()!=0) {
+                o.print(" extends ");
+                o.beginCommaMode();
+                for( int i=0; i<t.countBaseInterfaces(); i++ ) {
+                    o.comma();
+                    String baseName;
+                    try {
+                        baseName = getTypeName(t.getBaseInterface(i));
+                    } catch (BindingException e) {
+                        e.addContext("interface "+typeName);
+                        el.error(e);
+                        baseName = "Com4jObject";
+                    }
+                    if(baseName.equals("IUnknown") || baseName.equals("IDispatch"))
+                        baseName = "Com4jObject";
+                    o.print(baseName);
+                }
+                o.endCommaMode();
+            }
+            o.println(" {");
+            o.in();
+
+            for( int j=0; j<t.countMethods(); j++ ) {
+                IMethod m = t.getMethod(j);
+                try {
+                    o.startBuffering();
+                    Generator.this.generate(m,o);
+                    o.commit();
+                } catch( BindingException e ) {
+                    o.cancel();
+                    e.addContext("interface "+t.getName());
+                    el.error(e);
+                }
+                m.dispose();
+            }
+
+            o.out();
+            o.println("}");
+
+            o.close();
+        }
+
+        private void generate( IDispInterfaceDecl t ) throws IOException {
+            if(t.isDual())
+                generate( t.getVtblInterface() );
+            else {
+                // TODO: how should we handle this?
+            }
+//        } catch( BindingException e ) {
+//            throw new BindingException(
+//                Messages.FAILED_TO_BIND.format(t.getName()),
+//                e );
+//        }
+        }
+
+        private void generateHeader(IndentingWriter o) {
+            o.println("// GENERATED. DO NOT MODIFY");
+            if(lib.packageName.length()!=0) {
+                o.printf("package %1s;",lib.packageName);
+                o.println();
+                o.println();
+            }
+
+            o.println("import com4j.*;");
+            o.println();
+        }
+    }
 
     /**
      * Returns the primary interface for the given co-class.
@@ -207,12 +323,15 @@ public final class Generator {
     }
 
     private void declareFactoryMethod(IndentingWriter o, ICoClassDecl t) {
-        String primaryIntf; // default interface name
         ITypeDecl p = getDefaultInterface(t);
-        if(p!=null)
+
+        String primaryIntf = Com4jObject.class.getName(); // default interface name
+        try {
             primaryIntf = getTypeName(p);
-        else
-            primaryIntf = Com4jObject.class.getName();
+        } catch( BindingException e ) {
+            e.addContext("class factory for coclass "+t.getName());
+            el.error(e);
+        }
 
         o.println();
         printJavadoc(t.getHelpString(),o);
@@ -243,147 +362,9 @@ public final class Generator {
 //        }
     }
 
-    private void generatePackageHtml(IWTypeLib lib) throws IOException {
-        PrintWriter o = writer.create( new File(getPackageDir(),"package.html" ) );
-        o.println("<html><body>");
-        o.printf("<h2>%1s</h2>",lib.getName());
-        o.printf("<p>%1s</p>",lib.getHelpString());
-        o.println("</html></body>");
-        o.close();
-    }
 
-    private void generate( IDispInterfaceDecl t ) throws IOException {
-        if(t.isDual())
-            generate( t.getVtblInterface() );
-        else {
-            // TODO: how should we handle this?
-        }
-//        } catch( BindingException e ) {
-//            throw new BindingException(
-//                Messages.FAILED_TO_BIND.format(t.getName()),
-//                e );
-//        }
-    }
 
-    private void generate( IEnumDecl t ) throws IOException {
 
-        // load all the constants first
-        int len = t.countConstants();
-        IConstant[] cons = new IConstant[len];
-
-        for( int i=0; i<len; i++ )
-            cons[i] = t.getConstant(i);
-
-        // check if we need to use ComEnum
-        boolean needComEnum = false;
-        for( int i=0; i<len; i++ ) {
-            if( cons[i].getValue()!=i ) {
-                needComEnum = true;
-                break;
-            }
-        }
-
-        // generate the prolog
-        String typeName = getTypeName(t);
-        IndentingWriter o = writer.create( new File(getPackageDir(),typeName+".java" ) );
-        generateHeader(o);
-
-        printJavadoc(t.getHelpString(), o);
-
-        o.printf("public enum %1s ",typeName);
-        if(needComEnum)
-            o.print("implements ComEnum ");
-        o.println("{");
-        o.in();
-
-        // generate constants
-        for( IConstant con : cons ) {
-            printJavadoc(con.getHelpString(),o);
-            o.print(con.getName());
-            if(needComEnum) {
-                o.printf("(%1d),",con.getValue());
-            } else {
-                o.print(", // ");
-                o.print(con.getValue());
-            }
-            o.println();
-        }
-
-        if(needComEnum) {
-            // the rest of the boiler-plate code
-            o.println(";");
-            o.println();
-            o.println("private final int value;");
-            o.println(typeName+"(int value) { this.value=value; }");
-            o.println("public int comEnumValue() { return value; }");
-        }
-
-        o.out();
-        o.println("}");
-
-        // clean up
-        for( IConstant con : cons)
-            con.dispose();
-
-        o.close();
-    }
-
-    private void generate( IInterfaceDecl t ) throws IOException {
-        String typeName = getTypeName(t);
-        IndentingWriter o = writer.create( new File(getPackageDir(),typeName+".java" ) );
-        generateHeader(o);
-
-        printJavadoc(t.getHelpString(), o);
-
-        o.printf("@IID(\"%1s\")",t.getGUID());
-        o.println();
-        o.printf("public interface %1s",typeName);
-        if(t.countBaseInterfaces()!=0) {
-            o.print(" extends ");
-            o.beginCommaMode();
-            for( int i=0; i<t.countBaseInterfaces(); i++ ) {
-                o.comma();
-                String baseName = getTypeName(t.getBaseInterface(i));
-                if(baseName.equals("IUnknown") || baseName.equals("IDispatch"))
-                    baseName = "Com4jObject";
-                o.print(baseName);
-            }
-            o.endCommaMode();
-        }
-        o.println(" {");
-        o.in();
-
-        for( int j=0; j<t.countMethods(); j++ ) {
-            IMethod m = t.getMethod(j);
-            try {
-                o.startBuffering();
-                generate(m,o);
-                o.commit();
-            } catch( BindingException e ) {
-                o.cancel();
-                e.addContext("interface "+t.getName());
-                el.error(e);
-            }
-            m.dispose();
-        }
-
-        o.out();
-        o.println("}");
-
-        o.close();
-    }
-
-    private void generateHeader(IndentingWriter o) {
-        o.println("// GENERATED. DO NOT MODIFY");
-        if(packageName.length()!=0) {
-            o.printf("package %1s;",packageName);
-            o.println();
-            o.println();
-        }
-
-        o.println("import com4j.*;");
-        o.println();
-    }
 
     /**
      * Binds a native method to a Java method.
@@ -440,7 +421,7 @@ public final class Generator {
 
             declareReturnType(o);
 
-            o.print(camelize(method.getName()));
+            o.print(escape(camelize(method.getName())));
             o.print('(');
             o.in();
 
@@ -480,7 +461,7 @@ public final class Generator {
             o.print(' ');
             String name = p.getName();
             if(name==null)  name="rhs";
-            o.print(camelize(name));
+            o.print(escape(camelize(name)));
         }
 
         /**
@@ -521,6 +502,122 @@ public final class Generator {
             }
         }
     }
+
+    /**
+     * Type library information.
+     */
+    private final Map<IWTypeLib,TypeLibInfo> typeLibs = new HashMap<IWTypeLib,TypeLibInfo>();
+
+    /**
+     * Information about a type library.
+     *
+     * <p>
+     * Processing a type library often requires references to other
+     * type libraries, and in particular how the type names in other
+     * type libraries are bound in Java.
+     *
+     * <p>
+     * An instance of this class is created for each type library
+     * (including the one that we are binding.)
+     */
+    private class TypeLibInfo {
+        final IWTypeLib lib;
+
+        /**
+         * Java package name of this type library.
+         * Can be empty but never null.
+         */
+        final String packageName;
+
+        /**
+         * Every top-level type declaration in this type library and their
+         * Java type name.
+         */
+        private final Map<ITypeDecl,String> aliases = new HashMap<ITypeDecl,String>();
+
+        public TypeLibInfo(IWTypeLib lib) throws BindingException {
+            this.lib = lib;
+            this.packageName = referenceResolver.resolve(lib);
+
+            buildSimpleAliasTable();
+        }
+
+        /**
+         * MIDL often produces typedefs of the form "typedef A B" where
+         * B is an enum declaration, and A is the name given by the user in IDL.
+         *
+         * <p>
+         * I don't know why MIDL behaves in this way, but in this case
+         * it's usually desirable as a binding if we use A everywhere in place of B.
+         *
+         * <p>
+         * We build this map B -> A to simply this.
+         */
+        private void buildSimpleAliasTable() {
+            String prefix = packageName;
+            if(prefix.length()==0)  prefix += '.';
+
+            int len = lib.count();
+            for( int i=0; i<len; i++ ) {
+                ITypeDecl t = lib.getType(i);
+                if(t.getKind()==TypeKind.ALIAS) {
+                    ITypedefDecl typedef = t.queryInterface(ITypedefDecl.class);
+                    ITypeDecl def = typedef.getDefinition().queryInterface(ITypeDecl.class);
+                    if(def!=null) {
+//                    System.out.println(def.getName()+" -> "+typedef.getName());
+                        aliases.put( def, prefix+typedef.getName() );
+                    }
+                }
+                t.dispose();
+            }
+        }
+
+        private File getPackageDir() {
+            if(packageName.equals(""))
+                return new File(".");
+            else
+                return new File(packageName.replace('.',File.separatorChar));
+        }
+
+        private String getTypeName(ITypeDecl decl) {
+            assert decl.getParent().equals(lib);
+
+            if(aliases.containsKey(decl))
+                return aliases.get(decl);
+            else
+                return decl.getName();
+        }
+    }
+
+
+    /**
+     * Gets the type name for the given declaration.
+     * <p>
+     * This takes the followings into account:
+     *
+     * <ul>
+     *  <li>aliases (typedefs)
+     *  <li>types in other type libs.
+     * </ul>
+     */
+    private String getTypeName(ITypeDecl decl) throws BindingException {
+        return getTypeLibInfo(decl.getParent()).getTypeName(decl);
+    }
+
+    /**
+     * Gets or creates a {@link TypeLibInfo} object for the given
+     * type library.
+     */
+    private TypeLibInfo getTypeLibInfo(IWTypeLib p) throws BindingException {
+        TypeLibInfo tli = typeLibs.get(p);
+        if(tli==null) {
+            typeLibs.put(p,tli=new TypeLibInfo(p));
+        }
+        return tli;
+    }
+
+
+
 
     private static class VariableBinding {
         public final String javaType;
@@ -594,10 +691,11 @@ public final class Generator {
         if(ptrt!=null) {
             // pointer type
             IType comp = ptrt.getPointedAtType();
-            ITypeDecl compDecl = comp.queryInterface(ITypeDecl.class);
-            if( compDecl!=null )
+            IInterfaceDecl compDecl = comp.queryInterface(IInterfaceDecl.class);
+            if( compDecl!=null ) {
                 // t = T* where T is a declared interface
                 return new VariableBinding( getTypeName(compDecl), NativeType.ComObject, true );
+            }
 
             IPrimitiveType compPrim = comp.queryInterface(IPrimitiveType.class);
             if( compPrim!=null ) {
@@ -676,6 +774,12 @@ public final class Generator {
         }
     }
 
+    /**
+     * Returns a human-readable identifier of the type,
+     * but it's not necessarily a correct Java id.
+     *
+     * This is mainly for debugging.
+     */
     private String getTypeString(IType t) {
         if(t==null)
             return "null";
@@ -690,7 +794,7 @@ public final class Generator {
 
         ITypeDecl decl = t.queryInterface(ITypeDecl.class);
         if(decl!=null)
-            return getTypeName(decl);
+            return decl.getName();
 
         return "N/A";
     }
@@ -702,5 +806,9 @@ public final class Generator {
         } else {
             return s;
         }
+    }
+
+    private static String escape(String s) {
+        return Escape.escape(s);
     }
 }

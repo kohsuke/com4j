@@ -8,6 +8,6 @@ import com4j.VTID;
  */
 @IID("{1FA456D6-6E48-4ff0-9BF8-300937470A02}")
 public interface ITypedefDecl extends ITypeDecl {
-    @VTID(6)
+    @VTID(7)
     IType getDefinition();
 }

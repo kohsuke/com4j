@@ -17,4 +17,7 @@ public interface ITypeDecl extends Com4jObject {
 
     @VTID(5)
     TypeKind getKind();
+
+    @VTID(6)
+    IWTypeLib getParent();
 }

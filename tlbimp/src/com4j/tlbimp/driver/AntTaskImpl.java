@@ -1,11 +1,15 @@
-package com4j.tlbimp;
+package com4j.tlbimp.driver;
 
 import com4j.COM4J;
 import com4j.ComException;
+import com4j.tlbimp.BindingException;
+import com4j.tlbimp.ErrorListener;
+import com4j.tlbimp.FileCodeWriter;
+import com4j.tlbimp.TypeLibInfo;
 import com4j.tlbimp.def.IWTypeLib;
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Task;
 import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Task;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,18 +22,20 @@ import java.io.IOException;
 public class AntTaskImpl extends Task implements ErrorListener {
 
     private File destDir;
-    private String packageName="";
     private File source;
 
     private String libid;
     private String libver;
+
+    private Driver driver = new Driver();
+
 
     public void setDestDir(File destDir) {
         this.destDir = destDir;
     }
 
     public void setPackage(String packageName) {
-        this.packageName = packageName;
+        driver.setPackageName(packageName);
     }
 
     public void setFile(File source) {
@@ -42,6 +48,11 @@ public class AntTaskImpl extends Task implements ErrorListener {
 
     public void setLibver(String libver) {
         this.libver = libver;
+    }
+
+    public void addConfiguredRef( Ref r ) {
+        r.validate();
+        driver.addRef(r);
     }
 
     public void execute() throws BuildException {
@@ -62,18 +73,25 @@ public class AntTaskImpl extends Task implements ErrorListener {
 
         try {
             log("Generating definitions from "+source, Project.MSG_INFO);
-            IWTypeLib tlb = COM4J.loadTypeLibrary(source).queryInterface(IWTypeLib.class);
-            CodeWriter cw = new FileCodeWriter(destDir);
-            Generator.generate(tlb,cw,packageName,this);
-            tlb.dispose();
+
+            driver.run(
+                COM4J.loadTypeLibrary(source).queryInterface(IWTypeLib.class),
+                new FileCodeWriter(destDir),
+                this);
         } catch( ComException e ) {
             throw new BuildException(e);
         } catch( IOException e ) {
+            throw new BuildException(e);
+        } catch( BindingException e ) {
             throw new BuildException(e);
         }
     }
 
     public void error(BindingException e) {
         log(e.getMessage(),Project.MSG_ERR);
+    }
+
+    public void warning(String message) {
+        log(message,Project.MSG_WARN);
     }
 }

@@ -9,24 +9,24 @@ import com4j.VTID;
  */
 @IID("{3BDCCFBF-B493-4d54-B1D0-4DE2FB1AFC78}")
 public interface IDispInterfaceDecl extends ITypeDecl, IInterface {
-    @VTID(6)
+    @VTID(7)
     GUID getGUID();
 
-    @VTID(7)
+    @VTID(8)
     int countMethods();
 
-    @VTID(8)
+    @VTID(9)
     IMethod getMethod(int idx);
 
     /**
      * return true if this interface is a dual interface
      */
-    @VTID(9)
+    @VTID(10)
     boolean isDual();
 
     /**
      * get the vtable interface of this dispatch interface. Works only when this is a dual interface.
      */
-    @VTID(10)
+    @VTID(11)
     IInterfaceDecl getVtblInterface();
 }

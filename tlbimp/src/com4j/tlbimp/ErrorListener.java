@@ -5,4 +5,6 @@ package com4j.tlbimp;
  */
 public interface ErrorListener {
     void error( BindingException e );
+
+    void warning( String message );
 }

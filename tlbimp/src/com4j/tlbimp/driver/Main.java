@@ -1,9 +1,16 @@
-package com4j.tlbimp;
+package com4j.tlbimp.driver;
 
 import com4j.COM4J;
 import com4j.ComException;
+import com4j.tlbimp.BindingException;
+import com4j.tlbimp.CodeWriter;
+import com4j.tlbimp.DumpCodeWriter;
+import com4j.tlbimp.ErrorListener;
+import com4j.tlbimp.FileCodeWriter;
+import com4j.tlbimp.TypeLibInfo;
 import com4j.tlbimp.def.IWTypeLib;
 import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineOption;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.opts.BooleanOption;
 import org.kohsuke.args4j.opts.FileOption;
@@ -13,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
@@ -25,6 +33,22 @@ public class Main implements ErrorListener {
 
     public StringOption libid = new StringOption("-libid");
     public StringOption libVersion = new StringOption("-libver");
+
+    private final List<Ref> refs = new ArrayList<Ref>();
+
+    public CmdLineOption refOpt = new CmdLineOption() {
+        public boolean accepts(String optionName) {
+            return optionName.equals("-ref");
+        }
+
+        public int parseArguments(CmdLineParser parser, Parameters params) throws CmdLineException {
+            Ref r = new Ref();
+            r.setLibid(params.getParameter(0));
+            r.setPackageName(params.getParameter(1));
+            refs.add(r);
+            return 2;
+        }
+    };
 
     public static void main(String[] args) {
         System.exit(new Main().doMain(args));
@@ -89,12 +113,17 @@ public class Main implements ErrorListener {
             File typeLibFileName = new File(file);
             System.err.println("Processing "+typeLibFileName);
             try {
-                IWTypeLib tlb = COM4J.loadTypeLibrary(typeLibFileName).queryInterface(IWTypeLib.class);
-                Generator.generate(tlb,cw,packageName.value,this);
-                tlb.dispose();
+                IWTypeLib mainLib = COM4J.loadTypeLibrary(typeLibFileName).queryInterface(IWTypeLib.class);
+                Driver driver = new Driver();
+                for( Ref r : refs )
+                    driver.addRef(r);
+                driver.run(mainLib,cw,this);
+                mainLib.dispose();
             } catch( ComException e ) {
                 return handleException(e);
             } catch( IOException e ) {
+                return handleException(e);
+            } catch( BindingException e ) {
                 return handleException(e);
             }
         }
@@ -114,5 +143,9 @@ public class Main implements ErrorListener {
 
     public void error(BindingException e) {
         handleException(e);
+    }
+
+    public void warning(String message) {
+        System.err.println(message);
     }
 }

@@ -9,24 +9,24 @@ import com4j.VTID;
  */
 @IID("{EE076FF5-2E16-4a23-AE24-5DF610F6006E}")
 public interface IInterfaceDecl extends ITypeDecl, IInterface {
-    @VTID(6)
+    @VTID(7)
     GUID getGUID();
 
-    @VTID(7)
+    @VTID(8)
     int countMethods();
 
-    @VTID(8)
+    @VTID(9)
     IMethod getMethod(int idx);
 
     /**
      * count the number of the base interfaces
      */
-    @VTID(9)
+    @VTID(10)
     int countBaseInterfaces();
 
     /**
      * gets the base interface
      */
-    @VTID(10)
+    @VTID(11)
     ITypeDecl getBaseInterface(int index);
 }

@@ -3,6 +3,7 @@ package com4j.tlbimp.def;
 import com4j.Com4jObject;
 import com4j.IID;
 import com4j.VTID;
+import com4j.GUID;
 
 /**
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
@@ -11,6 +12,9 @@ import com4j.VTID;
 public interface IWTypeLib extends Com4jObject {
     @VTID(3)
     int count();
+
+    @VTID(4)
+    GUID getLibid();
 
     @VTID(5)
     String getName();

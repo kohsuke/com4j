@@ -12,22 +12,22 @@ public interface ICoClassDecl extends ITypeDecl {
     /**
      * count the number of the interfaces implemented by this co-class
      */
-    @VTID(6)
+    @VTID(7)
     int countImplementedInterfaces();
 
     /**
      * gets an interface implemented by this co-class
      */
-    @VTID(7)
+    @VTID(8)
     IImplementedInterfaceDecl getImplementedInterface(
         int index);
 
     /**
      * checks if this co-class is creatable
      */
-    @VTID(8)
+    @VTID(9)
     boolean isCreatable();
 
-    @VTID(9)
+    @VTID(10)
     GUID getGUID();
 }

@@ -1,4 +1,4 @@
-package com4j.tlbimp;
+package com4j.tlbimp.driver;
 
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
@@ -10,14 +10,11 @@ import java.util.ResourceBundle;
  */
 enum Messages {
 
-    RETVAL_MUST_BY_REFERENCE,
-    UNSUPPORTED_VARTYPE,
-    UNSUPPORTED_TYPE,
-    FAILED_TO_BIND,
-    INVALID_LIBID,
-    NO_VERSION_AVAILABLE,
-    INVALID_VERSION,
-    NO_WIN32_TYPELIB,
+    USAGE,
+    NO_FILE_NAME,
+    NO_OUTPUT_DIR,
+    CANT_SPECIFY_LIBID_AND_FILENAME,
+    REFERENCED_TYPELIB_GENERATED,
     ;
 
     private static final ResourceBundle rb = ResourceBundle.getBundle(Messages.class.getName());
