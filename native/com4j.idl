@@ -29,6 +29,7 @@ library com4j
 	interface IConstant;
 
 	typedef enum {
+		[helpstring("testing")]
 		TypeKind_ENUM	= 0,
 		TypeKind_RECORD	= 1,
 		TypeKind_MODULE	= 2,
@@ -225,5 +226,7 @@ library com4j
 
 		[helpstring("numeric value of this constant.")]
 		HRESULT getValue(int* pValue);
+
+		HRESULT getHelpString([out,retval] BSTR* pHelpString);
 	};
 };

@@ -17,4 +17,7 @@ public interface IConstant extends Com4jObject {
 
     @VTID(5)
     int getValue();
+
+    @VTID(6)
+    String getHelpString();
 }

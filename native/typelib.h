@@ -286,6 +286,9 @@ public:
 		*ppType = createType(m_pParent, m_pDesc->elemdescVar.tdesc);
 		return S_OK;
 	}
+	STDMETHOD(raw_getHelpString)(BSTR* pStr) {
+		return getTypeInfo()->GetDocumentation( m_pDesc->memid, NULL, pStr, NULL, NULL );
+	}
 	STDMETHOD(raw_getValue)(int* pValue) {
 		VARIANT r;
 		VariantInit(&r);
