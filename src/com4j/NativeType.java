@@ -1,9 +1,8 @@
 package com4j;
 
-import static com4j.Const.*;
-
-import java.lang.reflect.Field;
 import java.util.Calendar;
+
+import static com4j.Const.*;
 
 /**
  * Native method type.

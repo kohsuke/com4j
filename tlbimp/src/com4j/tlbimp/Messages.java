@@ -1,7 +1,7 @@
 package com4j.tlbimp;
 
-import java.util.ResourceBundle;
 import java.text.MessageFormat;
+import java.util.ResourceBundle;
 
 /**
  * Localization of the messages.

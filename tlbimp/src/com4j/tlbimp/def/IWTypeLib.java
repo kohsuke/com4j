@@ -1,11 +1,8 @@
 package com4j.tlbimp.def;
 
-import static com4j.NativeType.HRESULT;
+import com4j.Com4jObject;
 import com4j.IID;
 import com4j.VTID;
-import com4j.Com4jObject;
-import com4j.ReturnValue;
-import com4j.NativeType;
 
 /**
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)

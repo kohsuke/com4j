@@ -1,11 +1,9 @@
 package com4j.tlbimp;
 
-import com4j.NativeType;
-
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.io.OutputStream;
-import java.io.IOException;
 import java.util.Stack;
 
 /**

@@ -1,7 +1,7 @@
 package com4j.tlbimp.def;
 
-import com4j.IID;
 import com4j.Com4jObject;
+import com4j.IID;
 
 /**
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)

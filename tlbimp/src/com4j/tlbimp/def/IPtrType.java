@@ -2,7 +2,6 @@ package com4j.tlbimp.def;
 
 import com4j.IID;
 import com4j.VTID;
-import com4j.GUID;
 
 /**
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)

@@ -1,7 +1,6 @@
 package com4j;
 
-import com4j.ComException;
-import com4j.GUID;
+
 
 
 /**

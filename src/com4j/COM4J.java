@@ -1,7 +1,7 @@
 package com4j;
 
-import java.lang.reflect.Proxy;
 import java.io.File;
+import java.lang.reflect.Proxy;
 
 /**
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
