@@ -6,6 +6,8 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.Buffer;
 import java.util.Iterator;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
@@ -120,6 +122,8 @@ final class MethodInfo {
                 return NativeType.VARIANT_ByRef;
             if(Buffer.class.isAssignableFrom(c))
                 return NativeType.PVOID;
+            if(Calendar.class.isAssignableFrom(c) || Date.class==c)
+                return NativeType.Date;
         }
 
         if( t instanceof ParameterizedType ) {

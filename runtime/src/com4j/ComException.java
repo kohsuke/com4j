@@ -12,14 +12,23 @@ package com4j;
 public class ComException extends RuntimeException {
     private final int hresult;
 
-    public ComException( String msg, int hresult ) {
+    private final String fileName;
+    private final int line;
+
+    public ComException( String msg, int hresult, String fileName, int line ) {
         super(Integer.toHexString(hresult)+' '+cutEOL(msg));
         this.hresult = hresult;
+        this.fileName = fileName;
+        this.line = line;
     }
 
-    public ComException( String msg ) {
-        this(msg,-1);
+    public ComException( String msg, String fileName, int line ) {
+        super(msg);
+        this.hresult = -1;
+        this.fileName = fileName;
+        this.line = line;
     }
+
 
     /**
      * Gets the HRESULT code of this error.`
@@ -35,5 +44,13 @@ public class ComException extends RuntimeException {
             return s.substring(0,s.length()-2);
         else
             return s;
+    }
+
+    public String toString() {
+        String s = super.toString();
+        if(fileName!=null) {
+            s += ' '+fileName+':'+line;
+        }
+        return s;
     }
 }

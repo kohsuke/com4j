@@ -1,18 +1,15 @@
 package com4j;
 
-import static com4j.Const.BYREF;
-
-import sun.nio.ch.DirectBuffer;
-
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
 import java.util.Calendar;
 import java.util.Iterator;
-import java.nio.Buffer;
-import java.nio.CharBuffer;
-import java.nio.ByteBuffer;
-import java.lang.reflect.Type;
-import java.lang.reflect.ParameterizedType;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
-import static com4j.Const.*;
+import static com4j.Const.BYREF;
 
 /**
  * Native method type.
@@ -398,7 +395,6 @@ public enum NativeType {
             t += 2209132800000L;
 
             // DATE is an offset from "30 December 1899"
-            long MSPD = 24*60*60*1000;
             if(t<0) {
                 // -0.3 -> -0.7
                 long offset = -(t%MSPD);    // TODO: check
@@ -406,6 +402,24 @@ public enum NativeType {
             }
             double d = ((double)t)/MSPD;
             return d;
+        }
+
+        Object unmassage(Class<?> signature, Type genericSignature, Object param) {
+            double d = (Double)param;
+            long t = (long)(d*MSPD);
+            t -= 2209132800000L;
+            java.util.Date dt = new java.util.Date(t);
+            if(defaultTimeZone.inDaylightTime(dt)) {
+                // adjust
+                dt.setTime(t-defaultTimeZone.getDSTSavings());
+            }
+            if(Calendar.class.isAssignableFrom(signature)) {
+                GregorianCalendar cal = new GregorianCalendar();
+                cal.setTime(dt);
+                return cal;
+            } else {
+                return dt;
+            }
         }
     },
 
@@ -487,4 +501,9 @@ public enum NativeType {
     public NativeType byRef() {
         return null;
     }
+
+
+    private static final long MSPD = 24*60*60*1000;
+    private static final TimeZone defaultTimeZone = TimeZone.getDefault();
+
 }
