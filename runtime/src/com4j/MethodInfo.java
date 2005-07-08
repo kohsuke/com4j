@@ -8,6 +8,8 @@ import java.nio.Buffer;
 import java.util.Iterator;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
@@ -93,6 +95,22 @@ final class MethodInfo {
     }
 
 
+    private static final Map<Class,NativeType> defaultConversions = new HashMap<Class, NativeType>();
+
+    static {
+        defaultConversions.put( Iterator.class, NativeType.ComObject );
+        defaultConversions.put( GUID.class, NativeType.GUID );
+        defaultConversions.put( double.class, NativeType.Double );
+        defaultConversions.put( float.class, NativeType.Float );
+        defaultConversions.put( int.class, NativeType.Int32 );
+        defaultConversions.put( short.class, NativeType.Int16 );
+        defaultConversions.put( byte.class, NativeType.Int8 );
+        defaultConversions.put( boolean.class, NativeType.VariantBool );
+        defaultConversions.put( String.class, NativeType.BSTR );
+        defaultConversions.put( Object.class, NativeType.VARIANT_ByRef );
+        defaultConversions.put( Variant.class, NativeType.VARIANT_ByRef );
+        defaultConversions.put( Date.class, NativeType.Date );
+    }
 
     /**
      * Computes the default conversion for the given type.
@@ -100,29 +118,16 @@ final class MethodInfo {
     private static NativeType getDefaultConversion(Type t) {
         if( t instanceof Class ) {
             Class<?> c = (Class<?>)t;
+            NativeType r = defaultConversions.get(c);
+            if(r!=null) return r;
+
             if(Com4jObject.class.isAssignableFrom(c))
                 return NativeType.ComObject;
             if(Enum.class.isAssignableFrom(c))
                 return NativeType.Int32;
-            if(Iterator.class==t)
-                return NativeType.ComObject;
-            if(GUID.class==t)
-                return NativeType.GUID;
-            if(Integer.TYPE==t)
-                return NativeType.Int32;
-            if(Short.TYPE==t)
-                return NativeType.Int16;
-            if(Byte.TYPE==t)
-                return NativeType.Int8;
-            if(String.class==t)
-                return NativeType.BSTR;
-            if(Boolean.TYPE==t)
-                return NativeType.VariantBool;
-            if(Object.class==t || Variant.class==t)
-                return NativeType.VARIANT_ByRef;
             if(Buffer.class.isAssignableFrom(c))
                 return NativeType.PVOID;
-            if(Calendar.class.isAssignableFrom(c) || Date.class==c)
+            if(Calendar.class.isAssignableFrom(c))
                 return NativeType.Date;
         }
 
