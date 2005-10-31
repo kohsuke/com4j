@@ -19,6 +19,7 @@ import com4j.tlbimp.def.IWTypeLib;
 import com4j.tlbimp.def.TypeKind;
 import com4j.tlbimp.def.VarType;
 import com4j.tlbimp.def.ISafeArrayType;
+import com4j.tlbimp.def.InvokeKind;
 
 import java.io.File;
 import java.io.IOException;
@@ -260,8 +261,19 @@ public final class Generator {
             o.println(" {");
             o.in();
 
+            // see issue 15.
+            // to avoid binding both propput and propputref,
+            // we'll use this to keep track of what we generated.
+            // TODO: what was the difference between propput and propputref?
+            Set<String> putMethods = new HashSet<String>();
+
             for( int j=0; j<t.countMethods(); j++ ) {
                 IMethod m = t.getMethod(j);
+                InvokeKind kind = m.getKind();
+                if(kind== InvokeKind.PROPERTYPUT || kind== InvokeKind.PROPERTYPUTREF) {
+                    if(!putMethods.add(m.getName()))
+                        continue;   // already added
+                }
                 try {
                     o.startBuffering();
                     Generator.this.generate(m,o);
@@ -771,6 +783,9 @@ public final class Generator {
                     if( isPsz(nameHint) )
                         // this is a common mistake
                         return new VariableBinding( String.class, NativeType.Unicode, false );
+                }
+                if( compPrim.getVarType()==VarType.VT_BOOL ) {
+                    return new VariableBinding("Holder<Boolean>", NativeType.VariantBool_ByRef, true );
                 }
             }
 
