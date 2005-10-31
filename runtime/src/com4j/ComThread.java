@@ -134,8 +134,7 @@ final class ComThread extends Thread {
             if(task.exception!=null) {
                 RuntimeException e = task.exception;
                 task.exception = null;
-                e.fillInStackTrace();
-                throw e;
+                throw new ExecutionException(e);
             } else {
                 T r = task.result;
                 task.result = null;

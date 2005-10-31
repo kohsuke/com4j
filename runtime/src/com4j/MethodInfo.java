@@ -4,6 +4,10 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.WildcardType;
+import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.Array;
+import java.lang.reflect.TypeVariable;
 import java.nio.Buffer;
 import java.util.Iterator;
 import java.util.Calendar;
@@ -81,16 +85,30 @@ final class MethodInfo {
     }
 
     Object invoke( int ptr, Object[] args ) {
-        for( int i=0; i<args.length; i++ )
-            args[i] = params[i].massage(args[i]);
+        for( int i=0; i<args.length; i++ ) {
+            if(args[i] instanceof Holder && params[i].getNoByRef()!=null) {
+                // massage the value of Holder, not the Holder itself
+                Holder h = (Holder)args[i];
+                h.value = params[i].getNoByRef().massage(h.value);
+            } else {
+                args[i] = params[i].massage(args[i]);
+            }
+        }
 
         try {
             Object r = Native.invoke( ptr, vtIndex, args, paramConvs,
                 method.getReturnType(), returnIndex, returnIsInOut, returnConv.code );
             return returnConv.unmassage(method.getReturnType(), method.getGenericReturnType(), r);
         } finally {
-            for( int i=0; i<args.length; i++ )
-                args[i] = params[i].unmassage(paramTypes[i], genericParamTypes[i], args[i]);
+            for( int i=0; i<args.length; i++ ) {
+                if(args[i] instanceof Holder && params[i].getNoByRef()!=null) {
+                    Holder h = (Holder)args[i];
+                    Type holderParamType = getTypeParameter(genericParamTypes[i], 0);
+                    h.value = params[i].getNoByRef().unmassage( erasure(holderParamType), holderParamType, h.value );
+                } else {
+                    args[i] = params[i].unmassage(paramTypes[i], genericParamTypes[i], args[i]);
+                }
+            }
         }
     }
 
@@ -140,8 +158,10 @@ final class MethodInfo {
                     return NativeType.ComObject_ByRef;
                 if(String.class==v)
                     return NativeType.BSTR_ByRef;
-                if(Integer.class==v)
+                if(Integer.class==v || Enum.class.isAssignableFrom((Class<?>)v))
                     return NativeType.Int32_ByRef;
+                if(Boolean.class==v)
+                    return NativeType.VariantBool_ByRef;
             }
             if( p.getRawType()==Iterator.class ) {
                 return NativeType.ComObject;
@@ -151,4 +171,39 @@ final class MethodInfo {
         throw new IllegalAnnotationException("no default conversion available for "+t);
     }
 
+    private static Type getTypeParameter( Type t, int index ) {
+        if (t instanceof ParameterizedType) {
+            ParameterizedType pt = (ParameterizedType) t;
+            return pt.getActualTypeArguments()[index];
+        } else {
+            return Object.class;
+        }
+    }
+
+    private static Class erasure( Type t ) {
+        if (t instanceof Class) {
+            return (Class) t;
+        }
+        if (t instanceof ParameterizedType) {
+            ParameterizedType pt = (ParameterizedType) t;
+            return erasure(pt.getRawType());
+        }
+        if (t instanceof WildcardType) {
+            WildcardType wt = (WildcardType) t;
+            Type[] ub = wt.getUpperBounds();
+            if(ub.length==0)    return Object.class;
+            else                return erasure(ub[0]);
+        }
+        if (t instanceof GenericArrayType) {
+            GenericArrayType ga = (GenericArrayType) t;
+            return Array.newInstance(erasure(ga.getGenericComponentType()),0).getClass();   // ARGH!
+        }
+        if (t instanceof TypeVariable) {
+            TypeVariable tv = (TypeVariable) t;
+            Type[] ub = tv.getBounds();
+            if(ub.length==0)    return Object.class;
+            else                return erasure(ub[0]);
+        }
+        throw new IllegalArgumentException(t.toString());
+    }
 }

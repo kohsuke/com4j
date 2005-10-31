@@ -8,6 +8,8 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
+import java.util.Map;
+import java.util.HashMap;
 
 import static com4j.Const.BYREF;
 
@@ -25,11 +27,7 @@ public enum NativeType {
      * Expected Java type:
      *      String
      */
-    BSTR(1) {
-        public NativeType byRef() {
-            return BSTR_ByRef;
-        }
-    },
+    BSTR(1),
 
     /**
      * <tt>BSTR*</tt>.
@@ -73,11 +71,7 @@ public enum NativeType {
      *      byte
      *      {@link Number}
      */
-    Int8(100) {
-        public NativeType byRef() {
-            return Int8_ByRef;
-        }
-    },
+    Int8(100),
     Int8_ByRef(100|BYREF),
     /**
      * <tt>INT16</tt> (short).
@@ -87,11 +81,7 @@ public enum NativeType {
      *      short
      *      {@link Number}
      */
-    Int16(101) {
-        public NativeType byRef() {
-            return Int16_ByRef;
-        }
-    },
+    Int16(101),
     Int16_ByRef(101|BYREF),
 
     /**
@@ -109,6 +99,8 @@ public enum NativeType {
     Int32(102) {
         // the native code will see the raw pointer value as Integer
         Object massage(Object param) {
+            if(param==null)     return null;
+            
             Class<?> clazz = param.getClass();
 
             if( Enum.class.isAssignableFrom(clazz) ) {
@@ -124,10 +116,6 @@ public enum NativeType {
             }
 
             return param;
-        }
-
-        public NativeType byRef() {
-            return Int32_ByRef;
         }
     },
     Int32_ByRef(102|BYREF),
@@ -153,6 +141,7 @@ public enum NativeType {
      *      {@link Boolean}
      */
     VariantBool(104),
+    VariantBool_ByRef(104|BYREF),
 
     /**
      * <tt>float</tt>.
@@ -213,10 +202,6 @@ public enum NativeType {
                 return new ComCollection(itemType,Wrapper.create(IEnumVARIANT.class, (Integer)param ));
             }
             return Wrapper.create( (Class<? extends Com4jObject>)type, (Integer)param );
-        }
-
-        public NativeType byRef() {
-            return ComObject_ByRef;
         }
     },
 
@@ -347,11 +332,7 @@ public enum NativeType {
      *      direct {@link Buffer}s ({@link Buffer}s created from methods like
      *      {@link ByteBuffer#allocateDirect(int)}
      */
-    PVOID(304) {
-        public NativeType byRef() {
-            return PVOID_ByRef;
-        }
-    },
+    PVOID(304),
 
 
     /**
@@ -459,6 +440,14 @@ public enum NativeType {
      */
     final int code;
 
+    private static final Map<Integer,NativeType> codeMap = new HashMap<Integer, NativeType>();
+
+    static {
+        for (NativeType nt : values()) {
+            codeMap.put(nt.code,nt);
+        }
+    }
+
     NativeType( int code ) {
         this.code = code;
     }
@@ -495,8 +484,16 @@ public enum NativeType {
      * If the constant has the BYREF version, return it.
      * Otherwise null.
      */
-    public NativeType byRef() {
-        return null;
+    public final NativeType byRef() {
+        if(code==(code|BYREF))
+            return null;
+        return codeMap.get(code|BYREF);
+    }
+
+    public final NativeType getNoByRef() {
+        if(code==(code&(~BYREF)))
+            return null;
+        return codeMap.get(code&(~BYREF));
     }
 
 
