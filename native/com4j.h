@@ -20,6 +20,7 @@ enum Conv {
 	cvINT32_byRef = 102|BYREF,
 	cvBool = 103,
 	cvVariantBool = 104,
+	cvVariantBool_byRef = 104|BYREF,
 	cvFloat = 120,
 	cvDouble = 121,
 

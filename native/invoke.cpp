@@ -99,7 +99,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				if(arg==NULL) {
 					pv = NULL;
 				} else {
-					unm = new ByteUnmarshaller(env,arg);
+					unm = new ByteUnmarshaller(env,jholder(arg)->get(env));
 					add(new OutParamHandler( jholder(arg), unm ) );
 					pv = unm->addr();
 				}
@@ -116,7 +116,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				if(arg==NULL) {
 					pv = NULL;
 				} else {
-					unm = new ShortUnmarshaller(env,arg);
+					unm = new ShortUnmarshaller(env,jholder(arg)->get(env));
 					add(new OutParamHandler( jholder(arg), unm ) );
 					pv = unm->addr();
 				}
@@ -144,7 +144,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				if(arg==NULL) {
 					pv = NULL;
 				} else {
-					unm = new IntUnmarshaller(env,arg);
+					unm = new IntUnmarshaller(env,jholder(arg)->get(env));
 					add( new OutParamHandler( jholder(arg), unm ) );
 					pv = unm->addr();
 				}
@@ -182,6 +182,17 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 					vbool = VARIANT_FALSE;
 				}
 				_asm push vbool;
+				break;
+
+			case cvVariantBool_byRef:
+				if(arg==NULL) {
+					pv = NULL;
+				} else {
+					unm = new VariantBoolUnmarshaller(env,jholder(arg)->get(env));
+					add( new OutParamHandler( jholder(arg), unm ) );
+					pv = unm->addr();
+				}
+				_asm push pv;
 				break;
 
 			case cvGUID:

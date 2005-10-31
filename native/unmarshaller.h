@@ -96,6 +96,7 @@ typedef PrimitiveUnmarshaller<xducer::BoxedDoubleXducer>	DoubleUnmarshaller;
 
 
 typedef PrimitiveUnmarshaller<xducer::BoxedBoolXducer>	BoolUnmarshaller;
+typedef PrimitiveUnmarshaller<xducer::BoxedVariantBoolXducer>	VariantBoolUnmarshaller;
 
 
 
