@@ -10,17 +10,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/args4j-1.0.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES>
-          <root url="jar://$MODULE_DIR$/lib/args4j-1.0-src.zip!/src" />
-        </SOURCES>
-      </library>
-    </orderEntry>
     <orderEntry type="module" module-name="runtime" />
     <orderEntry type="module-library">
       <library>
@@ -33,7 +22,23 @@
         </SOURCES>
       </library>
     </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/args4j-2.0.1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="jar://$MODULE_DIR$/lib/args4j-2.0.1-src.zip!/args4j-2.0.1/src" />
+        </SOURCES>
+      </library>
+    </orderEntry>
     <orderEntryProperties />
+  </component>
+  <component name="org.mevenide.idea.module.ModuleSettings">
+    <favoriteGoals>
+      <list size="0" />
+    </favoriteGoals>
   </component>
 </module>
 

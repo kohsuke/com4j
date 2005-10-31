@@ -9,46 +9,39 @@ import com4j.tlbimp.ErrorListener;
 import com4j.tlbimp.FileCodeWriter;
 import com4j.tlbimp.TypeLibInfo;
 import com4j.tlbimp.def.IWTypeLib;
+import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineOption;
 import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.opts.BooleanOption;
-import org.kohsuke.args4j.opts.FileOption;
-import org.kohsuke.args4j.opts.StringOption;
+import org.kohsuke.args4j.Option;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.ArrayList;
 
 /**
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
 public class Main implements ErrorListener {
-    public FileOption outDir = new FileOption("-o",new File("-"));
-    public StringOption packageName = new StringOption("-p","");
-    public BooleanOption debug = new BooleanOption("-debug");
-    public BooleanOption verbose = new BooleanOption("-v");
+    @Option(name="-o")
+    public File outDir = new File("-");
+    @Option(name="-p")
+    public String packageName = "";
+    @Option(name="-debug")
+    public boolean debug;
+    @Option(name="-v")
+    public boolean verbose;
 
-    public StringOption libid = new StringOption("-libid");
-    public StringOption libVersion = new StringOption("-libver");
+    @Option(name="-libid")
+    public String libid = null;
+    @Option(name="-libver")
+    public String libVersion = null;
+
+    @Argument
+    private List<String> files = new ArrayList<String>();
 
     private final List<Ref> refs = new ArrayList<Ref>();
-
-    public CmdLineOption refOpt = new CmdLineOption() {
-        public boolean accepts(String optionName) {
-            return optionName.equals("-ref");
-        }
-
-        public int parseArguments(CmdLineParser parser, Parameters params) throws CmdLineException {
-            Ref r = new Ref();
-            r.setLibid(params.getParameter(0));
-            r.setPackageName(params.getParameter(1));
-            refs.add(r);
-            return 2;
-        }
-    };
 
     public static void main(String[] args) {
         System.exit(new Main().doMain(args));
@@ -59,28 +52,25 @@ public class Main implements ErrorListener {
     }
 
     private int doMain(String[] args) {
-        CmdLineParser parser = new CmdLineParser();
-        parser.addOptionClass(this);
+        CmdLineParser parser = new CmdLineParser(this);
 
         try {
-            parser.parse(args);
+            parser.parseArgument(args);
         } catch (CmdLineException e) {
             System.err.println(e.getMessage());
             usage();
             return -1;
         }
 
-        List<String> files = (List<String>)parser.getArguments();
-
-        if(libid.value!=null) {
-            if( !parser.getArguments().isEmpty() ) {
+        if(libid!=null) {
+            if( !files.isEmpty() ) {
                 System.err.println(Messages.CANT_SPECIFY_LIBID_AND_FILENAME);
                 usage();
                 return -1;
             }
             try {
-                TypeLibInfo tli = TypeLibInfo.locate(libid.value,libVersion.value);
-                if(verbose.isOn())
+                TypeLibInfo tli = TypeLibInfo.locate(libid,libVersion);
+                if(verbose)
                     System.err.printf("Found %1s <%2s>\n",tli.libName,tli.version);
 
                 files = Arrays.asList(tli.typeLibrary.toString());
@@ -98,8 +88,8 @@ public class Main implements ErrorListener {
         }
 
         CodeWriter cw;
-        if(outDir.value.getPath().equals("-")) {
-            if(debug.isOn())
+        if(outDir.getPath().equals("-")) {
+            if(debug)
                 cw = new DumpCodeWriter();
             else {
                 System.err.println(Messages.NO_OUTPUT_DIR);
@@ -107,7 +97,7 @@ public class Main implements ErrorListener {
                 return -1;
             }
         } else
-            cw = new FileCodeWriter(outDir.value);
+            cw = new FileCodeWriter(outDir);
 
         for( String file : files ) {
             File typeLibFileName = new File(file);
@@ -115,7 +105,7 @@ public class Main implements ErrorListener {
             try {
                 IWTypeLib mainLib = COM4J.loadTypeLibrary(typeLibFileName).queryInterface(IWTypeLib.class);
                 Driver driver = new Driver();
-                driver.setPackageName(packageName.value);
+                driver.setPackageName(packageName);
                 for( Ref r : refs )
                     driver.addRef(r);
                 driver.run(mainLib,cw,this);
@@ -133,7 +123,7 @@ public class Main implements ErrorListener {
     }
 
     private int handleException( Exception e) {
-        if(debug.isOn()) {
+        if(debug) {
             e.printStackTrace(System.err);
             return 1;
         } else {

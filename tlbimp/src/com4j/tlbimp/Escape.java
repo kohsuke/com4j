@@ -13,7 +13,7 @@ class Escape {
     /**
      * Set of all the Java keywords.
      */
-    private static final Set reservedWords;
+    private static final Set<String> reservedWords;
 
     /**
      * Escapes the identifier if necessary.
@@ -79,7 +79,7 @@ class Escape {
             "volatile",
             "while"
         };
-        HashSet s = new HashSet();
+        HashSet<String> s = new HashSet<String>();
         for( String w : words )
             s.add(w);
         reservedWords = Collections.unmodifiableSet(s);
