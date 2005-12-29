@@ -315,8 +315,12 @@ public enum NativeType {
             if(param==null)     return null;
             int disp = (Integer)param;
             if(disp==0)      return null;
+
+            Class<? extends Com4jObject> itf = (Class<? extends Com4jObject>) type;
+            Com4jObject r = Wrapper.create(itf, Native.queryInterface(disp, COM4J.getIID(itf)) );
+            
             Native.release( disp );
-            return Wrapper.create( (Class<? extends Com4jObject>)type, (Integer)param );
+            return r;
         }
     },
 
