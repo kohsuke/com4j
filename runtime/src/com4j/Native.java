@@ -39,6 +39,10 @@ class Native {
 
     static native int queryInterface( int pComObject, long iid1, long iid2 );
 
+    static int queryInterface( int pComObject, GUID guid ) {
+        return queryInterface(pComObject, guid.v[0], guid.v[1]);
+    }
+
     /**
      * Loads a type library from a given file, wraps it, and returns its IUnknown.
      */

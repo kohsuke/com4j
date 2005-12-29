@@ -156,7 +156,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
         return new Task<T>() {
             public T call() {
                 GUID iid = COM4J.getIID(comInterface);
-                int nptr = Native.queryInterface(ptr,iid.v[0],iid.v[1]);
+                int nptr = Native.queryInterface(ptr,iid);
                 if(nptr==0)
                     return null;    // failed to cast
                 return create( comInterface, nptr );
@@ -239,7 +239,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
         }
 
         public Integer call() {
-            int nptr = Native.queryInterface(ptr,iid.v[0],iid.v[1]);
+            int nptr = Native.queryInterface(ptr,iid);
             if(nptr!=0)
                 Native.release(nptr);
             return nptr;
