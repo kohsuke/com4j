@@ -3,9 +3,11 @@
 
 void error( JNIEnv* env, const char* file, int line, HRESULT hr, const char* msg ... ) {
 	// format the message
-	char w[1024];
 	va_list va;
 	va_start(va,msg);
+
+	int len = _vscprintf(msg,va);
+	char* w = reinterpret_cast<char*>(alloca(len+1)); // +1 for '\0'
 	vsprintf(w,msg,va);
 
 	env->ExceptionClear();
@@ -14,9 +16,11 @@ void error( JNIEnv* env, const char* file, int line, HRESULT hr, const char* msg
 
 void error( JNIEnv* env, const char* file, int line, const char* msg ... ) {
 	// format the message
-	char w[1024];
 	va_list va;
 	va_start(va,msg);
+
+	int len = _vscprintf(msg,va);
+	char* w = reinterpret_cast<char*>(alloca(len+1)); // +1 for '\0'
 	vsprintf(w,msg,va);
 
 	env->ExceptionClear();
