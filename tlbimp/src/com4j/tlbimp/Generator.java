@@ -110,7 +110,9 @@ public final class Generator {
         }
     }
 
-
+    /**
+     * Generates a Java package from a type library.
+     */
     private class PackageBinder {
         private final TypeLibInfo lib;
 
@@ -320,6 +322,9 @@ public final class Generator {
 
     /**
      * Returns the primary interface for the given co-class.
+     *
+     * @return
+     *      null if none is found.
      */
     private ITypeDecl getDefaultInterface( ICoClassDecl t ) {
         final int count = t.countImplementedInterfaces();
@@ -729,7 +734,7 @@ public final class Generator {
         primitiveTypeBindings.put(vt,new VariableBinding(c,n,isDefault));
     }
 
-    private static final boolean isPsz( String hint ) {
+    private static boolean isPsz( String hint ) {
         if(hint==null)  return false;
         return hint.startsWith("psz") || hint.startsWith("lpsz");
     }
@@ -766,6 +771,18 @@ public final class Generator {
             if( dispDecl!=null ) {
                 // t = T* where T is a declared interface
                 return new VariableBinding( getTypeName(dispDecl), NativeType.ComObject,  true );
+            }
+
+            // t = coclass*
+            ICoClassDecl classdecl = comp.queryInterface(ICoClassDecl.class);
+            if(classdecl!=null) {
+                // bind to its default interface
+                ITypeDecl di = getDefaultInterface(classdecl);
+                if(di==null)
+                    // no primary interface known. treat it as IUnknown
+                    return new VariableBinding(Com4jObject.class, NativeType.ComObject, true);
+                else
+                    return new VariableBinding( getTypeName(di), NativeType.ComObject, true );
             }
 
             IPrimitiveType compPrim = comp.queryInterface(IPrimitiveType.class);
