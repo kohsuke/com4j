@@ -1,7 +1,12 @@
 <?xml version="1.0"?>
 <project name="com4j" default="dist">
+  <!--
+    if the dist target fails with "Unable to load com4j.dll", make sure your path
+    includes native/Debug.
+  -->
   
   <target name="clean">
+    <delete dir="build" />
     <antcall target="-exec-target">
       <param name="target" value="clean"/>
     </antcall>
@@ -15,8 +20,9 @@
   
   <target name="javadoc"
           description="creates javadoc from the publicly visible runtime classes">
-    <javadoc destdir="build/javadoc"
-      locale="en_US"
+    <javadoc
+      locale="en"
+      destdir="build/javadoc"
       windowtitle="com4j"
       public="true">
       
@@ -25,23 +31,25 @@
     </javadoc>
   </target>
   
-  <target name="dist" depends="clean,jar,javadoc">
+  <target name="dist" depends="jar,javadoc">
     <tstamp/>
-    <delete dir="dist"/>
-    <mkdir dir="dist"/>
+    <mkdir dir="build/dist"/>
     
     <ant dir="native" target="release"/>
     
-    <ant dir="samples" target="compile"/>
-    
-    <zip file="dist/com4j-${DSTAMP}.zip">
-      <fileset dir="../www" includes="LICENSE.txt" />
-      <fileset dir="native/Release" includes="com4j.dll" />
+    <copy todir="build/dist">
+      <fileset dir="." includes="samples/**/*" excludes="**/CVS, samples/*/test/**"/>
       <fileset dir="runtime/build" includes="com4j.jar, com4j-src.zip"/>
       <fileset dir="tlbimp/build" includes="tlbimp.jar, tlbimp-src.zip"/>
-      <fileset dir="tlbimp/lib" includes="args4j-1.0.jar"/>
+      <fileset dir="tlbimp/lib" includes="args4j-*.jar"/>
+    </copy>
+    <ant dir="build/dist/samples" target="compile"/>
+    
+    <zip file="build/com4j-${DSTAMP}.zip">
+      <fileset dir="../www" includes="LICENSE.txt" />
       <fileset dir="build" includes="javadoc/**/*"/>
-      <fileset dir="." includes="samples/**/*" excludes="**/CVS"/>
+      <fileset dir="build/dist" includes="**/*"/>
+      <fileset dir="native/Release" includes="com4j.dll" />
     </zip>
   </target>
   
