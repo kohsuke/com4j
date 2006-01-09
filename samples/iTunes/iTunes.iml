@@ -15,5 +15,10 @@
     <orderEntry type="library" name="JUnit" level="project" />
     <orderEntryProperties />
   </component>
+  <component name="org.mevenide.idea.module.ModuleSettings">
+    <favoriteGoals>
+      <list size="0" />
+    </favoriteGoals>
+  </component>
 </module>
 

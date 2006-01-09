@@ -14,5 +14,10 @@
     <orderEntry type="module" module-name="runtime" />
     <orderEntryProperties />
   </component>
+  <component name="org.mevenide.idea.module.ModuleSettings">
+    <favoriteGoals>
+      <list size="0" />
+    </favoriteGoals>
+  </component>
 </module>
 
