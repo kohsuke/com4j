@@ -721,7 +721,7 @@ public final class Generator {
         pbind( VarType.VT_BOOL, Boolean.TYPE, NativeType.VariantBool, true );
         pbind( VarType.VT_R4, Float.TYPE, NativeType.Float, true );
         pbind( VarType.VT_R8, Double.TYPE, NativeType.Double, true );
-        pbind( VarType.VT_VARIANT, Object.class, NativeType.VARIANT_ByRef, true );
+        pbind( VarType.VT_VARIANT, Object.class, NativeType.VARIANT, false );
         pbind( VarType.VT_DISPATCH, Com4jObject.class, NativeType.Dispatch, false );
         pbind( VarType.VT_UNKNOWN, Com4jObject.class, NativeType.ComObject, true );
         pbind( VarType.VT_DATE, Date.class, NativeType.Date, true );
@@ -824,6 +824,7 @@ public final class Generator {
 
         ISafeArrayType at = t.queryInterface(ISafeArrayType.class);
         if(at!=null) {
+            // T=SAFEARRAY(...)
             IType comp = at.getComponentType();
 
             IPrimitiveType compPrim = comp.queryInterface(IPrimitiveType.class);

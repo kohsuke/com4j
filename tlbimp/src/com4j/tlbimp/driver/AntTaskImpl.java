@@ -72,8 +72,10 @@ public class AntTaskImpl extends Task implements ErrorListener {
         }
 
         try {
-            log("Generating definitions from "+source, Project.MSG_INFO);
+            if(!source.exists())
+                throw new BuildException(Messages.NO_SUCH_FILE.format(source));
 
+            log("Generating definitions from "+source, Project.MSG_INFO);
             driver.run(
                 COM4J.loadTypeLibrary(source).queryInterface(IWTypeLib.class),
                 new FileCodeWriter(destDir),

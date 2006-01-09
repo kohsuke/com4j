@@ -101,6 +101,11 @@ public class Main implements ErrorListener {
 
         for( String file : files ) {
             File typeLibFileName = new File(file);
+            if(!typeLibFileName.exists()) {
+                System.err.println(Messages.NO_SUCH_FILE.format(typeLibFileName));
+                return -1;
+            }
+            
             System.err.println("Processing "+typeLibFileName);
             try {
                 IWTypeLib mainLib = COM4J.loadTypeLibrary(typeLibFileName).queryInterface(IWTypeLib.class);
