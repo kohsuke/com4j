@@ -99,6 +99,13 @@ final class MethodInfo {
             Object r = Native.invoke( ptr, vtIndex, args, paramConvs,
                 method.getReturnType(), returnIndex, returnIsInOut, returnConv.code );
             return returnConv.unmassage(method.getReturnType(), method.getGenericReturnType(), r);
+        } catch( ComException e ) {
+            IErrorInfo pErrorInfo = Native.getErrorInfo(ptr, (Class)method.getDeclaringClass());
+            if(pErrorInfo!=null) {
+                e.setErrorInfo(new ErrorInfo(pErrorInfo));
+                pErrorInfo.dispose();   // don't keep it for too long
+            }
+            throw e;
         } finally {
             for( int i=0; i<args.length; i++ ) {
                 if(args[i] instanceof Holder && params[i].getNoByRef()!=null) {

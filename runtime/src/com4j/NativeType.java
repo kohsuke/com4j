@@ -250,7 +250,7 @@ public enum NativeType {
     },
 
     /**
-     * <tt>VARIANT*</tt>.
+     * <tt>VARIANT</tt>.
      *
      * <p>
      * Expected Java type:
@@ -293,6 +293,15 @@ public enum NativeType {
      *  <td>VT_UNKNOWN
      * </table>
      * TODO: expand the list
+     */
+    VARIANT(302),
+
+    /**
+     * <tt>VARIANT*</tt>.
+     *
+     * <p>
+     * This works like {@link #VARIANT}, except that a reference
+     * is passed, instead of a VARIANT itself.
      */
     VARIANT_ByRef(302|BYREF),
 

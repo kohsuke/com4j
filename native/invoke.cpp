@@ -26,6 +26,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 	// list of clean up actions
 
 	int i;
+	DWORD spBefore,spAfter;
 	// the unmarshaller if this method should return an object.
 	Unmarshaller* retUnm = NULL;
 
@@ -50,6 +51,8 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 	HRESULT hr;
 
 	const int paramLen = env->GetArrayLength(args);
+
+	__asm mov [spBefore],ESP;
 
 	// push arguments to the stack
 	// since we are accumlating things to the stack
@@ -202,6 +205,24 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				_asm push pv;
 				break;
 
+			case cvVARIANT:
+				_ASSERT(sizeof(VARIANT)==0x10);
+				_asm sub ESP,0x10;
+				_asm mov [pvar],ESP;
+
+				if(env->IsSameObject(env->GetObjectClass(arg),com4j_Variant)) {
+					// if we got a com4j.Variant object, create its copy
+					jobject img = env->GetObjectField(arg,com4j_Variant_image);
+					VariantCopy(pvar,(VARIANT*)env->GetDirectBufferAddress(img));
+				} else {
+					// otherwise convert a value to a VARIANT, and simply use that for the stack var.
+					// since we aren't using VariantCopy, there's no need to VariantClear pSrc.
+					VARIANT* pSrc = convertToVariant(env,arg);
+					*reinterpret_cast<VARIANT*>(pvar) = *pSrc;
+					delete pSrc;
+				}
+				break;
+
 			case cvVARIANT_byRef:
 				if(env->IsSameObject(env->GetObjectClass(arg),com4j_Variant)) {
 					// if we got a com4j.Variant object, pass its image
@@ -304,9 +325,19 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 	// invoke the method.
 	__asm call method;
 
+	__asm mov [spAfter],ESP;
+
 	// once the call returns, stack should have been cleaned up,
 	// and the return value should be in EAX.
 	__asm mov hr,EAX;
+
+	// check that the stack size is correct
+	if(spBefore!=spAfter) {
+		__asm mov ESP, [spBefore];
+		error(env,__FILE__,__LINE__,"Unexpected stack corruption. Is the method definition correct?");
+		return NULL;
+	}
+
 
 	// if the caller wants the HRESULT as the return value,
 	// don't throw ComException
@@ -328,7 +359,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				LocalFree(pmsg);
 			}
 		}
-		env->Throw( (jthrowable)comexception_new_hr(env, str, (jint)hr ) );
+		env->Throw( (jthrowable)comexception_new_hr(env, str, (jint)hr, env->NewStringUTF(__FILE__), (jint)__LINE__ ) );
 	}
 
 	if(retUnm==NULL)	return NULL;

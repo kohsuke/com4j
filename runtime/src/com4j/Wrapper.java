@@ -54,7 +54,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
     /**
      * Creates a new proxy object to a given COM pointer.
      * <p>
-     * Must be run from a {@link ComThread}.
+     * Must be run from a {@link ComThread}. This method doesn't do AddRef.
      */
     static <T extends Com4jObject>
     T create( Class<T> primaryInterface, int ptr ) {
@@ -124,12 +124,12 @@ final class Wrapper implements InvocationHandler, Com4jObject {
 
     public void dispose() {
         if(ptr!=0) {
-            thread.execute(new Task<Object>() {
-                public Object call() {
+            new Task<Void>() {
+                public Void call() {
                     dispose0();
                     return null;
                 }
-            });
+            }.execute();
         }
     }
 

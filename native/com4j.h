@@ -29,6 +29,7 @@ enum Conv {
 	cvComObject = 300,
 	cvComObject_byRef = 300|BYREF,
 	cvGUID = 301,
+	cvVARIANT = 302,
 	cvVARIANT_byRef = 302|BYREF,
 	cvDISPATCH = 303,
 	cvPVOID = 304,

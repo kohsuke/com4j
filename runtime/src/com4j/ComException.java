@@ -15,6 +15,8 @@ public class ComException extends RuntimeException {
     private final String fileName;
     private final int line;
 
+    private ErrorInfo errorInfo;
+
     public ComException( String msg, int hresult, String fileName, int line ) {
         super(Integer.toHexString(hresult)+' '+cutEOL(msg));
         this.hresult = hresult;
@@ -29,6 +31,25 @@ public class ComException extends RuntimeException {
         this.line = line;
     }
 
+    /*package*/ void setErrorInfo(ErrorInfo errorInfo) {
+        this.errorInfo = errorInfo;
+    }
+
+    /**
+     * Gets the {@link ErrorInfo} object associated with this error.
+     *
+     * <p>
+     * Some COM objects can report additional error information beyond
+     * simple HRESULT value. If an error came from such an COM object,
+     * this method returns a non-null value, and you can query the returned
+     * {@link ErrorInfo} object for more information about the error.
+     *
+     * @return
+     *      null if this exception doesn't have such detailed information.
+     */
+    public ErrorInfo getErrorInfo() {
+        return errorInfo;
+    }
 
     /**
      * Gets the HRESULT code of this error.`
@@ -46,6 +67,16 @@ public class ComException extends RuntimeException {
             return s;
     }
 
+    @Override
+    public String getMessage() {
+        if(errorInfo!=null && errorInfo.getDescription()!=null) {
+            return super.getMessage()+" : "+errorInfo.getDescription();
+        } else {
+            return super.getMessage();
+        }
+    }
+
+    @Override
     public String toString() {
         String s = super.toString();
         if(fileName!=null) {

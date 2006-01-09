@@ -49,6 +49,14 @@ JNIEXPORT jobject JNICALL Java_com4j_Native_invoke
 
 /*
  * Class:     com4j_Native
+ * Method:    getErrorInfo
+ * Signature: (IJJ)I
+ */
+JNIEXPORT jint JNICALL Java_com4j_Native_getErrorInfo
+  (JNIEnv *, jclass, jint, jlong, jlong);
+
+/*
+ * Class:     com4j_Native
  * Method:    queryInterface
  * Signature: (IJJ)I
  */

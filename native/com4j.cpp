@@ -102,6 +102,34 @@ JNIEXPORT jint JNICALL Java_com4j_Native_createInstance(
 	return reinterpret_cast<jint>(p);
 }
 
+JNIEXPORT jint JNICALL Java_com4j_Native_getErrorInfo(
+	JNIEnv* env, jclass __unused__, jint pComObject, jlong iid1, jlong iid2) {
+
+	MyGUID iid(iid1,iid2);
+
+	ISupportErrorInfoPtr p(reinterpret_cast<IUnknown*>(pComObject));
+	if(p==NULL)
+		return 0;	// not supported
+
+	HRESULT hr = p->InterfaceSupportsErrorInfo(iid);
+	if(FAILED(hr)) {
+		error(env,__FILE__,__LINE__,hr,"ISupportErrorInfo::InterfaceSupportsErrorInfo failed");
+		return 0;
+	}
+
+	if(hr!=S_OK)	return 0; // not supported
+
+	IErrorInfo* pError;
+	hr = GetErrorInfo(0,&pError);
+	if(FAILED(hr)) {
+		error(env,__FILE__,__LINE__,hr,"GetErrorInfo failed");
+		return 0;
+	}
+
+	// return the pointer
+	return reinterpret_cast<jint>(pError);
+}
+
 /*
 JNIEXPORT jint JNICALL Java_com4j_Native_loadTypeLibrary(
 	JNIEnv* env, jclass __unused__, jstring _name ) {
