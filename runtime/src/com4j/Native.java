@@ -18,7 +18,7 @@ class Native {
     /**
      * Creates a COM object and returns its pointer.
      */
-    static native int createInstance( String clsid, long iid1, long iid2 );
+    static native int createInstance( String clsid, int clsctx, long iid1, long iid2 );
 
     /**
      * Calls <tt>AddRef</tt>.

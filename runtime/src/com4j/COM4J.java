@@ -62,21 +62,45 @@ public abstract class COM4J {
     T createInstance( Class<T> primaryInterface, String clsid ) throws ComException {
 
         // create instance
-        return new CreateInstanceTask<T>(clsid,primaryInterface).execute();
+        return createInstance(primaryInterface,clsid,CLSCTX.ALL);
+    }
+
+    /**
+     * Creates a new COM object of the given CLSID and returns
+     * it in a wrapped interface.
+     *
+     * <p>
+     * Compared to {@link #createInstance(Class,String)},
+     * this method allows the caller to specify <tt>CLSCTX_XXX</tt>
+     * constants to control the server instanciation.
+     *
+     * @param clsctx
+     *      Normally this is {@link CLSCTX#ALL}, but can be any combination
+     *      of {@link CLSCTX} constants.
+     *
+     * @see CLSCTX
+     */
+    public static<T extends Com4jObject>
+    T createInstance( Class<T> primaryInterface, String clsid, int clsctx ) throws ComException {
+
+        // create instance
+        return new CreateInstanceTask<T>(clsid,clsctx,primaryInterface).execute();
     }
 
     private static class CreateInstanceTask<T extends Com4jObject> extends Task<T> {
         private final String clsid;
+        private final int clsctx;
         private final Class<T> intf;
 
-        public CreateInstanceTask(String clsid, Class<T> intf) {
+        public CreateInstanceTask(String clsid, int clsctx, Class<T> intf) {
             this.clsid = clsid;
+            this.clsctx = clsctx;
             this.intf = intf;
         }
 
         public T call() {
             GUID iid = getIID(intf);
-            return Wrapper.create( intf, Native.createInstance(clsid,iid.v[0],iid.v[1]) );
+            return Wrapper.create( intf, Native.createInstance(clsid,clsctx,iid.v[0],iid.v[1]) );
         }
     }
 
