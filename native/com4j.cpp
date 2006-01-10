@@ -78,7 +78,7 @@ JNIEXPORT jint JNICALL Java_com4j_Native_queryInterface( JNIEnv* env, jclass __u
 }
 
 JNIEXPORT jint JNICALL Java_com4j_Native_createInstance(
-	JNIEnv* env, jclass __unused__, jstring _progId, jlong iid1, jlong iid2 ) {
+	JNIEnv* env, jclass __unused__, jstring _progId, jint clsctx, jlong iid1, jlong iid2 ) {
 	
 	MyGUID iid(iid1,iid2);
 	CLSID clsid;
@@ -94,7 +94,7 @@ JNIEXPORT jint JNICALL Java_com4j_Native_createInstance(
 	}
 
 	void* p;
-	hr = CoCreateInstance(clsid,NULL,CLSCTX_ALL,iid,&p);
+	hr = CoCreateInstance(clsid,NULL,clsctx,iid,&p);
 	if(FAILED(hr)) {
 		error(env,__FILE__,__LINE__,hr,"CoCreateInstance failed");
 		return 0;

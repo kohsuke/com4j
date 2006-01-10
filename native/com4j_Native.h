@@ -18,10 +18,10 @@ JNIEXPORT void JNICALL Java_com4j_Native_init
 /*
  * Class:     com4j_Native
  * Method:    createInstance
- * Signature: (Ljava/lang/String;JJ)I
+ * Signature: (Ljava/lang/String;IJJ)I
  */
 JNIEXPORT jint JNICALL Java_com4j_Native_createInstance
-  (JNIEnv *, jclass, jstring, jlong, jlong);
+  (JNIEnv *, jclass, jstring, jint, jlong, jlong);
 
 /*
  * Class:     com4j_Native
