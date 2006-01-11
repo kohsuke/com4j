@@ -69,20 +69,21 @@ public final class Generator {
      * In particular this generates the ClassFactory class.
      */
     public void finish() throws IOException {
-        Map<String,Set<TypeLibInfo>> byPackage = new HashMap<String,Set<TypeLibInfo>>();
-        for( TypeLibInfo tli : generatedTypeLibs ) {
-            Set<TypeLibInfo> s = byPackage.get(tli.packageName);
-            if(s==null)
-                byPackage.put(tli.packageName,s=new HashSet<TypeLibInfo>());
-            s.add(tli);
-        }
+        //Map<String,Set<TypeLibInfo>> byPackage = new HashMap<String,Set<TypeLibInfo>>();
+        //for( TypeLibInfo tli : generatedTypeLibs ) {
+        //    Set<TypeLibInfo> s = byPackage.get(tli.packageName);
+        //    if(s==null)
+        //        byPackage.put(tli.packageName,s=new HashSet<TypeLibInfo>());
+        //    s.add(tli);
+        //}
 
-        for( Map.Entry<String,Set<TypeLibInfo>> e : byPackage.entrySet() ) {
-            TypeLibInfo lib1 = e.getValue().iterator().next();
+        // for( Map.Entry<String,Set<TypeLibInfo>> e : byPackage.entrySet() ) {
+        for( Package pkg : packages.values() ) {
+            TypeLibInfo lib1 = pkg.typeLibs.iterator().next();
             PackageBinder pb = new PackageBinder(lib1);
 
             // generate ClassFactory
-            IndentingWriter o = writer.create(new File(lib1.getPackageDir(),"ClassFactory.java"));
+            IndentingWriter o = pkg.createWriter(lib1,"ClassFactory.java");
             pb.generateHeader(o);
 
             printJavadoc("Defines methods to create COM objects",o);
@@ -92,7 +93,7 @@ public final class Generator {
             o.println("private ClassFactory() {} // instanciation is not allowed");
             o.println();
 
-            for( TypeLibInfo lib : e.getValue() ) {
+            for( TypeLibInfo lib : pkg.typeLibs ) {
                 int len = lib.lib.count();
                 for( int i=0; i<len; i++ ) {
                     ICoClassDecl t = lib.lib.getType(i).queryInterface(ICoClassDecl.class);
@@ -151,7 +152,7 @@ public final class Generator {
 
 
         private void generatePackageHtml() throws IOException {
-            PrintWriter o = writer.create( new File(lib.getPackageDir(),"package.html" ) );
+            PrintWriter o = lib.createWriter("package.html");
             o.println("<html><body>");
             o.printf("<h2>%1s</h2>",lib.lib.getName());
             o.printf("<p>%1s</p>",lib.lib.getHelpString());
@@ -179,7 +180,7 @@ public final class Generator {
 
             // generate the prolog
             String typeName = lib.getTypeName(t);
-            IndentingWriter o = writer.create( new File(lib.getPackageDir(),typeName+".java" ) );
+            IndentingWriter o = lib.createWriter(typeName+".java");
             generateHeader(o);
 
             printJavadoc(t.getHelpString(), o);
@@ -224,7 +225,7 @@ public final class Generator {
 
         private void generate( IInterfaceDecl t ) throws IOException {
             String typeName = lib.getTypeName(t);
-            IndentingWriter o = writer.create( new File(lib.getPackageDir(),typeName+".java" ) );
+            IndentingWriter o = lib.createWriter(typeName+".java");
             generateHeader(o);
 
             printJavadoc(t.getHelpString(), o);
@@ -309,8 +310,8 @@ public final class Generator {
 
         private void generateHeader(IndentingWriter o) {
             o.println("// GENERATED. DO NOT MODIFY");
-            if(lib.packageName.length()!=0) {
-                o.printf("package %1s;",lib.packageName);
+            if(!lib.pkg.isRoot()) {
+                o.printf("package %1s;",lib.pkg.name);
                 o.println();
                 o.println();
             }
@@ -539,6 +540,74 @@ public final class Generator {
     }
 
     /**
+     * All {@link Package}s keyed by their names.
+     */
+    private final Map<String,Package> packages = new HashMap<String, Package>();
+
+    private Package getPackage(String name) {
+        Package p = packages.get(name);
+        if(p==null)
+            packages.put(name,p=new Package(name));
+        return p;
+    }
+
+    private final class Package {
+        /**
+         * Java package name of this type library.
+         * Can be empty but never null.
+         */
+        final String name;
+
+        /**
+         * Short filenames that are generated into this package.
+         * <p>
+         * Used to detect collisions. The value is the type that
+         * generated it.
+         */
+        private final Map<String,TypeLibInfo> fileNames = new HashMap<String,TypeLibInfo>();
+
+        /**
+         * Type libraries generated into this package.
+         */
+        final Set<TypeLibInfo> typeLibs = new HashSet<TypeLibInfo>();
+
+        public Package(String name) {
+            this.name = name;
+        }
+
+        private File getDir() {
+            if(isRoot())
+                return new File(".");
+            else
+                return new File(name.replace('.',File.separatorChar));
+        }
+
+        /**
+         * True if this is the root package.
+         */
+        public boolean isRoot() {
+            return name.equals("");
+        }
+
+        /**
+         * Creates an {@link IndentingWriter} for a given file in this package.
+         *
+         * @param fileName
+         *      such as "Foo.java"
+         */
+        public IndentingWriter createWriter(TypeLibInfo lib, String fileName) throws IOException {
+            TypeLibInfo tli = fileNames.get(fileName);
+            if(tli!=null)
+                el.error(new BindingException(Messages.FILE_CONFLICT.format(
+                    fileName, tli.lib.getName(), lib.lib.getName(), name )));
+            else
+                fileNames.put(fileName,lib);
+            return writer.create(new File(getDir(),fileName));
+        }
+
+    }
+
+    /**
      * Type library information.
      */
     private final Map<IWTypeLib,TypeLibInfo> typeLibs = new HashMap<IWTypeLib,TypeLibInfo>();
@@ -555,14 +624,13 @@ public final class Generator {
      * An instance of this class is created for each type library
      * (including the one that we are binding.)
      */
-    private class TypeLibInfo {
+    private final class TypeLibInfo {
         final IWTypeLib lib;
 
         /**
-         * Java package name of this type library.
-         * Can be empty but never null.
+         * Java package of this type library.
          */
-        final String packageName;
+        final Package pkg;
 
         /**
          * Every top-level type declaration in this type library and their
@@ -572,7 +640,8 @@ public final class Generator {
 
         public TypeLibInfo(IWTypeLib lib) throws BindingException {
             this.lib = lib;
-            this.packageName = referenceResolver.resolve(lib);
+            this.pkg = getPackage(referenceResolver.resolve(lib));
+            this.pkg.typeLibs.add(this);
 
             buildSimpleAliasTable();
         }
@@ -589,7 +658,7 @@ public final class Generator {
          * We build this map B -> A to simply this.
          */
         private void buildSimpleAliasTable() {
-            String prefix = packageName;
+            String prefix = pkg.name;
             if(prefix.length()==0)  prefix += '.';
 
             int len = lib.count();
@@ -607,13 +676,6 @@ public final class Generator {
             }
         }
 
-        private File getPackageDir() {
-            if(packageName.equals(""))
-                return new File(".");
-            else
-                return new File(packageName.replace('.',File.separatorChar));
-        }
-
         private String getTypeName(ITypeDecl decl) {
             assert decl.getParent().equals(lib);
 
@@ -626,6 +688,10 @@ public final class Generator {
                 return "Com4jObject";
             else
                 return name;
+        }
+
+        public IndentingWriter createWriter(String fileName) throws IOException {
+            return pkg.createWriter(this,fileName);
         }
     }
 

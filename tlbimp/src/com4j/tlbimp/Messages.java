@@ -18,6 +18,7 @@ enum Messages {
     NO_VERSION_AVAILABLE,
     INVALID_VERSION,
     NO_WIN32_TYPELIB,
+    FILE_CONFLICT,
     ;
 
     private static final ResourceBundle rb = ResourceBundle.getBundle(Messages.class.getName());
