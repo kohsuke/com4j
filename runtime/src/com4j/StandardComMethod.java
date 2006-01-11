@@ -16,9 +16,12 @@ import java.util.Map;
 import java.util.HashMap;
 
 /**
+ * {@link ComMethod} that represents a single method invocation
+ * through JNI.
+ *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
-final class MethodInfo {
+final class StandardComMethod extends ComMethod {
 
     final Method method;
 
@@ -32,7 +35,7 @@ final class MethodInfo {
     final Class<?>[] paramTypes;
     final Type[] genericParamTypes;
 
-    MethodInfo( Method m ) {
+    StandardComMethod( Method m ) {
         method = m;
 
         VTID vtid = m.getAnnotation(VTID.class);

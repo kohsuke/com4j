@@ -36,4 +36,42 @@ public @interface ReturnValue {
      * The native type to be unmarshalled.
      */
     NativeType type() default NativeType.Default;
+
+    /**
+     * Indicates that the return value is actually a result from invoking
+     * default properties.
+     *
+     * <p>
+     * For example, when the underlying type definitions are as follows:
+     * <pre>
+     * interface IFoo {
+     *   &#64;VTID(10)
+     *   IBar abc();
+     * }
+     * interface IBar {
+     *   &#64;DefaultProperty
+     *   IZot def();
+     * }
+     * interface IZot {
+     *   &#64;
+     *   int value(int index);
+     * }
+     * </pre>
+     * <p>
+     * The following method on the IFoo interface effectively works
+     * as a short-cut of the following chain:
+     * </p>
+     * <pre>
+     * IFoo {
+     *   &#64;ReturnValue(defaultPropertyThrough={IFoo.class,IBar.class})
+     *   &#64;VTID(10)
+     *   int abc(int index);
+     * }
+     *
+     * // equivalent
+     * pFoo.value(5);
+     * pFoo.abc().def().value(5);
+     * </pre>
+     */
+    Class<? extends Com4jObject>[] defaultPropertyThrough() default {};
 }

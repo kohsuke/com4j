@@ -36,12 +36,12 @@ final class Wrapper implements InvocationHandler, Com4jObject {
     private final ComThread thread;
 
     /**
-     * Cached of {@link MethodInfo} keyed by the method decl.
+     * Cached of {@link ComMethod} keyed by the method decl.
      *
      * TODO: revisit the cache design
      */
-    private Map<Method,MethodInfo> cache = Collections.synchronizedMap(
-        new WeakHashMap<Method,MethodInfo>());
+    private Map<Method,ComMethod> cache = Collections.synchronizedMap(
+        new WeakHashMap<Method,ComMethod>());
 
     private Wrapper(int ptr) {
         if(ptr==0)   throw new IllegalArgumentException();
@@ -84,6 +84,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
     }
 
     protected void finalize() throws Throwable {
+        super.finalize();
         if(ptr!=0)
             thread.addToFreeList(this);
     }
@@ -111,15 +112,23 @@ final class Wrapper implements InvocationHandler, Com4jObject {
 
         if(invCache==null)
             invCache = new InvocationThunk();
-        return invCache.invoke(getMethodInfo(method),args);
+        return invCache.invoke(getMethod(method),args);
     }
 
-    private MethodInfo getMethodInfo(Method method) {
-        MethodInfo r = cache.get(method);
+    private ComMethod getMethod(Method method) {
+        ComMethod r = cache.get(method);
         if(r!=null)     return r;
-        r = new MethodInfo(method);
+
+        r = createComMethod(method);
         cache.put(method,r);
         return r;
+    }
+
+    private ComMethod createComMethod(Method method) {
+        ReturnValue rv = method.getAnnotation(ReturnValue.class);
+        if(rv!=null && rv.defaultPropertyThrough().length>0)
+            return new DefaultedComMethod(method,rv);
+        return new StandardComMethod(method);
     }
 
     public void dispose() {
@@ -189,14 +198,14 @@ final class Wrapper implements InvocationHandler, Com4jObject {
      * and the peer {@link ComThread}.
      */
     private class InvocationThunk extends Task<Object> {
-        private MethodInfo method;
+        private ComMethod method;
         private Object[] args;
 
         /**
          * Invokes the method on the peer {@link ComThread} and returns
          * its return value.
          */
-        public synchronized Object invoke( MethodInfo method, Object[] args ) {
+        public synchronized Object invoke( ComMethod method, Object[] args ) {
             invCache = null;
             this.method = method;
             this.args = args;

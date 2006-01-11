@@ -37,9 +37,9 @@ class Native {
      *      if the invocation returns a failure HRESULT, and the return type
      *      is not HRESULT.
      */
-    static native<RetT> RetT invoke( int pComObject, int vtIndex,
+    static native Object invoke( int pComObject, int vtIndex,
          Object[] args, int[] parameterConversions,
-         Class<RetT> returnType, int returnIndex, boolean returnIsInOut, int returnConversion );
+         Class returnType, int returnIndex, boolean returnIsInOut, int returnConversion );
 
     /**
      * Gets the error info.
