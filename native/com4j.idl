@@ -206,6 +206,8 @@ library com4j
 
 		[helpstring("returns true if this method is vararg. If true, the last parameter is always SAFEARRAY.")]
 		HRESULT isVarArg([out,retval]VARIANT_BOOL* pOut);
+
+		HRESULT getDispId([out,retval]int* pDispId);
 	};
 
 

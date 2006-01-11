@@ -208,6 +208,10 @@ public:
 		*pOut = (m_pDesc->cParamsOpt==-1)?VARIANT_TRUE:VARIANT_FALSE;
 		return S_OK;
 	}
+	STDMETHOD(raw_getDispId)(int* pDispid) {
+		*pDispid = m_pDesc->memid;
+		return S_OK;
+	}
 };
 
 
