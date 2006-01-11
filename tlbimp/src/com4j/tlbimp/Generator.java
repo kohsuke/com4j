@@ -446,6 +446,10 @@ public final class Generator {
                 method.getVtableIndex());
             o.println();
 
+            int dispId = method.getDispId();
+            if(dispId==0)
+                o.println("@DefaultMethod");
+
             if(isEnum(method)) {
                 // this is an enumerator. handle it differently.
                 o.println("java.util.Iterator<Com4jObject> iterator();");

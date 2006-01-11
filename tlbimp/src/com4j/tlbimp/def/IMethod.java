@@ -32,4 +32,7 @@ public interface IMethod extends Com4jObject {
 
     @VTID(10)
     boolean isVarArg();
+
+    @VTID(11)
+    int getDispId();
 }
