@@ -33,6 +33,8 @@ import java.util.HashSet;
 import java.nio.Buffer;
 
 /**
+ * Type library importer.
+ *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
 public final class Generator {
