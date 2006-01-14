@@ -21,6 +21,8 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
+ * Type library importer.
+ * 
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
 public class Main implements ErrorListener {
