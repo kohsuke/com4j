@@ -10,7 +10,8 @@ import com4j.tlbimp.def.IWTypeLib;
 public interface ReferenceResolver {
     /**
      * @return
-     *      the package name in which this given type library is.
+     *      the package name in which this given type library is
+     *      generated. Return "" to suppress generation.
      */
     String resolve(IWTypeLib lib) throws BindingException;
 }

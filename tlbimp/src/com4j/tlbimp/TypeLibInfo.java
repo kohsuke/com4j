@@ -2,13 +2,14 @@ package com4j.tlbimp;
 
 import com4j.COM4J;
 import com4j.ComException;
+import com4j.GUID;
 
-import java.util.List;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Set;
 import java.util.HashSet;
-import java.io.File;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Locates
@@ -55,13 +56,13 @@ public final class TypeLibInfo {
      * @throws ComException
      *      If it fails to find the type library.
      */
-    public static final TypeLibInfo locate( String libid, String version ) throws BindingException {
+    public static TypeLibInfo locate( GUID libid, String version ) throws BindingException {
         // make sure to load the com4j.dll
         COM4J.IID_IUnknown.toString();
 
         // check if libid is correct
         if(libid==null)     throw new IllegalArgumentException();
-        String libKey = "TypeLib\\{"+libid+"}";
+        String libKey = "TypeLib\\"+libid;
         try {
             Native.readRegKey(libKey);
         } catch( ComException e ) {
@@ -83,7 +84,7 @@ public final class TypeLibInfo {
             version = versions.get(versions.size()-1).toString();
         }
 
-        String verKey = "TypeLib\\{"+libid+"}\\"+version;
+        String verKey = "TypeLib\\"+libid+"\\"+version;
         String libName;
         try {
             libName = Native.readRegKey(verKey);

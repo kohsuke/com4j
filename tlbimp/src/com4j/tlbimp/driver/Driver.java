@@ -1,6 +1,7 @@
 package com4j.tlbimp.driver;
 
 import com4j.GUID;
+import com4j.COM4J;
 import com4j.tlbimp.BindingException;
 import com4j.tlbimp.CodeWriter;
 import com4j.tlbimp.ErrorListener;
@@ -19,12 +20,12 @@ import java.util.Set;
  */
 final class Driver {
 
-    private final Map<GUID,Ref> refs = new HashMap<GUID,Ref>();
+    private final Map<GUID,Lib> libs = new HashMap<GUID,Lib>();
 
     private String packageName="";
 
-    public void addRef( Ref r ) {
-        refs.put(r.libid,r);
+    public void addLib( Lib r ) {
+        libs.put(r.getLibid(),r);
     }
 
     public void setPackageName(String packageName) {
@@ -32,21 +33,28 @@ final class Driver {
     }
 
 
-    public void run( final IWTypeLib mainLib, CodeWriter cw, final ErrorListener el ) throws BindingException, IOException {
+    public void run( CodeWriter cw, final ErrorListener el ) throws BindingException, IOException {
 
         final Set<IWTypeLib> libsToGen = new HashSet<IWTypeLib>();
+        for (Lib lib : libs.values()) {
+            libsToGen.add(COM4J.loadTypeLibrary(lib.getFile()).queryInterface(IWTypeLib.class));
+        }
 
         ReferenceResolver resolver = new ReferenceResolver() {
             public String resolve(IWTypeLib lib) {
-                if(lib.equals(mainLib))
-                    return packageName;
-
                 GUID libid = lib.getLibid();
-                if( refs.containsKey(libid) )
-                    return refs.get(libid).packageName;
+                if( libs.containsKey(libid) ) {
+                    String pkg = libs.get(libid).getPackage();
+                    if(pkg!=null) {
+                        if(pkg.equals(Lib.NONE))
+                            return "";  // don't generate
+                        else
+                            return pkg;
+                    }
+                }
 
                 if( libid.equals(GUID_STDOLE))
-                    return "";  // don't generate STDOLE. That's done by com4j runtime.
+                    return "";  // don't generate STDOLE. That's replaced by com4j runtime.
 
                 if( libsToGen.add(lib) )
                     el.warning(Messages.REFERENCED_TYPELIB_GENERATED.format(lib.getName(),packageName));
@@ -57,14 +65,13 @@ final class Driver {
 
         Generator generator = new Generator(cw,resolver,el);
 
-        generator.generate(mainLib);
-
         // repeatedly generate all the libraries that need to be generated
         Set<IWTypeLib> generatedLibs = new HashSet<IWTypeLib>();
         while(!generatedLibs.containsAll(libsToGen) ) {
             Set<IWTypeLib> s = new HashSet<IWTypeLib>(libsToGen);
             s.removeAll(generatedLibs);
             for( IWTypeLib lib : s ) {
+                el.started(lib);
                 generator.generate(lib);
                 generatedLibs.add(lib);
             }

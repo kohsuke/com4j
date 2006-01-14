@@ -1,5 +1,7 @@
 package com4j.tlbimp;
 
+import com4j.tlbimp.def.IWTypeLib;
+
 /**
  * Receives errors found during the type generation.
  * 
@@ -15,4 +17,9 @@ public interface ErrorListener {
      * Report a non-fatal error.
      */
     void warning( String message );
+
+    /**
+     * Report that the {@link Generator} has started working on this.
+     */
+    void started( IWTypeLib lib );
 }

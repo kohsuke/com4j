@@ -1,7 +1,7 @@
 package com4j.tlbimp.driver;
 
-import com4j.COM4J;
 import com4j.ComException;
+import com4j.GUID;
 import com4j.tlbimp.BindingException;
 import com4j.tlbimp.CodeWriter;
 import com4j.tlbimp.DumpCodeWriter;
@@ -22,7 +22,7 @@ import java.util.List;
 
 /**
  * Type library importer.
- * 
+ *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
 public class Main implements ErrorListener {
@@ -43,7 +43,7 @@ public class Main implements ErrorListener {
     @Argument
     private List<String> files = new ArrayList<String>();
 
-    private final List<Ref> refs = new ArrayList<Ref>();
+    private final List<Lib> refs = new ArrayList<Lib>();
 
     public static void main(String[] args) {
         System.exit(new Main().doMain(args));
@@ -71,7 +71,7 @@ public class Main implements ErrorListener {
                 return -1;
             }
             try {
-                TypeLibInfo tli = TypeLibInfo.locate(libid,libVersion);
+                TypeLibInfo tli = TypeLibInfo.locate(new GUID(libid),libVersion);
                 if(verbose)
                     System.err.printf("Found %1s <%2s>\n",tli.libName,tli.version);
 
@@ -101,29 +101,30 @@ public class Main implements ErrorListener {
         } else
             cw = new FileCodeWriter(outDir);
 
+        Driver driver = new Driver();
+        driver.setPackageName(packageName);
+
         for( String file : files ) {
             File typeLibFileName = new File(file);
             if(!typeLibFileName.exists()) {
                 System.err.println(Messages.NO_SUCH_FILE.format(typeLibFileName));
                 return -1;
             }
-            
-            System.err.println("Processing "+typeLibFileName);
-            try {
-                IWTypeLib mainLib = COM4J.loadTypeLibrary(typeLibFileName).queryInterface(IWTypeLib.class);
-                Driver driver = new Driver();
-                driver.setPackageName(packageName);
-                for( Ref r : refs )
-                    driver.addRef(r);
-                driver.run(mainLib,cw,this);
-                mainLib.dispose();
-            } catch( ComException e ) {
-                return handleException(e);
-            } catch( IOException e ) {
-                return handleException(e);
-            } catch( BindingException e ) {
-                return handleException(e);
-            }
+
+            Lib lib = new Lib();
+            lib.setFile(typeLibFileName);
+            driver.addLib(lib);
+        }
+
+
+        try {
+            driver.run(cw,this);
+        } catch( ComException e ) {
+            return handleException(e);
+        } catch( IOException e ) {
+            return handleException(e);
+        } catch( BindingException e ) {
+            return handleException(e);
         }
 
         return 0;
@@ -137,6 +138,10 @@ public class Main implements ErrorListener {
             System.err.println(e.getMessage());
             return 1;
         }
+    }
+
+    public void started(IWTypeLib lib) {
+        System.err.println("Generating definitions from "+lib.getName());
     }
 
     public void error(BindingException e) {

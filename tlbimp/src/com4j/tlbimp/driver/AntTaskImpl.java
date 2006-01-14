@@ -1,11 +1,10 @@
 package com4j.tlbimp.driver;
 
-import com4j.COM4J;
 import com4j.ComException;
+import com4j.GUID;
 import com4j.tlbimp.BindingException;
 import com4j.tlbimp.ErrorListener;
 import com4j.tlbimp.FileCodeWriter;
-import com4j.tlbimp.TypeLibInfo;
 import com4j.tlbimp.def.IWTypeLib;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -24,11 +23,12 @@ public class AntTaskImpl extends Task implements ErrorListener {
     private File destDir;
     private File source;
 
-    private String libid;
+    private GUID libid;
     private String libver;
 
     private Driver driver = new Driver();
 
+    private boolean hasLib = false;
 
     public void setDestDir(File destDir) {
         this.destDir = destDir;
@@ -43,43 +43,36 @@ public class AntTaskImpl extends Task implements ErrorListener {
     }
 
     public void setLibid(String libid) {
-        this.libid = libid;
+        this.libid = new GUID(libid);
     }
 
     public void setLibver(String libver) {
         this.libver = libver;
     }
 
-    public void addConfiguredRef( Ref r ) {
+    public void addConfiguredLib( Lib r ) {
         r.validate();
-        driver.addRef(r);
+        driver.addLib(r);
+        hasLib = true;
     }
 
     public void execute() throws BuildException {
         if( destDir==null )
             throw new BuildException("@destDir is missing");
-        if( source==null ) {
-            if( libid==null )
-                throw new BuildException("both @file and @libid is missing");
-            try {
-                TypeLibInfo tli = TypeLibInfo.locate(libid,libver);
-                log("The type library is "+tli.libName+" <"+tli.version+">", Project.MSG_INFO);
-                source = tli.typeLibrary;
-            } catch (BindingException e) {
-                error(e);
-                return;
-            }
+
+        if(source!=null || libid!=null) {
+            Lib lib = new Lib();
+            lib.setLibid(libid);
+            lib.setLibver(libver);
+            lib.setFile(source);
+            addConfiguredLib(lib);
         }
 
-        try {
-            if(!source.exists())
-                throw new BuildException(Messages.NO_SUCH_FILE.format(source));
+        if(!hasLib)
+            throw new BuildException("No type library is specified");
 
-            log("Generating definitions from "+source, Project.MSG_INFO);
-            driver.run(
-                COM4J.loadTypeLibrary(source).queryInterface(IWTypeLib.class),
-                new FileCodeWriter(destDir),
-                this);
+        try {
+            driver.run( new FileCodeWriter(destDir), this);
         } catch( ComException e ) {
             throw new BuildException(e);
         } catch( IOException e ) {
@@ -87,6 +80,10 @@ public class AntTaskImpl extends Task implements ErrorListener {
         } catch( BindingException e ) {
             throw new BuildException(e);
         }
+    }
+
+    public void started(IWTypeLib lib) {
+        log("Generating definitions from "+lib.getName(),Project.MSG_INFO);
     }
 
     public void error(BindingException e) {
