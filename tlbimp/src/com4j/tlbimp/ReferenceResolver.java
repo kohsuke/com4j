@@ -11,7 +11,13 @@ public interface ReferenceResolver {
     /**
      * @return
      *      the package name in which this given type library is
-     *      generated. Return "" to suppress generation.
+     *      generated.
      */
     String resolve(IWTypeLib lib) throws BindingException;
+
+    /**
+     * @return
+     *      true to avoid generating code for this library.
+     */
+    boolean suppress(IWTypeLib lib);
 }

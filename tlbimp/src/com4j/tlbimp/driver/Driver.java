@@ -45,14 +45,11 @@ final class Driver {
                 GUID libid = lib.getLibid();
                 if( libs.containsKey(libid) ) {
                     String pkg = libs.get(libid).getPackage();
-                    if(pkg!=null) {
-                        if(pkg.equals(Lib.NONE))
-                            return "";  // don't generate
-                        else
-                            return pkg;
-                    }
+                    if(pkg!=null)
+                        return pkg;
                 }
 
+                // TODO: move this to a filter
                 if( libid.equals(GUID_STDOLE))
                     return "";  // don't generate STDOLE. That's replaced by com4j runtime.
 
@@ -60,6 +57,19 @@ final class Driver {
                     el.warning(Messages.REFERENCED_TYPELIB_GENERATED.format(lib.getName(),packageName));
 
                 return packageName;
+            }
+
+            public boolean suppress(IWTypeLib lib) {
+                GUID libid = lib.getLibid();
+
+                if( libid.equals(GUID_STDOLE))
+                    return true;
+
+                Lib r = libs.get(libid);
+                if(r!=null)
+                    return r.suppress();
+                else
+                    return false;
             }
         };
 

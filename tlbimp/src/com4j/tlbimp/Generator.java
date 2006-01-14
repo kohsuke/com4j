@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.nio.Buffer;
 
 /**
@@ -65,6 +66,8 @@ public final class Generator {
      */
     public void generate( IWTypeLib lib ) throws BindingException, IOException {
         TypeLibInfo tli = getTypeLibInfo(lib);
+        if(referenceResolver.suppress(lib))
+            return; // skip code generation
         if(generatedTypeLibs.add(tli))
             new PackageBinder(tli).generate();
     }
@@ -316,7 +319,6 @@ public final class Generator {
         }
 
         private void generateHeader(IndentingWriter o) {
-            o.println("// GENERATED. DO NOT MODIFY");
             if(!lib.pkg.isRoot()) {
                 o.printf("package %1s;",lib.pkg.name);
                 o.println();
@@ -499,24 +501,15 @@ public final class Generator {
             if(intermediates.isEmpty())
                 return; // no default method to generate
 
+            if(m.getParamCount()<2)
+                return; // the default method has to have at least one in param and one ret val
+
             o.printf("@VTID(%1d)",
                 method.getVtableIndex());
             o.println();
-            o.print("@ReturnValue(defaultPropertyThrough={");
-            boolean first = true;
-            for (IType im : intermediates) {
-                VariableBinding vb = bind(im, null);
-                o.print(vb.javaType);
-                o.print(".class");
-                if(first)
-                    first = false;
-                else
-                    o.print(',');
-            }
-            o.println("})");
 
             MethodBinder mb = new MethodBinder(m);
-            mb.declareReturnType(o);
+            mb.declareReturnType(o,intermediates);
             this.declareMethodName(o);
             mb.declareParameters(o);
             o.println();
@@ -539,7 +532,7 @@ public final class Generator {
                 return;
             }
 
-            declareReturnType(o);
+            declareReturnType(o,null);
             declareMethodName(o);
             declareParameters(o);
         }
@@ -597,15 +590,15 @@ public final class Generator {
         /**
          * Declares the return type.
          */
-        private void declareReturnType(IndentingWriter o) throws BindingException {
-            if(retParam==-1) {
+        private void declareReturnType(IndentingWriter o, List<IType> intermediates ) throws BindingException {
+            if(retParam==-1 && intermediates==null) {
                 o.print("void ");
             } else {
                 // we assume that the [retval] param to be passed by reference
                 VariableBinding retBinding = bind(returnType,null);
 
                 // add @ReturnValue if necessary
-                if(!retBinding.isDefault || params[retParam].isIn() || retParam!=params.length-1 ) {
+                if(!retBinding.isDefault || params[retParam].isIn() || retParam!=params.length-1 || intermediates!=null) {
                     o.print("@ReturnValue(");
                     o.beginCommaMode();
                     if(!retBinding.isDefault) {
@@ -617,9 +610,24 @@ public final class Generator {
                         o.print("inout=true");
                     }
                     if(retParam!=params.length-1) {
-                        o.comma();;
+                        o.comma();
                         o.print("index="+retParam);
                     }
+
+                    if(intermediates!=null) {
+                        o.comma();
+                        o.print("defaultPropertyThrough={");
+                        o.beginCommaMode();
+                        for (IType im : intermediates) {
+                            VariableBinding vb = bind(im, null);
+                            o.comma();
+                            o.print(vb.javaType);
+                            o.print(".class");
+                        }
+                        o.endCommaMode();
+                        o.print("}");
+                    }
+
                     o.endCommaMode();
                     o.println(")");
                 }
@@ -767,6 +775,9 @@ public final class Generator {
             }
         }
 
+        /**
+         * Gets the simple name of the type (as opposed to FQCN.)
+         */
         private String getTypeName(ITypeDecl decl) {
             assert decl.getParent().equals(lib);
 
@@ -775,7 +786,7 @@ public final class Generator {
                 name = aliases.get(decl);
             else
                 name = decl.getName();
-            if(name.equals("IUnknown") || name.equals("IDispatch"))
+            if(STDOLE_TYPES.contains(name))
                 return "Com4jObject";
             else
                 return name;
@@ -785,6 +796,10 @@ public final class Generator {
             return pkg.createWriter(this,fileName);
         }
     }
+
+    // TODO: map IFont and IPicture correctly
+    private static final Set<String> STDOLE_TYPES = new HashSet<String>(
+        Arrays.asList("IUnknown","IDispatch","IFont","IPicture","IFontDisp","IPictureDisp"));
 
 
     /**
@@ -798,7 +813,11 @@ public final class Generator {
      * </ul>
      */
     private String getTypeName(ITypeDecl decl) throws BindingException {
-        return getTypeLibInfo(decl.getParent()).getTypeName(decl);
+        Generator.TypeLibInfo tli = getTypeLibInfo(decl.getParent());
+        String name = tli.pkg.name;
+        if(name.length()>0) name+='.';
+        name += tli.getTypeName(decl);
+        return name;
     }
 
     /**

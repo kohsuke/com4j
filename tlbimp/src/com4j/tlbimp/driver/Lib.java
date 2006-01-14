@@ -4,6 +4,7 @@ import com4j.GUID;
 import com4j.COM4J;
 import com4j.tlbimp.TypeLibInfo;
 import com4j.tlbimp.BindingException;
+import com4j.tlbimp.ReferenceResolver;
 import com4j.tlbimp.def.IWTypeLib;
 
 import java.io.File;
@@ -30,7 +31,7 @@ public final class Lib {
     /**
      * Java package name to put the generated files into.
      * <p>
-     * This could be a special token {@link #NONE} to
+     * This could be a special token {@link ReferenceResolver#NONE} to
      * indicate that this type library should not be generated.
      */
     private String packageName;
@@ -39,6 +40,12 @@ public final class Lib {
      * The file that contains a type library.
      */
     private File file;
+
+    /**
+     * True to avoid generating source code for this type library.
+     * (It's assumed to be present somewhere else already.) 
+     */
+    private boolean suppress = false;
 
     public void setLibid(String libid) {
         this.libid = new GUID(libid);
@@ -57,14 +64,13 @@ public final class Lib {
     }
 
     public void setSuppress(boolean b) {
-        if(b)
-            this.packageName = NONE;
+        this.suppress = b;
     }
 
     public void setFile(File file) {
         this.file = file;
 
-        if(!file.exists())
+        if(file!=null && !file.exists())
             throw new BuildException(Messages.NO_SUCH_FILE.format(file));
     }
 
@@ -78,6 +84,10 @@ public final class Lib {
 
     public String getPackage() {
         return packageName;
+    }
+
+    public boolean suppress() {
+        return suppress;
     }
 
     public GUID getLibid() {
@@ -96,6 +106,4 @@ public final class Lib {
         if(libid==null && file==null)
             throw new IllegalArgumentException("either libid or file must be set");
     }
-
-    public static final String NONE = "";
 }
