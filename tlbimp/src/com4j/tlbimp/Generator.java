@@ -20,6 +20,7 @@ import com4j.tlbimp.def.TypeKind;
 import com4j.tlbimp.def.VarType;
 import com4j.tlbimp.def.ISafeArrayType;
 import com4j.tlbimp.def.InvokeKind;
+import com4j.tlbimp.def.IInterface;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +31,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.List;
+import java.util.ArrayList;
 import java.nio.Buffer;
 
 /**
@@ -43,6 +46,8 @@ public final class Generator {
     private final ReferenceResolver referenceResolver;
 
     private final ErrorListener el;
+
+    private final DefaultMethodFinder dmf = new DefaultMethodFinder();
 
     /**
      * {@link IWTypeLib}s specified to the {@link #generate(IWTypeLib)} method.
@@ -402,8 +407,14 @@ public final class Generator {
         private final IMethod method;
         private final IParam[] params;
         private int retParam;
+        /**
+         * The return type.
+         *
+         * "T" of "[out,retval]T* ..."
+         */
+        private final IType returnType;
 
-        public MethodBinder(IMethod method) {
+        public MethodBinder(IMethod method) throws BindingException {
             this.method = method;
 
             int len = method.getParamCount();
@@ -412,6 +423,16 @@ public final class Generator {
                 params[i] = method.getParam(i);
 
             retParam = getReturnParam();
+            returnType = getReturnTypeBinding();
+        }
+
+        private IType getReturnTypeBinding() throws BindingException {
+            if(retParam==-1)
+                return null;
+            IPtrType pt = params[retParam].getType().queryInterface(IPtrType.class);
+            if(pt==null)
+                throw new BindingException(Messages.RETVAL_MUST_BY_REFERENCE.format());
+            return pt.getPointedAtType();
         }
 
         /**
@@ -441,6 +462,66 @@ public final class Generator {
             return outIdx;
         }
 
+        public void generateDefaultInterfaceFacade( IndentingWriter o ) throws BindingException {
+            IMethod m = method;
+            List<IType> intermediates = new ArrayList<IType>();
+
+            while(true) {
+                MethodBinder mb = new MethodBinder(m);
+                // only handle methods of the form "HRESULT foo([out,retval]IFoo** ppOut);
+                if(m.getParamCount()!=1 || mb.retParam!=0 || mb.params[mb.retParam].isIn())
+                    break;
+
+                // we expect it to be an interface pointer.
+                IPtrType pt = mb.returnType.queryInterface(IPtrType.class);
+                IDispInterfaceDecl di=null;
+                IInterfaceDecl ii=null;
+                if(pt!=null) {
+                    IType t = pt.getPointedAtType();
+                    di = t.queryInterface(IDispInterfaceDecl.class);
+                    ii = t.queryInterface(IInterfaceDecl.class);
+                }
+
+                if(di==null && ii==null)
+                    break;
+                IInterface intf = ii != null ? ii : di.getVtblInterface();
+
+                // does this target interface has a default method?
+                IMethod dm = dmf.getDefaultMethod( intf );
+                if(dm==null)
+                    return;
+
+                // recursively check...
+                m = dm;
+                intermediates.add(pt);
+            }
+
+            if(intermediates.isEmpty())
+                return; // no default method to generate
+
+            o.printf("@VTID(%1d)",
+                method.getVtableIndex());
+            o.println();
+            o.print("@ReturnValue(defaultPropertyThrough={");
+            boolean first = true;
+            for (IType im : intermediates) {
+                VariableBinding vb = bind(im, null);
+                o.print(vb.javaType);
+                o.print(".class");
+                if(first)
+                    first = false;
+                else
+                    o.print(',');
+            }
+            o.println("})");
+
+            MethodBinder mb = new MethodBinder(m);
+            mb.declareReturnType(o);
+            this.declareMethodName(o);
+            mb.declareParameters(o);
+            o.println();
+        }
+
         public void declare( IndentingWriter o ) throws BindingException {
             printJavadoc(method.getHelpString(), o);
 //            o.println("// "+method.getKind());
@@ -459,11 +540,18 @@ public final class Generator {
             }
 
             declareReturnType(o);
+            declareMethodName(o);
+            declareParameters(o);
+        }
 
+        private void declareMethodName(IndentingWriter o) {
             String name = escape(camelize(method.getName()));
             if(reservedMethods.contains(name))
                 name += '_';
             o.print(name);
+        }
+
+        private void declareParameters(IndentingWriter o) throws BindingException {
             o.print('(');
             o.in();
 
@@ -514,18 +602,15 @@ public final class Generator {
                 o.print("void ");
             } else {
                 // we assume that the [retval] param to be passed by reference
-                IPtrType pt = params[retParam].getType().queryInterface(IPtrType.class);
-                if(pt==null)
-                    throw new BindingException(Messages.RETVAL_MUST_BY_REFERENCE.format());
-                VariableBinding vb = bind(pt.getPointedAtType(),null);
+                VariableBinding retBinding = bind(returnType,null);
 
                 // add @ReturnValue if necessary
-                if(!vb.isDefault || params[retParam].isIn() || retParam!=params.length-1 ) {
+                if(!retBinding.isDefault || params[retParam].isIn() || retParam!=params.length-1 ) {
                     o.print("@ReturnValue(");
                     o.beginCommaMode();
-                    if(!vb.isDefault) {
+                    if(!retBinding.isDefault) {
                         o.comma();
-                        o.print("type=NativeType."+vb.nativeType.name());
+                        o.print("type=NativeType."+retBinding.nativeType.name());
                     }
                     if(params[retParam].isIn()) {
                         o.comma();
@@ -539,7 +624,7 @@ public final class Generator {
                     o.println(")");
                 }
 
-                o.print(vb.javaType);
+                o.print(retBinding.javaType);
                 o.print(' ');
             }
         }
@@ -934,8 +1019,11 @@ public final class Generator {
 
     private void generate(IMethod m, IndentingWriter o) throws BindingException {
         try {
-            new MethodBinder(m).declare(o);
+            MethodBinder mb = new MethodBinder(m);
+            mb.declare(o);
             o.println();
+
+            mb.generateDefaultInterfaceFacade(o);
         } catch (BindingException e) {
             e.addContext("method "+m.getName());
             throw e;
