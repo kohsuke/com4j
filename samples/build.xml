@@ -25,5 +25,6 @@
     <ant dir="wsh" target="${target}"/>
     <ant dir="wmi" target="${target}"/>
     <ant dir="iTunes" target="${target}"/>
+    <ant dir="powerPoint" target="${target}"/>
   </target>
 </project>

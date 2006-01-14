@@ -301,6 +301,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/samples/iTunes/iTunes.iml" filepath="$PROJECT_DIR$/samples/iTunes/iTunes.iml" />
       <module fileurl="file://$PROJECT_DIR$/samples/jnlp/jnlp.iml" filepath="$PROJECT_DIR$/samples/jnlp/jnlp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/samples/powerPoint/powerPoint.iml" filepath="$PROJECT_DIR$/samples/powerPoint/powerPoint.iml" />
       <module fileurl="file://$PROJECT_DIR$/runtime/runtime.iml" filepath="$PROJECT_DIR$/runtime/runtime.iml" />
       <module fileurl="file://$PROJECT_DIR$/samples/speech/speech.iml" filepath="$PROJECT_DIR$/samples/speech/speech.iml" />
       <module fileurl="file://$PROJECT_DIR$/tlbimp/tlbimp.iml" filepath="$PROJECT_DIR$/tlbimp/tlbimp.iml" />
