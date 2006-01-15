@@ -1,15 +1,13 @@
 package com4j.tlbimp.driver;
 
-import com4j.GUID;
 import com4j.COM4J;
-import com4j.tlbimp.TypeLibInfo;
+import com4j.GUID;
 import com4j.tlbimp.BindingException;
 import com4j.tlbimp.ReferenceResolver;
+import com4j.tlbimp.TypeLibInfo;
 import com4j.tlbimp.def.IWTypeLib;
 
 import java.io.File;
-
-import org.apache.tools.ant.BuildException;
 
 /**
  * Reference to another type library and which package it is in.
@@ -30,9 +28,6 @@ public final class Lib {
 
     /**
      * Java package name to put the generated files into.
-     * <p>
-     * This could be a special token {@link ReferenceResolver#NONE} to
-     * indicate that this type library should not be generated.
      */
     private String packageName;
 
@@ -71,7 +66,7 @@ public final class Lib {
         this.file = file;
 
         if(file!=null && !file.exists())
-            throw new BuildException(Messages.NO_SUCH_FILE.format(file));
+            throw new IllegalArgumentException(Messages.NO_SUCH_FILE.format(file));
     }
 
     public File getFile() throws BindingException {
