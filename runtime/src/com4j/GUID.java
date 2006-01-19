@@ -20,9 +20,13 @@ public final class GUID {
     }
 
     /**
-     * Parses the string representation "<tt>{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}</tt>".
+     * Parses the string representation "<tt>{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}</tt>"
+     * or "<tt>xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</tt>".
      */
     public GUID( String str ) {
+        if(str.length()==32+4)
+            str = '{'+str+'}';
+        
         if(str.length()!=32+6)
             throw new IllegalArgumentException("not a GUID: "+str);
 
