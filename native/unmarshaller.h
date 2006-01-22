@@ -71,9 +71,9 @@ public:
 
 template < class XDUCER >
 class PrimitiveUnmarshaller : public Unmarshaller {
-	XDUCER::NativeType value;
+	typename XDUCER::NativeType value;
 public:
-	PrimitiveUnmarshaller( JNIEnv* env, XDUCER::JavaType i ) {
+	PrimitiveUnmarshaller( JNIEnv* env, typename XDUCER::JavaType i ) {
 		value = 0;
 		if(i!=NULL)
 			value = XDUCER::toNative(env,i);
@@ -81,7 +81,7 @@ public:
 	
 	void* addr() { return &value; }
 
-	XDUCER::JavaType unmarshal( JNIEnv* env ) {
+	typename XDUCER::JavaType unmarshal( JNIEnv* env ) {
 		return XDUCER::toJava(env,value);
 	}
 };

@@ -97,7 +97,7 @@ namespace xducer {
 		static inline JavaType toJava( JNIEnv* env, NativeType value ) {
 			if(value==NULL)
 				return NULL;
-			return env->NewString(value,SysStringLen(value));
+			return env->NewString((jchar*)value,SysStringLen(value));
 		}
 	};
 

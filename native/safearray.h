@@ -30,7 +30,7 @@ namespace safearray {
 	template < VARTYPE itemType, class XDUCER >
 	class BasicArrayXducer {
 	public:
-		typedef array::Array<XDUCER::JavaType> JARRAY;
+		typedef array::Array<typename XDUCER::JavaType> JARRAY;
 		typedef SAFEARRAY* NativeType;
 		typedef jarray JavaType;
 

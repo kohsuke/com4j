@@ -50,7 +50,7 @@ public:
 template <VARTYPE vt, class XDUCER>
 class VariantHandlerImpl : public VariantHandler {
 protected:
-	inline XDUCER::NativeType& addr(VARIANT* v) {
+	inline typename XDUCER::NativeType& addr(VARIANT* v) {
 		return *reinterpret_cast<XDUCER::NativeType*>(&v->boolVal);
 	}
 public:

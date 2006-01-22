@@ -30,6 +30,7 @@ public:
 
 
 
+template<>
 class Array<jboolean> {
 public:
 	typedef jbooleanArray ARRAY;
@@ -44,6 +45,7 @@ public:
 	}
 };
 
+template<>
 class Array<jbyte> {
 public:
 	typedef jbyteArray ARRAY;
@@ -58,6 +60,7 @@ public:
 	}
 };
 
+template<>
 class Array<jchar> {
 public:
 	typedef jcharArray ARRAY;
@@ -72,6 +75,7 @@ public:
 	}
 };
 
+template<>
 class Array<jshort> {
 public:
 	typedef jshortArray ARRAY;
@@ -86,6 +90,7 @@ public:
 	}
 };
 
+template<>
 class Array<jint> {
 public:
 	typedef jintArray ARRAY;
@@ -100,6 +105,7 @@ public:
 	}
 };
 
+template<>
 class Array<jlong> {
 public:
 	typedef jlongArray ARRAY;
@@ -114,6 +120,7 @@ public:
 	}
 };
 
+template<>
 class Array<jfloat> {
 public:
 	typedef jfloatArray ARRAY;
@@ -128,6 +135,7 @@ public:
 	}
 };
 
+template<>
 class Array<jdouble> {
 public:
 	typedef jdoubleArray ARRAY;

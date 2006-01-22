@@ -5,9 +5,12 @@
 
 
 
-
+__declspec(dllexport) int __stdcall foo(IUnknown* pUnk, int arg1, short arg2) {
+	return arg1+arg2;
+}
 
 Environment::~Environment() {
+	foo(NULL,0,3);
 	// run post actions
 	while( postActions!=NULL ) {
 		postActions->act(env);
