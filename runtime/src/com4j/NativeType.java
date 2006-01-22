@@ -27,7 +27,7 @@ public enum NativeType {
      * Expected Java type:
      *      String
      */
-    BSTR(1),
+    BSTR(1,4),
 
     /**
      * <tt>BSTR*</tt>.
@@ -37,7 +37,7 @@ public enum NativeType {
      * Expected Java type:
      *      {@link Holder<String>}
      */
-    BSTR_ByRef(1|BYREF),
+    BSTR_ByRef(1|BYREF,4),
 
 
     /**
@@ -46,7 +46,7 @@ public enum NativeType {
      * More concretely, it becomes a L'\0'-terminated
      * UTF-16LE format.
      */
-    Unicode(2),
+    Unicode(2,4),
     /**
      * String will be marshalled as "char*".
      *
@@ -61,7 +61,7 @@ public enum NativeType {
      * a typical Japanese Windows system, this is
      * Shift-JIS.
      */
-    CSTR(3),
+    CSTR(3,4),
 
     /**
      * <tt>INT8</tt> (byte).
@@ -71,8 +71,8 @@ public enum NativeType {
      *      byte
      *      {@link Number}
      */
-    Int8(100),
-    Int8_ByRef(100|BYREF),
+    Int8(100,1),
+    Int8_ByRef(100|BYREF,1),
     /**
      * <tt>INT16</tt> (short).
      *
@@ -81,8 +81,8 @@ public enum NativeType {
      *      short
      *      {@link Number}
      */
-    Int16(101),
-    Int16_ByRef(101|BYREF),
+    Int16(101,2),
+    Int16_ByRef(101|BYREF,2),
 
     /**
      * Marshalled as 32-bit integer.
@@ -96,7 +96,7 @@ public enum NativeType {
      *      {@link Number}
      *      {@link Enum} (see {@link ComEnum})
      */
-    Int32(102) {
+    Int32(102,4) {
         // the native code will see the raw pointer value as Integer
         Object massage(Object param) {
             if(param==null)     return null;
@@ -118,7 +118,7 @@ public enum NativeType {
             return param;
         }
     },
-    Int32_ByRef(102|BYREF),
+    Int32_ByRef(102|BYREF,4),
 
     /**
      * The native type is 'BOOL' (defined as 'int')
@@ -129,7 +129,7 @@ public enum NativeType {
      *      boolean
      *      {@link Boolean}
      */
-    Bool(103),
+    Bool(103,4),
 
     /**
      * The native type is 'VARIANT_BOOL' where TRUE=1 and FALSE=0.
@@ -140,8 +140,8 @@ public enum NativeType {
      *      boolean
      *      {@link Boolean}
      */
-    VariantBool(104),
-    VariantBool_ByRef(104|BYREF),
+    VariantBool(104,2),
+    VariantBool_ByRef(104|BYREF,2),
 
     /**
      * <tt>float</tt>.
@@ -151,7 +151,7 @@ public enum NativeType {
      *      boolean
      *      {@link Number}
      */
-    Float(120),
+    Float(120,4),
 
     /**
      * <tt>double</tt>.
@@ -161,20 +161,20 @@ public enum NativeType {
      *      boolean
      *      {@link Number}
      */
-    Double(121),
+    Double(121,8),
 
     /**
      * Used only with {@link ReturnValue} for returning
      * HRESULT of the method invocation as "int".
      */
-    HRESULT(200),
+    HRESULT(200,4),
 
     /**
      * The native type is determined from the Java method return type.
      * See the documentation for mor details.
      * TODO: link to the doc.
      */
-    Default(201),
+    Default(201,9999),
 
     /**
      * COM interface pointer.
@@ -183,7 +183,7 @@ public enum NativeType {
      * Expected Java type:
      *      {@link Com4jObject}
      */
-    ComObject(300) {
+    ComObject(300,4) {
         // the native code will see the raw pointer value as Integer
         Object massage(Object param) {
             return COM4J.unwrap((Com4jObject)param).getPtr();
@@ -212,7 +212,7 @@ public enum NativeType {
      * Expected Java type:
      *      {@link Holder<ComObject>}
      */
-    ComObject_ByRef(300|BYREF) {
+    ComObject_ByRef(300|BYREF,4) {
         // the native code will see the raw pointer value as Integer
         Object massage(Object param) {
             Holder h = (Holder)param;
@@ -237,7 +237,7 @@ public enum NativeType {
      * Expected Java type:
      *      {@link GUID}
      */
-    GUID(301) {
+    GUID(301,4) {
         // pass in the value as two longs
         Object massage(Object param) {
             GUID g = (GUID)param;
@@ -294,7 +294,7 @@ public enum NativeType {
      * </table>
      * TODO: expand the list
      */
-    VARIANT(302),
+    VARIANT(302,16),
 
     /**
      * <tt>VARIANT*</tt>.
@@ -303,7 +303,7 @@ public enum NativeType {
      * This works like {@link #VARIANT}, except that a reference
      * is passed, instead of a VARIANT itself.
      */
-    VARIANT_ByRef(302|BYREF),
+    VARIANT_ByRef(302|BYREF,4),
 
     /**
      * <tt>IDispatch*</tt>
@@ -312,7 +312,7 @@ public enum NativeType {
      * Expected Java type:
      *      {@link Com4jObject}
      */
-    Dispatch(303) {
+    Dispatch(303,4) {
         // the native code will see the raw pointer value as Integer
         Object massage(Object param) {
             int ptr = COM4J.unwrap((Com4jObject)param).getPtr();
@@ -345,7 +345,7 @@ public enum NativeType {
      *      direct {@link Buffer}s ({@link Buffer}s created from methods like
      *      {@link ByteBuffer#allocateDirect(int)}
      */
-    PVOID(304),
+    PVOID(304,4),
 
 
     /**
@@ -359,7 +359,7 @@ public enum NativeType {
      *      {@link Holder}&lt;{@link Buffer}> ({@link Buffer}s created from methods like
      *      {@link ByteBuffer#allocateDirect(int)}
      */
-    PVOID_ByRef(304|BYREF),
+    PVOID_ByRef(304|BYREF,4),
 
     /**
      * <tt>DATE</tt>.
@@ -370,7 +370,7 @@ public enum NativeType {
      *      {@link java.util.Date}
      *      {@link Calendar}
      */
-    Date(400) {
+    Date(400,8) {
         // the native code will see the raw pointer value as Integer
         Object massage(Object param) {
             java.util.Date dt;
@@ -439,7 +439,7 @@ public enum NativeType {
      *  <li>String[] -> SAFEARRAY(VT_BSTR)
      * </ul>
      */
-    SafeArray(500),
+    SafeArray(500,24),
 
     ;
 
@@ -453,6 +453,11 @@ public enum NativeType {
      */
     final int code;
 
+    /**
+     * Size of the native type in bytes.
+     */
+    final int size;
+
     private static final Map<Integer,NativeType> codeMap = new HashMap<Integer, NativeType>();
 
     static {
@@ -461,8 +466,9 @@ public enum NativeType {
         }
     }
 
-    NativeType( int code ) {
+    NativeType( int code, int size ) {
         this.code = code;
+        this.size = size;
     }
 
     /**

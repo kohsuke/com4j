@@ -19,14 +19,16 @@ public @interface ReturnValue {
      *
      * <p>
      * If 0, the retval parameter is the 1st parameter in the parameter list.
+     * The default value '-1' means the return value is the last parameter.
      *
      * <p>
-     * The default value '-1' means the return value is the last parameter.
+     * If the method has the return type <tt>void</tt>, the COM method
+     * is assumed to have no return value (regardless of this annotation.)
      */
     int index() default -1;
 
     /**
-     * True if the parameter is "in/out" (therefore it shows up in the
+     * True if the [retval] parameter is "in/out" (therefore it also shows up in the
      * Java parameter list.) Otherwise, the return value is not a part of the
      * Java parameter list.
      */

@@ -38,6 +38,8 @@ final class StandardComMethod extends ComMethod {
     StandardComMethod( Method m ) {
         method = m;
 
+        MethodIntrospector mi = new MethodIntrospector(m);
+
         VTID vtid = m.getAnnotation(VTID.class);
         if(vtid==null)
             throw new IllegalAnnotationException("@VTID is missing: "+m.toGenericString());
@@ -67,21 +69,12 @@ final class StandardComMethod extends ComMethod {
             }
         }
 
-        Type[] javaParamTypes = m.getGenericParameterTypes();
-
         paramTypes = m.getParameterTypes();
         genericParamTypes = m.getGenericParameterTypes();
         paramConvs = new int[paramLen];
         params = new NativeType[paramLen];
         for( int i=0; i<paramLen; i++ ) {
-            NativeType n=null;
-            for( Annotation a : pa[i] )
-                if( a instanceof MarshalAs )
-                    n = ((MarshalAs)a).value();
-            if(n==null) {
-                // missing annotation
-                n = getDefaultConversion(javaParamTypes[i]);
-            }
+            NativeType n = mi.getParamConversation(i);
             params[i] = n;
             paramConvs[i] = n.code;
         }
@@ -143,7 +136,7 @@ final class StandardComMethod extends ComMethod {
     /**
      * Computes the default conversion for the given type.
      */
-    private static NativeType getDefaultConversion(Type t) {
+    static NativeType getDefaultConversion(Type t) {
         if( t instanceof Class ) {
             Class<?> c = (Class<?>)t;
             NativeType r = defaultConversions.get(c);
