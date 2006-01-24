@@ -1083,12 +1083,18 @@ public final class Generator {
     }
 
     private static String camelize(String s) {
-        if(Character.isUpperCase(s.charAt(0))) {
-            // change "ThisKindOfName" to "thisKindOfName"
-            return Character.toLowerCase(s.charAt(0))+s.substring(1);
-        } else {
-            return s;
-        }
+        int idx = 0;
+
+        while(idx<s.length() && Character.isUpperCase(s.charAt(idx)))
+            idx++;
+
+        if(idx==s.length())
+            return s.toLowerCase();
+        if(idx>0)
+            // s=="HTMLProject" then idx==5
+            return s.substring(0,idx-1).toLowerCase()+s.substring(idx-1);
+
+        return s;
     }
 
     private static String escape(String s) {
@@ -1111,4 +1117,7 @@ public final class Generator {
         return m.getName().equals("_NewEnum");
     }
 
+    public static void main(String[] args) {
+        System.out.println(camelize(args[0]));
+    }
 }
