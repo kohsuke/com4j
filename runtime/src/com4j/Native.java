@@ -63,6 +63,13 @@ class Native {
         else        return Wrapper.create(IErrorInfo.class,p);
     }
 
+    /**
+     * Gets the error message string for the given HRESULT.
+     *
+     * @return null if none is found.
+     */
+    static native String getErrorMessage( int hresult );
+
     static native int queryInterface( int pComObject, long iid1, long iid2 );
 
     static int queryInterface( int pComObject, GUID guid ) {

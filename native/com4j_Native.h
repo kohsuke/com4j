@@ -57,6 +57,14 @@ JNIEXPORT jint JNICALL Java_com4j_Native_getErrorInfo
 
 /*
  * Class:     com4j_Native
+ * Method:    getErrorMessage
+ * Signature: (I)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_com4j_Native_getErrorMessage
+  (JNIEnv *, jclass, jint);
+
+/*
+ * Class:     com4j_Native
  * Method:    queryInterface
  * Signature: (IJJ)I
  */

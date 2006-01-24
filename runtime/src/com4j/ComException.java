@@ -71,16 +71,19 @@ public class ComException extends RuntimeException {
     public String getMessage() {
         if(errorInfo!=null && errorInfo.getDescription()!=null) {
             return super.getMessage()+" : "+errorInfo.getDescription();
-        } else {
-            return super.getMessage();
         }
+        String s = Native.getErrorMessage(hresult);
+        if(s!=null) {
+            return super.getMessage()+" : "+s;
+        }
+        return super.getMessage();
     }
 
     @Override
     public String toString() {
         String s = super.toString();
         if(fileName!=null) {
-            s += ' '+fileName+':'+line;
+            s += " : "+fileName+':'+line;
         }
         return s;
     }

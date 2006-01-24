@@ -102,6 +102,31 @@ JNIEXPORT jint JNICALL Java_com4j_Native_createInstance(
 	return reinterpret_cast<jint>(p);
 }
 
+JNIEXPORT jstring JNICALL Java_com4j_Native_getErrorMessage(
+	JNIEnv* env, jclass __unused__, jint hresult) {
+
+	LPWSTR p;
+
+	DWORD r = FormatMessageW(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER|
+		FORMAT_MESSAGE_FROM_SYSTEM,
+		NULL, hresult,
+		0, reinterpret_cast<LPWSTR>(&p), 0, NULL );
+
+	if(r==0)
+		return NULL;	// failed
+
+	// trim off the trailing NL
+	int len = wcslen(p);
+	while(len>0 && (p[len-1]==L'\r' || p[len-1]==L'\n'))
+		len--;
+
+	jstring result = env->NewString(p,len);
+	LocalFree(p);
+
+	return result;
+}
+
 JNIEXPORT jint JNICALL Java_com4j_Native_getErrorInfo(
 	JNIEnv* env, jclass __unused__, jint pComObject, jlong iid1, jlong iid2) {
 
