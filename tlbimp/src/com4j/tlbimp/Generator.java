@@ -1090,9 +1090,11 @@ public final class Generator {
 
         if(idx==s.length())
             return s.toLowerCase();
-        if(idx>0)
+        if(idx>0) {
+            if(idx==1)  idx=2;
             // s=="HTMLProject" then idx==5
             return s.substring(0,idx-1).toLowerCase()+s.substring(idx-1);
+        }
 
         return s;
     }
@@ -1115,9 +1117,5 @@ public final class Generator {
 
     private static boolean isEnum(IMethod m) {
         return m.getName().equals("_NewEnum");
-    }
-
-    public static void main(String[] args) {
-        System.out.println(camelize(args[0]));
     }
 }
