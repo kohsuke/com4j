@@ -166,5 +166,6 @@ public final class Variant extends Number {
         return Wrapper.create(type,ptr);
     }
 
+    // TODO: this isn't quite working
     public static final Variant MISSING = new Variant(Type.VT_ERROR);
 }
