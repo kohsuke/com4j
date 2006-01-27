@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<project name="wsh" default="run" basedir=".">
+<project name="powerPoint" default="run" basedir=".">
   
   <path id="com4j">
     <fileset dir="../.." includes="*.jar"/>
