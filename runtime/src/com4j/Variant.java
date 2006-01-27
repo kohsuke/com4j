@@ -82,6 +82,14 @@ public final class Variant extends Number {
     }
 
     /**
+     * Creates an empty {@link Variant} with the given type.
+     */
+    public Variant(Type type) {
+        this();
+        setType(type);
+    }
+
+    /**
      * Empties the current contents.
      *
      * <p>
@@ -157,4 +165,6 @@ public final class Variant extends Number {
         Native.addRef(ptr);
         return Wrapper.create(type,ptr);
     }
+
+    public static final Variant MISSING = new Variant(Type.VT_ERROR);
 }
