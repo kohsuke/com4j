@@ -5,12 +5,7 @@
 
 
 
-__declspec(dllexport) int __stdcall foo(IUnknown* pUnk, int arg1, short arg2) {
-	return arg1+arg2;
-}
-
 Environment::~Environment() {
-	foo(NULL,0,3);
 	// run post actions
 	while( postActions!=NULL ) {
 		postActions->act(env);
@@ -48,7 +43,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 		void*	pv;
 		SAFEARRAY* psa;
 		VARIANT* pvar;
-		VARIANT_BOOL vbool;
+		// VARIANT_BOOL vbool;
 //	};
 
 	HRESULT hr;
@@ -183,11 +178,11 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 
 			case cvVariantBool:
 				if(javaLangBoolean_booleanValue(env,arg)) {
-					vbool = VARIANT_TRUE;
+					int32 = VARIANT_TRUE;
 				} else {
-					vbool = VARIANT_FALSE;
+					int32 = VARIANT_FALSE;
 				}
-				_asm push vbool;
+				_asm push int32;
 				break;
 
 			case cvVariantBool_byRef:
