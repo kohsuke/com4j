@@ -208,6 +208,9 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				_asm sub ESP,0x10;
 				_asm mov [pvar],ESP;
 
+				if(arg==NULL) {
+					VariantCopy(pvar,&vtMissing);
+				} else
 				if(env->IsSameObject(env->GetObjectClass(arg),com4j_Variant)) {
 					// if we got a com4j.Variant object, create its copy
 					jobject img = env->GetObjectField(arg,com4j_Variant_image);
@@ -222,6 +225,9 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				break;
 
 			case cvVARIANT_byRef:
+				if(arg==NULL) {
+					pvar = &vtMissing;
+				} else
 				if(env->IsSameObject(env->GetObjectClass(arg),com4j_Variant)) {
 					// if we got a com4j.Variant object, pass its image
 					jobject img = env->GetObjectField(arg,com4j_Variant_image);
