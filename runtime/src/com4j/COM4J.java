@@ -182,6 +182,22 @@ public abstract class COM4J {
         ComThread.get().removeListener(listener);
     }
 
+    /**
+     * Cleans up COM resources for the current thread.
+     *
+     * <p>
+     * This method can be invoked explicitly by a thread that used COM objects,
+     * to clean up resources, such as references to out-of-process COM objects.
+     *
+     * <p>
+     * In COM terminology, this effectively amounts to calling {@code CoUninitialize}.
+     *
+     * After this method is invoked, a thread can still go use other COM resources.
+     */
+    public static void cleanUp() {
+        ComThread.detach();
+    }
+
     static int queryInterface( int ptr, GUID iid ) {
         return Native.queryInterface(ptr,iid.v[0],iid.v[1]);
     }

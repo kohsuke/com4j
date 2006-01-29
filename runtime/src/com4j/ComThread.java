@@ -2,6 +2,9 @@ package com4j;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Collections;
 
 
 /**
@@ -32,6 +35,11 @@ final class ComThread extends Thread {
      */
     static ComThread get() {
         return map.get();
+    }
+
+    static void detach() {
+        map.get().kill();
+        map.remove();
     }
 
 
@@ -70,13 +78,47 @@ final class ComThread extends Thread {
     private final List<ComObjectListener> listeners = new ArrayList<ComObjectListener>();
 
     /**
+     * If set to true, this thread will commit suicide.
+     */
+    private boolean die = false;
+
+    /**
      * Returns true if this thread can exit.
      */
     private boolean canExit() {
-        return !peer.isAlive() && liveObjects==0;
+        // lhs:forcible death <->  rhs:natural death
+        return die || (!peer.isAlive() && liveObjects==0);
+    }
+
+    public void kill() {
+        new Task<Void>() {
+            public Void call() {
+                // this thread is going to shut down.
+                // if the master thread needs a ComThread again,
+                // we'll create a new thread.
+                die = true;
+                return null;
+            }
+        }.execute();
+
+        // wait for it to die. if someone interrupts us, process that later.
+        try {
+            join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     public synchronized void run() {
+        threads.add(this);
+        try {
+            run0();
+        } finally {
+            threads.remove(this);
+        }
+    }
+
+    private synchronized void run0() {
         Native.coInitialize();
 
         // TODO: we need to run Windows message pump
@@ -169,5 +211,23 @@ final class ComThread extends Thread {
     public void removeListener(ComObjectListener listener) {
         if(!listeners.remove(listener))
             throw new IllegalArgumentException("listener isn't registered");
+    }
+
+
+    /**
+     * Live {@link ComThread}s.
+     */
+    static final Set<ComThread> threads = Collections.synchronizedSet(new HashSet<ComThread>());
+
+    static {
+        // before shut-down clean up all ComThreads
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                // move threads to array to avoid concurrent modification
+                for (ComThread thread : threads.toArray(new ComThread[threads.size()]) ) {
+                    thread.kill();
+                }
+            }
+        });
     }
 }
