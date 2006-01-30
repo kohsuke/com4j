@@ -25,6 +25,14 @@ JNIEXPORT jint JNICALL Java_com4j_Native_createInstance
 
 /*
  * Class:     com4j_Native
+ * Method:    getActiveObject
+ * Signature: (JJ)I
+ */
+JNIEXPORT jint JNICALL Java_com4j_Native_getActiveObject
+  (JNIEnv *, jclass, jlong, jlong);
+
+/*
+ * Class:     com4j_Native
  * Method:    addRef
  * Signature: (I)V
  */

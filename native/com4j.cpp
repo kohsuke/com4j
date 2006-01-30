@@ -124,6 +124,23 @@ JNIEXPORT jint JNICALL Java_com4j_Native_createInstance(
 	return reinterpret_cast<jint>(p);
 }
 
+JNIEXPORT jint JNICALL Java_com4j_Native_getActiveObject(
+	JNIEnv* env, jclass __unused__, jlong clsid1, jlong clsid2) {
+
+	MyGUID clsid(clsid1,clsid2);
+	HRESULT hr;
+	
+	IUnknown* pUnk = NULL;
+
+	hr = ::GetActiveObject(clsid,NULL,&pUnk);
+	if(FAILED(hr)) {
+		error(env,__FILE__,__LINE__,hr,"GetActiveObject failed");
+		return 0;
+	}
+
+	return reinterpret_cast<jint>(pUnk);
+}
+
 JNIEXPORT jstring JNICALL Java_com4j_Native_getErrorMessage(
 	JNIEnv* env, jclass __unused__, jint hresult) {
 
