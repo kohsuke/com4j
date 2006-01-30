@@ -105,6 +105,70 @@ public abstract class COM4J {
     }
 
     /**
+     * Gets an already object from the running object table.
+     *
+     * @param primaryInterface
+     *      The returned COM object is returned as this interface.
+     *      Must be non-null. Passing in {@link Com4jObject} allows
+     *      the caller to create a new instance without knowing
+     *      its primary interface.
+     * @param clsid
+     *      The CLSID of the object to be retrieved.
+     *
+     * @throws ComException
+     *      if the retrieval fails.
+     *
+     * @see
+     *  <a href="http://msdn2.microsoft.com/en-us/library/ms221467.aspx">MSDN documentation</a>
+     */
+    public static <T extends Com4jObject> T getActiveObject(Class<T> primaryInterface, GUID clsid ) {
+        return new GetActiveObjectTask<T>(clsid,primaryInterface).execute();
+    }
+
+    /**
+     * Gets an already object from the running object table.
+     *
+     * @param primaryInterface
+     *      The returned COM object is returned as this interface.
+     *      Must be non-null. Passing in {@link Com4jObject} allows
+     *      the caller to create a new instance without knowing
+     *      its primary interface.
+     * @param clsid
+     *      The CLSID of the COM object to be retrieved, in the
+     *      "<tt>{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}</tt>" format,
+     *      or the ProgID of the object (like "Microsoft.XMLParser.1.0")
+     *
+     * @return
+     *      non-null valid object.
+     *
+     * @throws ComException
+     *      if the retrieval fails.
+     *
+     * @see #getActiveObject(Class,GUID)
+     */
+    public static <T extends Com4jObject> T getActiveObject(Class<T> primaryInterface, String clsid ) {
+        return getActiveObject(primaryInterface,new GUID(clsid));
+    }
+
+    private static class GetActiveObjectTask<T extends Com4jObject> extends Task<T> {
+        private final GUID clsid;
+        private final Class<T> intf;
+
+        public GetActiveObjectTask(GUID clsid, Class<T> intf) {
+            this.clsid = clsid;
+            this.intf = intf;
+        }
+
+        public T call() {
+            GUID iid = getIID(intf);
+            int o1 = Native.getActiveObject(clsid.v[0], clsid.v[1]);
+            int o2 = Native.queryInterface(o1, iid.v[0], iid.v[1]);
+            Native.release(o1);
+            return Wrapper.create(intf,o2);
+        }
+    }
+
+    /**
      * Gets the interface GUID associated with the given interface.
      *
      * <p>

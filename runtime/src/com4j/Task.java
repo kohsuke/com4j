@@ -43,7 +43,7 @@ abstract class Task<T> implements Callable<T> {
         exception = null;
         try {
             result = call();
-        } catch( RuntimeException e ) {
+        } catch( Throwable e ) {
             exception = e;
         }
 
@@ -67,5 +67,7 @@ abstract class Task<T> implements Callable<T> {
      * Managed by {@link ComThread} to pass the exception
      * across threads.
      */
-    RuntimeException exception;
+    Throwable exception;
+
+    Error error;
 }

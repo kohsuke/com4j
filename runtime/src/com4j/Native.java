@@ -21,6 +21,11 @@ class Native {
     static native int createInstance( String clsid, int clsctx, long iid1, long iid2 );
 
     /**
+     * Calls {@code GetActiveObject} Win32 API.
+     */
+    static native int getActiveObject( long clsid1, long clsid2 );
+
+    /**
      * Calls <tt>AddRef</tt>.
      */
     static native void addRef( int pComObject );

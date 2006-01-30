@@ -174,7 +174,7 @@ final class ComThread extends Thread {
             } catch (InterruptedException e) {}
 
             if(task.exception!=null) {
-                RuntimeException e = task.exception;
+                Throwable e = task.exception;
                 task.exception = null;
                 throw new ExecutionException(e);
             } else {
