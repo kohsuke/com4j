@@ -474,26 +474,35 @@ public final class Generator {
             while(true) {
                 MethodBinder mb = new MethodBinder(m);
                 // only handle methods of the form "HRESULT foo([out,retval]IFoo** ppOut);
-                if(m.getParamCount()!=1 || mb.retParam!=0 || mb.params[mb.retParam].isIn())
+                if (m.getParamCount() != 1 || mb.retParam != 0 || mb.params[mb.retParam].isIn())
                     break;
 
                 // we expect it to be an interface pointer.
                 IPtrType pt = mb.returnType.queryInterface(IPtrType.class);
-                IDispInterfaceDecl di=null;
-                IInterfaceDecl ii=null;
-                if(pt!=null) {
+                IDispInterfaceDecl di = null;
+                IInterfaceDecl ii = null;
+                if (pt != null) {
                     IType t = pt.getPointedAtType();
                     di = t.queryInterface(IDispInterfaceDecl.class);
                     ii = t.queryInterface(IInterfaceDecl.class);
                 }
 
-                if(di==null && ii==null)
+                if (di == null && ii == null)
                     break;
-                IInterface intf = ii != null ? ii : di.getVtblInterface();
+
+                IInterface intf;
+                if (ii != null) {
+                    intf = ii;
+                } else {
+                    if(di.isDual())
+                        intf = di.getVtblInterface();
+                    else
+                        break;
+                }
 
                 // does this target interface has a default method?
-                IMethod dm = dmf.getDefaultMethod( intf );
-                if(dm==null)
+                IMethod dm = dmf.getDefaultMethod(intf);
+                if (dm == null)
                     return;
 
                 // recursively check...
