@@ -92,6 +92,9 @@ public final class Generator {
             TypeLibInfo lib1 = pkg.typeLibs.iterator().next();
             PackageBinder pb = new PackageBinder(lib1);
 
+            if(referenceResolver.suppress(lib1.lib))
+                continue;
+
             // generate ClassFactory
             IndentingWriter o = pkg.createWriter(lib1,"ClassFactory.java");
             pb.generateHeader(o);
