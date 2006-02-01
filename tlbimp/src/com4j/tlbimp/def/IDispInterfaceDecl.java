@@ -26,6 +26,8 @@ public interface IDispInterfaceDecl extends ITypeDecl, IInterface {
 
     /**
      * get the vtable interface of this dispatch interface. Works only when this is a dual interface.
+     *
+     * @see #isDual()
      */
     @VTID(11)
     IInterfaceDecl getVtblInterface();
