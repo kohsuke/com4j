@@ -750,7 +750,8 @@ public final class Generator {
 
         /**
          * MIDL often produces typedefs of the form "typedef A B" where
-         * B is an enum declaration, and A is the name given by the user in IDL.
+         * B is an enum declaration, and A is the name given by the user in IDL
+         * (A is usually cryptic, B is human readable.)
          *
          * <p>
          * I don't know why MIDL behaves in this way, but in this case
@@ -772,6 +773,17 @@ public final class Generator {
                     if(def!=null) {
 //                    System.out.println(def.getName()+" -> "+typedef.getName());
                         aliases.put( def, typedef.getName() );
+
+                        if(def.getKind()==TypeKind.DISPATCH ) {
+                            // if the alias is defined against dispinterface,
+                            // also define the same typedef for 'interface'
+
+                            IDispInterfaceDecl dispi = def.queryInterface(IDispInterfaceDecl.class);
+                            if(dispi.isDual()) {
+                                IInterfaceDecl custitf = dispi.getVtblInterface();
+                                aliases.put(custitf, typedef.getName());
+                            }
+                        }
                     }
                 }
                 t.dispose();
