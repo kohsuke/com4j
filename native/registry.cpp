@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "com4j_tlbimp_Native.h"
 #include "com4j.h"
-#include "jstring.h"
 
 // HKEY wrapper that automates deallocation
 class KeyHolder {

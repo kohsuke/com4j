@@ -2,10 +2,8 @@
 #include "java_id.h"
 #include <oaidl.h>
 
-JClassID* JClassID::init = NULL;
-JMethodID_Base* JMethodID_Base::init = NULL;
 
-
+/*
 JClassID javaLangNumber("java/lang/Number");
 JMethodID<jbyte> javaLangNumber_byteValue(javaLangNumber,"byteValue","()B");
 JMethodID<jint> javaLangNumber_intValue(javaLangNumber,"intValue","()I");
@@ -37,6 +35,7 @@ JMethodID<jboolean> javaLangBoolean_booleanValue(javaLangBoolean,"booleanValue",
 JStaticMethodID<jobject> javaLangBoolean_valueOf(javaLangBoolean,"valueOf","(Z)Ljava/lang/Boolean;");
 
 JClassID javaLangString("java/lang/String");
+*/
 
 JClassID com4j_COM4J("com4j/COM4J");
 JStaticMethodID<jint> com4j_COM4J_getPtr(com4j_COM4J,"getPtr","(Lcom4j/Com4jObject;)I");
@@ -55,6 +54,7 @@ jfieldID com4j_Variant_image;
 JClassID com4jWrapper("com4j/Wrapper");
 JConstructorID com4jWrapper_new(com4jWrapper,"(I)V");
 
+/*
 JClassID booleanArray("[Z");
 JClassID byteArray("[B");
 JClassID charArray("[C");
@@ -65,3 +65,4 @@ JClassID longArray("[J");
 JClassID shortArray("[S");
 JClassID stringArray("[Ljava/lang/String;");
 JClassID objectArray("[Ljava/lang/Object;");
+*/

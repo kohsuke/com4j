@@ -3,6 +3,7 @@
 #include <atlimpl.cpp>
 
 CComModule _Module;
+JNIModule jniModule;
 
 BOOL APIENTRY DllMain( HINSTANCE hModule, 
                        DWORD  dwReason, 

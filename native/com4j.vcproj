@@ -253,10 +253,6 @@
 			Filter="h;hpp;hxx;hm;inl;inc"
 			>
 			<File
-				RelativePath="array.h"
-				>
-			</File>
-			<File
 				RelativePath="cleanup.h"
 				>
 			</File>
@@ -282,18 +278,6 @@
 			</File>
 			<File
 				RelativePath="java_id.h"
-				>
-			</File>
-			<File
-				RelativePath=".\jnitl.h"
-				>
-			</File>
-			<File
-				RelativePath="jstring.h"
-				>
-			</File>
-			<File
-				RelativePath="op.h"
 				>
 			</File>
 			<File

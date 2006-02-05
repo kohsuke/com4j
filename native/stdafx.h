@@ -24,6 +24,10 @@ extern CComModule _Module;
 #include <algorithm>
 using namespace std;
 
+// if the following line fails, you need to install JNITL from http://jnitl.dev.java.net/
+#include <jnitl.h>
+using namespace jnitl;
+
 // smart pointer definitions
 #include <comdef.h>
 _COM_SMARTPTR_TYPEDEF(ITypeInfo, __uuidof(ITypeInfo));

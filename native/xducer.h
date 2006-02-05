@@ -1,6 +1,5 @@
 #pragma once
 #include "com4j.h"
-#include "jstring.h"
 #include "java_id.h"
 /*
 	Transducers are basic unit of conversion between Java and Native Types.

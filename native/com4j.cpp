@@ -2,7 +2,6 @@
 #include "java_id.h"
 #include "com4j.h"
 #include "com4j_native.h"
-#include "jstring.h"
 #include "typelib.h"
 #include "safearray.h"
 #include "event_sink.h"
@@ -33,15 +32,7 @@ JNIEXPORT jobject JNICALL Java_com4j_Native_invoke(JNIEnv* env,
 	return r;
 }
 
-extern "C"
-JNIEXPORT jint JNICALL JVM_OnLoad(JavaVM* _jvm, const char* options, void* reserved) {
-	jvm = _jvm;
-	return JNI_OK;
-}
-
 JNIEXPORT void JNICALL Java_com4j_Native_init( JNIEnv* env, jclass __unused__ ) {
-	JClassID::runInit(env);
-	JMethodID_Base::runInit(env);
 	com4j_Holder_value = env->GetFieldID(com4j_Holder,"value","Ljava/lang/Object;");
 	com4j_Variant_image = env->GetFieldID(com4j_Variant,"image","Ljava/nio/ByteBuffer;");
 
