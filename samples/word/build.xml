@@ -35,7 +35,7 @@
   </target>
   
   <target name="run" depends="compile">
-    <java classname="Main" fork="true">
+    <java classname="WordDemo" fork="true">
       <classpath>
         <path refid="com4j"/>
       </classpath>
