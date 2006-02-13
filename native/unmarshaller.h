@@ -7,8 +7,6 @@
 #include "cleanup.h"
 #include "xducer.h"
 
-extern jfieldID com4j_Holder_value;
-
 // wraps the com4j.Holder object for convenient access
 class Holder : public _jobject {
 public:
@@ -25,6 +23,7 @@ typedef Holder* jholder;
 class Unmarshaller {
 public:
 	virtual jobject unmarshal( JNIEnv* env ) = 0;
+	// the address of the variable that should receive the value during a method invocation
 	virtual void* addr() = 0;
 	virtual ~Unmarshaller() {}
 };

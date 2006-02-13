@@ -200,6 +200,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\eventReceiver.cpp"
+				>
+			</File>
+			<File
 				RelativePath="invoke.cpp"
 				>
 			</File>
@@ -273,7 +277,7 @@
 				>
 			</File>
 			<File
-				RelativePath="event_sink.h"
+				RelativePath=".\eventReceiver.h"
 				>
 			</File>
 			<File
@@ -305,7 +309,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\variant.h"
+				>
+			</File>
+			<File
 				RelativePath="xducer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\xducer2.h"
 				>
 			</File>
 		</Filter>

@@ -4,15 +4,10 @@
 #include "xducer.h"
 #include "unmarshaller.h"
 #include "safearray.h"
-
-// used to map two jlongs to the memory image of VARIANT.
-static VARIANT* getVariantImage( JNIEnv* env, jobject buffer ) {
-	return reinterpret_cast<VARIANT*>(env->GetDirectBufferAddress(buffer));
-}
-
+#include "variant.h"
 
 JNIEXPORT void JNICALL Java_com4j_Variant_clear0(JNIEnv* env, jclass, jobject image) {
-	HRESULT hr = VariantClear(getVariantImage(env,image));
+	HRESULT hr = VariantClear((VARIANT*)env->GetDirectBufferAddress(image));
 	if(FAILED(hr))
 		error(env,__FILE__,__LINE__,hr,"failed to clear variant");
 }
@@ -31,9 +26,18 @@ void VariantChangeType( JNIEnv* env, VARIANT* v, VARTYPE type ) {
 }
 
 JNIEXPORT void JNICALL Java_com4j_Variant_changeType0(JNIEnv* env, jclass, jint type, jobject image) {
-	VariantChangeType( env, getVariantImage(env,image), (VARTYPE)type );
+	VariantChangeType( env, (VARIANT*)env->GetDirectBufferAddress(image), (VARTYPE)type );
 }
 
+JNIEXPORT jobject JNICALL Java_com4j_Variant_convertTo(JNIEnv* env, jobject instance, jclass target) {
+	jobject r = variantToObject(env,target,*com4jVariantToVARIANT(env,instance));
+	if(r==reinterpret_cast<jobject>(-1)) {
+		jstring name = javaLangClass_getName(env,target);
+		error(env,__FILE__,__LINE__,E_FAIL,"Unable to convert to the %s",LPCSTR(JString(env,name)));
+		return NULL;
+	}
+	return r;
+}
 
 
 
@@ -44,7 +48,7 @@ class VariantHandler {
 public:
 	// returnss VARIANT allocated by 'new'
 	virtual VARIANT* set( JNIEnv* env, jobject src ) = 0;
-	virtual jobject get( JNIEnv* env, VARIANT* v ) = 0;
+	virtual jobject get( JNIEnv* env, VARIANT* v, jclass retType ) = 0;
 };
 
 template <VARTYPE vt, class XDUCER>
@@ -62,7 +66,7 @@ public:
 			env, static_cast<XDUCER::JavaType>(o) );
 		return v;
 	}
-	jobject get( JNIEnv* env, VARIANT* v ) {
+	jobject get( JNIEnv* env, VARIANT* v, jclass retType ) {
 		_variant_t dst(v);
 		dst.ChangeType(vt);
 		jobject o = XDUCER::toJava(env, addr(&dst));
@@ -71,8 +75,10 @@ public:
 };
 
 class ComObjectVariandHandlerImpl : public VariantHandlerImpl<VT_DISPATCH,xducer::Com4jObjectXducer> {
+	typedef VariantHandlerImpl<VT_DISPATCH,xducer::Com4jObjectXducer> BASE;
+
 	VARIANT* set( JNIEnv* env, jobject o) {
-		VARIANT* v = ComObjectVariandHandlerImpl::set(env,o);
+		VARIANT* v = BASE::set(env,o);
 		IDispatch* pDisp = NULL;
 		HRESULT hr = addr(v)->QueryInterface(&pDisp);
 		if(SUCCEEDED(hr)) {
@@ -82,6 +88,10 @@ class ComObjectVariandHandlerImpl : public VariantHandlerImpl<VT_DISPATCH,xducer
 			v->vt = VT_DISPATCH;
 		} // otherwise use VT_UNKNOWN. See java.net issue 2.
 		return v;
+	}
+	jobject get( JNIEnv* env, VARIANT* v, jclass retType ) {
+		jobject o = BASE::get(env,v,retType);
+		return com4jWrapper_queryInterface(env,o,retType);
 	}
 };
 
@@ -105,15 +115,11 @@ static SetterEntry setters[] = {
 	{ &javaLangInteger,	VT_I4,			new VariantHandlerImpl<VT_I4,		xducer::BoxedIntXducer>() },
 	{ &javaLangLong,	VT_I8,			new VariantHandlerImpl<VT_I8,		xducer::BoxedLongXducer>() },
 	// see issue 2 on java.net. I used to convert a COM object to VT_UNKNOWN
-	{ &com4j_Com4jObject,VT_DISPATCH,	new VariantHandlerImpl<VT_DISPATCH,	xducer::Com4jObjectXducer>() },
-	{ &com4j_Com4jObject,VT_UNKNOWN,	new VariantHandlerImpl<VT_DISPATCH,	xducer::Com4jObjectXducer>() },
+	{ &com4j_Com4jObject,VT_DISPATCH,	new ComObjectVariandHandlerImpl() },
+	{ &com4j_Com4jObject,VT_UNKNOWN,	new ComObjectVariandHandlerImpl() },
 	{ NULL, 0, NULL }
 };
 
-// convert a java object to a VARIANT based on the actual type of the Java object.
-// the caller should call VariantClear to clean up the data, then delete it.
-//
-// return NULL if fails to convert
 VARIANT* convertToVariant( JNIEnv* env, jobject o ) {
 	jclass cls = env->GetObjectClass(o);
 	
@@ -137,22 +143,33 @@ VARIANT* convertToVariant( JNIEnv* env, jobject o ) {
 	return NULL;
 }
 
-jobject VariantUnmarshaller::unmarshal( JNIEnv* env ) {
+jobject variantToObject( JNIEnv* env, jclass retType, VARIANT& v ) {
 	// return type driven
 	for( SetterEntry* p = setters; p->cls!=NULL; p++ ) {
 		if( env->IsAssignableFrom( retType, *(p->cls) ) ) {
-			return p->handler->get(env,&v);
+			return p->handler->get(env,&v,retType);
 		}
 	}
 
 	// if none is found, drive by the variant type
 	for( SetterEntry* p = setters; p->cls!=NULL; p++ ) {
 		if( v.vt==p->vt ) {
-			return p->handler->get(env,&v);
+			return p->handler->get(env,&v,retType);
 		}
 	}
 
-	// the expected return type is something we can't handle
-	error(env,__FILE__,__LINE__,"The specified return type is not compatible with VARIANT");
-	return NULL;
+	// everything failed
+	return reinterpret_cast<jobject>(-1);
+}
+
+jobject VariantUnmarshaller::unmarshal( JNIEnv* env ) {
+	jobject r = variantToObject(env,retType,v);
+
+	if(r==reinterpret_cast<jobject>(-1)) {
+		// the expected return type is something we can't handle
+		error(env,__FILE__,__LINE__,"The specified return type is not compatible with VARIANT");
+		return NULL;
+	} else {
+		return r;
+	}
 }

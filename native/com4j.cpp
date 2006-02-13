@@ -4,7 +4,7 @@
 #include "com4j_native.h"
 #include "typelib.h"
 #include "safearray.h"
-#include "event_sink.h"
+#include "eventReceiver.h"
 
 JavaVM* jvm;
 
@@ -34,7 +34,6 @@ JNIEXPORT jobject JNICALL Java_com4j_Native_invoke(JNIEnv* env,
 
 JNIEXPORT void JNICALL Java_com4j_Native_init( JNIEnv* env, jclass __unused__ ) {
 	com4j_Holder_value = env->GetFieldID(com4j_Holder,"value","Ljava/lang/Object;");
-	com4j_Variant_image = env->GetFieldID(com4j_Variant,"image","Ljava/nio/ByteBuffer;");
 
 	HRESULT hr = CoInitialize(NULL);
 	if(FAILED(hr)) {
@@ -230,4 +229,15 @@ JNIEXPORT void JNICALL Java_com4j_Native_coUninitialize(
 	JNIEnv* env, jclass _) {
 
 	CoUninitialize();
+}
+
+JNIEXPORT jint JNICALL Java_com4j_Native_advise( JNIEnv* env, jclass _, jint ptr, jobject proxy,jlong iid1, jlong iid2) {
+	CEventReceiver* p = CEventReceiver::create( env, reinterpret_cast<IConnectionPoint*>(ptr), proxy, MyGUID(iid1,iid2) );
+	return reinterpret_cast<jint>(p);
+}
+
+JNIEXPORT void JNICALL Java_com4j_Native_unadvise( JNIEnv* env, jclass _, jint p ) {
+	CEventReceiver* er = reinterpret_cast<CEventReceiver*>(p);
+	er->Disconnect(env);
+	delete er;
 }

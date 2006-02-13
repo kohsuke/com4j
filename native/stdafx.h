@@ -27,6 +27,7 @@ using namespace std;
 // if the following line fails, you need to install JNITL from http://jnitl.dev.java.net/
 #include <jnitl.h>
 using namespace jnitl;
+extern JNIModule jniModule;
 
 // smart pointer definitions
 #include <comdef.h>

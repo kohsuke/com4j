@@ -2,7 +2,7 @@
 #include "com4j.h"
 #include "unmarshaller.h"
 #include "safearray.h"
-
+#include "variant.h"
 
 
 Environment::~Environment() {
@@ -213,8 +213,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				} else
 				if(env->IsSameObject(env->GetObjectClass(arg),com4j_Variant)) {
 					// if we got a com4j.Variant object, create its copy
-					jobject img = env->GetObjectField(arg,com4j_Variant_image);
-					VariantCopy(pvar,(VARIANT*)env->GetDirectBufferAddress(img));
+					VariantCopy(pvar,com4jVariantToVARIANT(env,arg));
 				} else {
 					// otherwise convert a value to a VARIANT, and simply use that for the stack var.
 					// since we aren't using VariantCopy, there's no need to VariantClear pSrc.
@@ -230,8 +229,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				} else
 				if(env->IsSameObject(env->GetObjectClass(arg),com4j_Variant)) {
 					// if we got a com4j.Variant object, pass its image
-					jobject img = env->GetObjectField(arg,com4j_Variant_image);
-					pvar = (VARIANT*)env->GetDirectBufferAddress(img);
+					pvar = com4jVariantToVARIANT(env,arg);
 				} else {
 					// otherwise convert a value to a VARIANT
 					pvar = convertToVariant(env,arg);

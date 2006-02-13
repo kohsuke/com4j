@@ -103,6 +103,22 @@ JNIEXPORT void JNICALL Java_com4j_Native_coInitialize
 JNIEXPORT void JNICALL Java_com4j_Native_coUninitialize
   (JNIEnv *, jclass);
 
+/*
+ * Class:     com4j_Native
+ * Method:    advise
+ * Signature: (ILcom4j/EventProxy;JJ)I
+ */
+JNIEXPORT jint JNICALL Java_com4j_Native_advise
+  (JNIEnv *, jclass, jint, jobject, jlong, jlong);
+
+/*
+ * Class:     com4j_Native
+ * Method:    unadvise
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_com4j_Native_unadvise
+  (JNIEnv *, jclass, jint);
+
 #ifdef __cplusplus
 }
 #endif

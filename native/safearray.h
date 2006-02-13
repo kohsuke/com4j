@@ -4,7 +4,7 @@
 	SafeArrayXducer::toNative is probably the most useful public entry point.
 */
 #pragma once
-#include "xducer.h"
+#include "xducer2.h"
 
 namespace safearray {
 	

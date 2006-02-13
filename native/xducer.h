@@ -1,6 +1,5 @@
+// transducer shared between nlink and com4j
 #pragma once
-#include "com4j.h"
-#include "java_id.h"
 /*
 	Transducers are basic unit of conversion between Java and Native Types.
 
@@ -100,21 +99,6 @@ namespace xducer {
 		}
 	};
 
-	// object <-> VARIANT.
-	class VariantXducer {
-	public:
-		typedef VARIANT NativeType;
-		typedef jobject JavaType;
-
-		static inline NativeType toNative( JNIEnv* env, JavaType value ) {
-			return *convertToVariant(env,value);
-		}
-
-//		TODO
-//		static inline JavaType toJava( JNIEnv* env, NativeType value ) {
-//		}
-	};
-
 
 	typedef BoxXducer<byte,jbyte,&javaLangByte_valueOf, &javaLangNumber_byteValue >
 		BoxedByteXducer;
@@ -133,29 +117,4 @@ namespace xducer {
 
 	typedef BoxXducer<INT64,jlong, &javaLangLong_valueOf, &javaLangNumber_longValue >
 		BoxedLongXducer;
-
-
-	// Com4jObject <-> IUnknown*.
-	class Com4jObjectXducer {
-	public:
-		typedef IUnknown* NativeType;
-		typedef jobject JavaType;
-
-		static inline NativeType toNative( JNIEnv* env, JavaType value ) {
-			if(value==NULL)		return NULL;
-
-			jint p = com4j_COM4J_getPtr(env,value);
-			NativeType ptr = reinterpret_cast<NativeType>(p);
-			
-			if(p==NULL)		return NULL;
-
-			ptr->AddRef();
-			return ptr;
-		}
-
-		static inline JavaType toJava( JNIEnv* env, NativeType value ) {
-			if(value==NULL)	return NULL;
-			return com4jWrapper_new(env,reinterpret_cast<int>(value));
-		}
-	};
 }

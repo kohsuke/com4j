@@ -25,6 +25,14 @@ JNIEXPORT void JNICALL Java_com4j_Variant_clear0
 JNIEXPORT void JNICALL Java_com4j_Variant_changeType0
   (JNIEnv *, jclass, jint, jobject);
 
+/*
+ * Class:     com4j_Variant
+ * Method:    convertTo
+ * Signature: (Ljava/lang/Class;)Ljava/lang/Object;
+ */
+JNIEXPORT jobject JNICALL Java_com4j_Variant_convertTo
+  (JNIEnv *, jobject, jclass);
+
 #ifdef __cplusplus
 }
 #endif
