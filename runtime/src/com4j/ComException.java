@@ -31,6 +31,10 @@ public class ComException extends RuntimeException {
         this.line = line;
     }
 
+    public ComException(String msg, int hresult) {
+        this(msg,hresult,null,-1);
+    }
+
     /*package*/ void setErrorInfo(ErrorInfo errorInfo) {
         this.errorInfo = errorInfo;
     }

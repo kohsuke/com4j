@@ -80,4 +80,16 @@ public interface Com4jObject {
      *      if the queryInterface fails.
      */
     <T extends Com4jObject> T queryInterface( Class<T> comInterface );
+
+    /**
+     * Subscribes to the given event interface of this object.
+     *
+     * @throws ComException
+     *      if a subscription fails.
+     *
+     * @return
+     *      Always non-null. Call {@link EventProxy#close()} to shut down
+     *      the event subscription.
+     */
+    <T> EventProxy<?> advise( Class<T> eventInterface, T object );
 }

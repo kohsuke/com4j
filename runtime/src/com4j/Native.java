@@ -94,4 +94,19 @@ class Native {
      * Calls "CoUninitialize"
      */
     static native void coUninitialize();
+
+    /**
+     * Calls IConnectionPoint::Advise and subscribe to the event.
+     *
+     * @param connectionPoint
+     *      interface pointer to the connection point.
+     * @return
+     *      pointer to the native proxy
+     */
+    static native int advise(int connectionPoint, EventProxy<?> eventProxy, long iid1, long iid2);
+
+    /**
+     * Shuts down the event subscription by calling IConnectionPoint::Unadvise.
+     */
+    static native void unadvise(int nativeProxy);
 }

@@ -29,7 +29,7 @@ public final class Variant extends Number {
     /**
      * The memory image of the VARIANT.
      */
-    final ByteBuffer image = ByteBuffer.allocateDirect(16);
+    final ByteBuffer image;
 
     /**
      * VARIANT type.
@@ -78,6 +78,7 @@ public final class Variant extends Number {
      * Creates an empty {@link Variant}.
      */
     public Variant() {
+        image = ByteBuffer.allocateDirect(16);
         image.order(ByteOrder.LITTLE_ENDIAN);
     }
 
@@ -165,6 +166,11 @@ public final class Variant extends Number {
         Native.addRef(ptr);
         return Wrapper.create(type,ptr);
     }
+
+    /**
+     * Converts the variant to the given object type.
+     */
+    public native <T> T convertTo( Class<T> type );
 
     // TODO: this isn't quite working
     public static final Variant MISSING = new Variant(Type.VT_ERROR);

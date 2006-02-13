@@ -181,7 +181,7 @@ public abstract class COM4J {
      * @return
      *      always return no-null valid {@link GUID} object.
      */
-    public static GUID getIID( Class<? extends Com4jObject> _interface ) {
+    public static GUID getIID( Class<?> _interface ) {
         IID iid = _interface.getAnnotation(IID.class);
         if(iid==null)
             throw new IllegalArgumentException(_interface.getName()+" doesn't have @IID annotation");
