@@ -6,6 +6,8 @@
 #include "safearray.h"
 #include "eventReceiver.h"
 
+// MsgWaitForMultipleObjects
+
 JavaVM* jvm;
 
 JNIEXPORT jobject JNICALL Java_com4j_Native_invoke(JNIEnv* env,

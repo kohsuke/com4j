@@ -95,6 +95,21 @@ class ComObjectVariandHandlerImpl : public VariantHandlerImpl<VT_DISPATCH,xducer
 	}
 };
 
+class NoopVariantHandlerImpl : public VariantHandler {
+public:
+	VARIANT* set( JNIEnv* env, jobject src ) {
+		VARIANT* pv = new VARIANT();
+		VariantClear(pv);
+		VariantCopy(pv, com4jVariantToVARIANT(env,src));
+		return pv;
+	}
+	jobject get( JNIEnv* env, VARIANT* v, jclass retType ) {
+		jobject r = com4j_Variant_new(env);
+		::VariantCopy(com4jVariantToVARIANT(env,r),v);
+		return r;
+	}
+};
+
 // conversion table for variant
 // from Java->native, we look for the cls field that can accept the current object,
 // then if they match, we'll call the handler.
@@ -117,6 +132,7 @@ static SetterEntry setters[] = {
 	// see issue 2 on java.net. I used to convert a COM object to VT_UNKNOWN
 	{ &com4j_Com4jObject,VT_DISPATCH,	new ComObjectVariandHandlerImpl() },
 	{ &com4j_Com4jObject,VT_UNKNOWN,	new ComObjectVariandHandlerImpl() },
+	{ &com4j_Variant,	0/*don't match from native->Java*/,		new NoopVariantHandlerImpl() },
 	{ NULL, 0, NULL }
 };
 

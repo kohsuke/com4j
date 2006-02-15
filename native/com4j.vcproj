@@ -196,6 +196,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\com4j_Win32Lock.cpp"
+				>
+			</File>
+			<File
 				RelativePath="error.cpp"
 				>
 			</File>
@@ -274,6 +278,10 @@
 			</File>
 			<File
 				RelativePath="com4j_Variant.h"
+				>
+			</File>
+			<File
+				RelativePath=".\com4j_Win32Lock.h"
 				>
 			</File>
 			<File

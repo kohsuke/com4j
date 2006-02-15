@@ -83,6 +83,12 @@ final class ComThread extends Thread {
     private boolean die = false;
 
     /**
+     * Used instead of the monitor of an object, so that we can run
+     * a message loop while waiting.
+     */
+    private final Win32Lock lock = new Win32Lock();
+
+    /**
      * Returns true if this thread can exit.
      */
     private boolean canExit() {
@@ -109,7 +115,7 @@ final class ComThread extends Thread {
         }
     }
 
-    public synchronized void run() {
+    public void run() {
         threads.add(this);
         try {
             run0();
@@ -118,27 +124,26 @@ final class ComThread extends Thread {
         }
     }
 
-    private synchronized void run0() {
+    private void run0() {
         Native.coInitialize();
 
-        // TODO: we need to run Windows message pump
         while(!canExit()) {
-            try {
-                wait(1000);
-            } catch (InterruptedException e) {}
+            lock.suspend();
 
-            // dispose unused objects if any
-            while(freeList!=null) {
-                if(freeList.dispose0())
-                    liveObjects--;
-                freeList = freeList.next;
-            }
+            synchronized(this) {
+                // dispose unused objects if any
+                while(freeList!=null) {
+                    if(freeList.dispose0())
+                        liveObjects--;
+                    freeList = freeList.next;
+                }
 
-            // do any scheduled tasks that need to be done
-            while(taskList!=null) {
-                Task<?> task = taskList;
-                taskList = task.next;
-                task.invoke();
+                // do any scheduled tasks that need to be done
+                while(taskList!=null) {
+                    Task<?> task = taskList;
+                    taskList = task.next;
+                    task.invoke();
+                }
             }
         }
 
@@ -164,10 +169,11 @@ final class ComThread extends Thread {
                 // add it to the link
                 task.next = taskList;
                 taskList = task;
-
-                // invoke the execution
-                notify();
             }
+
+            // invoke the execution
+            lock.activate();
+
             // wait for the completion
             try {
                 task.wait();
