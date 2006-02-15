@@ -1,8 +1,8 @@
 package iTunes;
 
 import iTunes.def.ClassFactory;
-import iTunes.def.IiTunes;
 import iTunes.def.IITTrack;
+import iTunes.def.IiTunes;
 
 /**
  * Uses iTunes COM API to drive iTunes.
