@@ -159,11 +159,28 @@ public final class Variant extends Number {
         return image.getFloat(8);
     }
 
+    public void set(float f) {
+        changeType(Type.VT_R4);
+        image.putFloat(8,f);
+    }
+
     public double doubleValue() {
         changeType(Type.VT_R8);
         return image.getDouble(8);
     }
 
+    public void set(double d) {
+        changeType(Type.VT_R8);
+        image.putDouble(8,d);
+    }
+
+    public String stringValue() {
+        return convertTo(String.class);
+    }
+
+    /**
+     * Reads this VARIANT as a COM interface pointer.
+     */
     public <T extends Com4jObject> T object( Class<T> type ) {
         changeType(Type.VT_UNKNOWN);
         int ptr = image.getInt(8);
