@@ -346,19 +346,48 @@ public final class Generator {
             IImplementedInterfaceDecl impl = t.getImplementedInterface(i);
             if(impl.isSource())
                 continue;
-            if(impl.isDefault())
-                return impl.getType();
+            IInterfaceDecl c = getCustom(impl);
+            if(impl.isDefault() && c!=null)
+                return c;
         }
 
         // if none is found, look for any non-source interface
+        Set<IInterfaceDecl> types = new HashSet<IInterfaceDecl>();
         for( int i=0; i<count; i++ ) {
             IImplementedInterfaceDecl impl = t.getImplementedInterface(i);
             if(impl.isSource())
                 continue;
-            return impl.getType();
+            IInterfaceDecl c = getCustom(impl);
+            if(c !=null)
+                types.add(c);
         }
 
-        return null;
+        if(types.isEmpty())
+            return null;
+
+        // if T1 and T2 are in the set and T1 derives from T2, eliminate T2
+        // (since returning T1 is better)
+        Set<IInterfaceDecl> bases = new HashSet<IInterfaceDecl>();
+        for (IInterfaceDecl ii : types) {
+            for( int i=0; i<ii.countBaseInterfaces(); i++)
+                bases.add(ii.getBaseInterface(i).queryInterface(IInterfaceDecl.class));
+        }
+        types.removeAll(bases);
+
+        return types.iterator().next();
+    }
+
+    private IInterfaceDecl getCustom(IImplementedInterfaceDecl impl) {
+        ITypeDecl t = impl.getType();
+        IInterfaceDecl ii = t.queryInterface(IInterfaceDecl.class);
+        if(ii!=null)
+            return ii;    // this is a custom interface
+
+        IDispInterfaceDecl di = t.queryInterface(IDispInterfaceDecl.class);
+        if(di.isDual())
+            return di.getVtblInterface();
+
+        return null;   // disp-only. can't handle it now.
     }
 
     private void declareFactoryMethod(IndentingWriter o, ICoClassDecl t) {
@@ -366,7 +395,8 @@ public final class Generator {
 
         String primaryIntf = Com4jObject.class.getName(); // default interface name
         try {
-            primaryIntf = getTypeName(p);
+            if(p!=null)
+                primaryIntf = getTypeName(p);
         } catch( BindingException e ) {
             e.addContext("class factory for coclass "+t.getName());
             el.error(e);
