@@ -20,7 +20,6 @@ STDMETHODIMP CTestObject::InterfaceSupportsErrorInfo(REFIID riid)
 	return S_FALSE;
 }
 
-#endif
 STDMETHODIMP CTestObject::raw_TestVariant(VARIANT v1, VARIANT* v2, VARIANT* v3)
 {
 	VariantClear(v3);
@@ -29,3 +28,4 @@ STDMETHODIMP CTestObject::raw_TestVariant(VARIANT v1, VARIANT* v2, VARIANT* v3)
 	VariantCopy(v2,&v1);
 	return S_OK;
 }
+#endif
