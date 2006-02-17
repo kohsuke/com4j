@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<project name="word" default="run" basedir=".">
+  
+  <path id="com4j">
+    <pathelement location="../runtime/build/classes"/>
+    <pathelement location="../tlbimp/build/classes"/>
+    <pathelement path="${java.class.path}"/><!-- this line is just to allow the sample inside the workspace -->
+  </path>
+  
+  <taskdef resource="com4j/tlbimp/ant.properties">
+    <classpath refid="com4j" />
+  </taskdef>
+  
+  
+  <target name="tlbimp">
+    <mkdir dir="build/src"/>
+    <!-- compile type library -->
+    <tlbimp destdir="build/src">
+      <lib libid="AEDD2B06-81EF-499d-A9D6-E32B3188B61A" package="com4j_idl" />
+    </tlbimp>
+  </target>
+  
+  <target name="compile" depends="tlbimp">
+    <mkdir dir="build/classes"/>
+    <javac srcdir="build/src" destdir="build/classes"
+           debug="on">
+      <classpath refid="com4j" />
+    </javac>
+    <javac srcdir="src" destdir="build/classes"
+           debug="on">
+      <classpath refid="com4j" />
+    </javac>
+  </target>
+  
+  <target name="run" depends="compile">
+    <mkdir dir="build/test-reports" />
+    <junit haltonfailure="true" fork="true" printsummary="yes">
+      <classpath>
+        <path refid="com4j" />
+        <pathelement path="build/classes" />
+      </classpath>
+      <formatter type="plain"/>
+      <batchtest todir="build/test-reports">
+        <fileset dir="src">
+          <include name="**/*Test.java"/>
+        </fileset>
+      </batchtest>
+    </junit>
+  </target>
+  
+  <target name="clean">
+    <delete dir="build"/>
+  </target>
+</project>
