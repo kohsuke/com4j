@@ -11,6 +11,7 @@ import java.nio.ByteOrder;
  * but in general you should bind <tt>VARIANT*</tt> to {@link Object} or
  * {@link Holder}&lt;Object> for more natural Java binding.
  *
+ * <p>
  * TODO: more documentation.
  *
  * <h2>Notes</h2>
@@ -22,6 +23,9 @@ import java.nio.ByteOrder;
  *
  * <p>
  * Method names that end with '0' are native methods.
+ *
+ * <p>
+ * TODO: more accessors
  *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
