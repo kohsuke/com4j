@@ -304,8 +304,10 @@
       <module fileurl="file://$PROJECT_DIR$/samples/powerPoint/powerPoint.iml" filepath="$PROJECT_DIR$/samples/powerPoint/powerPoint.iml" />
       <module fileurl="file://$PROJECT_DIR$/runtime/runtime.iml" filepath="$PROJECT_DIR$/runtime/runtime.iml" />
       <module fileurl="file://$PROJECT_DIR$/samples/speech/speech.iml" filepath="$PROJECT_DIR$/samples/speech/speech.iml" />
+      <module fileurl="file://$PROJECT_DIR$/test/test.iml" filepath="$PROJECT_DIR$/test/test.iml" />
       <module fileurl="file://$PROJECT_DIR$/tlbimp/tlbimp.iml" filepath="$PROJECT_DIR$/tlbimp/tlbimp.iml" />
       <module fileurl="file://$PROJECT_DIR$/samples/wmi/wmi.iml" filepath="$PROJECT_DIR$/samples/wmi/wmi.iml" />
+      <module fileurl="file://$PROJECT_DIR$/samples/word/word.iml" filepath="$PROJECT_DIR$/samples/word/word.iml" />
       <module fileurl="file://$PROJECT_DIR$/samples/wsh/wsh.iml" filepath="$PROJECT_DIR$/samples/wsh/wsh.iml" />
     </modules>
   </component>
