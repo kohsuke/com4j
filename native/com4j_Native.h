@@ -50,10 +50,10 @@ JNIEXPORT void JNICALL Java_com4j_Native_release
 /*
  * Class:     com4j_Native
  * Method:    invoke
- * Signature: (II[Ljava/lang/Object;[ILjava/lang/Class;IZI)Ljava/lang/Object;
+ * Signature: (II[Ljava/lang/Object;[IIZI)Ljava/lang/Object;
  */
 JNIEXPORT jobject JNICALL Java_com4j_Native_invoke
-  (JNIEnv *, jclass, jint, jint, jobjectArray, jintArray, jclass, jint, jboolean, jint);
+  (JNIEnv *, jclass, jint, jint, jobjectArray, jintArray, jint, jboolean, jint);
 
 /*
  * Class:     com4j_Native

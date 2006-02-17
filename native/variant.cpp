@@ -133,6 +133,7 @@ static SetterEntry setters[] = {
 	{ &com4j_Com4jObject,VT_DISPATCH,	new ComObjectVariandHandlerImpl() },
 	{ &com4j_Com4jObject,VT_UNKNOWN,	new ComObjectVariandHandlerImpl() },
 	{ &com4j_Variant,	0/*don't match from native->Java*/,		new NoopVariantHandlerImpl() },
+	// TODO: Holder support
 	{ NULL, 0, NULL }
 };
 
@@ -176,16 +177,4 @@ jobject variantToObject( JNIEnv* env, jclass retType, VARIANT& v ) {
 
 	// everything failed
 	return reinterpret_cast<jobject>(-1);
-}
-
-jobject VariantUnmarshaller::unmarshal( JNIEnv* env ) {
-	jobject r = variantToObject(env,retType,v);
-
-	if(r==reinterpret_cast<jobject>(-1)) {
-		// the expected return type is something we can't handle
-		error(env,__FILE__,__LINE__,"The specified return type is not compatible with VARIANT");
-		return NULL;
-	} else {
-		return r;
-	}
 }

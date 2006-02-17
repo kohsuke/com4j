@@ -62,7 +62,6 @@ public:
 		ComMethod		method,	// pointer to the method to invoke
 		jobjectArray	args,	// arguments
 		jint*			convs,	// conversions
-		jclass			retType,
 		int				retIndex,
 		bool			retIsInOut,
 		jint			retConv

@@ -1,0 +1,26 @@
+HKCR
+{
+	com4j.TestObject.1 = s 'TestObject Class'
+	{
+		CLSID = s '{E069E52A-704B-42DC-BF03-CE5C14C3B7B3}'
+	}
+	com4j.TestObject = s 'TestObject Class'
+	{
+		CLSID = s '{E069E52A-704B-42DC-BF03-CE5C14C3B7B3}'
+		CurVer = s 'com4j.TestObject.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {E069E52A-704B-42DC-BF03-CE5C14C3B7B3} = s 'TestObject Class'
+		{
+			ProgID = s 'com4j.TestObject.1'
+			VersionIndependentProgID = s 'com4j.TestObject'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{AEDD2B06-81EF-499d-A9D6-E32B3188B61A}'
+		}
+	}
+}

@@ -16,7 +16,6 @@ JNIEXPORT jobject JNICALL Java_com4j_Native_invoke(JNIEnv* env,
 	jint pFuncIndex,		// which function are we trying to call?
 	jobjectArray args,		// arguments
 	jintArray _convs,		// conversions
-	jclass returnType,		// expected Java return type
 	jint returnIndex,		// index of the return value in the parameter list
 	jboolean returnIsInOut,	// true if the return type also shows up in the paramter list
 	jint returnConv			// conversion of the return type
@@ -28,7 +27,7 @@ JNIEXPORT jobject JNICALL Java_com4j_Native_invoke(JNIEnv* env,
 		(*reinterpret_cast<VTable*>(pComObject))[pFuncIndex],
 		args,
 		convs,
-		returnType, returnIndex, returnIsInOut!=0,
+		returnIndex, returnIsInOut!=0,
 		returnConv );
 	env->ReleaseIntArrayElements(_convs,convs,0);
 	return r;

@@ -63,6 +63,7 @@
 				Name="VCLinkerTool"
 				OutputFile="$(OutDir)/com4j.dll"
 				LinkIncremental="2"
+				ModuleDefinitionFile="com4j.def"
 				TypeLibraryFile=""
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/com4j.pdb"
@@ -146,6 +147,7 @@
 				Name="VCLinkerTool"
 				OutputFile="$(OutDir)/com4j.dll"
 				LinkIncremental="1"
+				ModuleDefinitionFile="com4j.def"
 				TypeLibraryFile="$(IntDir)/$(ProjectName).tlb"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -189,6 +191,10 @@
 			>
 			<File
 				RelativePath="com4j.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\com4j.def"
 				>
 			</File>
 			<File
@@ -244,6 +250,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\TestObject.cpp"
+				>
+			</File>
+			<File
 				RelativePath="toJava.cpp"
 				>
 			</File>
@@ -260,6 +270,10 @@
 			Name="ヘッダー ファイル"
 			Filter="h;hpp;hxx;hm;inl;inc"
 			>
+			<File
+				RelativePath=".\_ITestObjectEvents_CP.h"
+				>
+			</File>
 			<File
 				RelativePath="cleanup.h"
 				>
@@ -305,6 +319,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TestObject.h"
+				>
+			</File>
+			<File
 				RelativePath="thunkPool.h"
 				>
 			</File>
@@ -335,6 +353,10 @@
 			>
 			<File
 				RelativePath="com4j.rc"
+				>
+			</File>
+			<File
+				RelativePath=".\TestObject.rgs"
 				>
 			</File>
 		</Filter>

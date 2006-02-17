@@ -19,8 +19,7 @@ Environment::~Environment() {
 static int invocationCount = 0;
 #endif
 
-jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray args, jint* convs,
-	jclass retType, int retIndex, bool retIsInOut, jint retConv ) {
+jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray args, jint* convs, int retIndex, bool retIsInOut, jint retConv ) {
 	// list of clean up actions
 
 	int i;
@@ -136,6 +135,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				pv = env->GetDirectBufferAddress(arg);
 				if(pv==NULL) {
 					error(env,__FILE__,__LINE__,"the given Buffer object is not a direct buffer");
+					__asm mov ESP,[spBefore];
 					return NULL;
 				}
 				_asm push pv;
@@ -210,14 +210,17 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 
 				if(arg==NULL) {
 					VariantCopy(pvar,&vtMissing);
-				} else
-				if(env->IsSameObject(env->GetObjectClass(arg),com4j_Variant)) {
-					// if we got a com4j.Variant object, create its copy
-					VariantCopy(pvar,com4jVariantToVARIANT(env,arg));
 				} else {
 					// otherwise convert a value to a VARIANT, and simply use that for the stack var.
 					// since we aren't using VariantCopy, there's no need to VariantClear pSrc.
+					// hence just 'delete'
 					VARIANT* pSrc = convertToVariant(env,arg);
+					if(pSrc==NULL) {
+						jstring name = javaLangClass_getName(env,env->GetObjectClass(arg));
+						error(env,__FILE__,__LINE__,E_FAIL,"Unable to convert %s to VARIANT",LPCSTR(JString(env,name)));
+						__asm mov ESP,[spBefore];
+						return NULL;
+					}
 					*reinterpret_cast<VARIANT*>(pvar) = *pSrc;
 					delete pSrc;
 				}
@@ -228,10 +231,22 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 					pvar = &vtMissing;
 				} else
 				if(env->IsSameObject(env->GetObjectClass(arg),com4j_Variant)) {
-					// if we got a com4j.Variant object, pass its image
+					// if we got a com4j.Variant object, pass its image.
+					// we can't rely on convertToVariant, which would lose
+					// the 'byRef' semantics
 					pvar = com4jVariantToVARIANT(env,arg);
+					// no post-unmarshalling necessary in this case
+				} else
+				if(env->IsSameObject(env->GetObjectClass(arg),com4j_Holder)) {
+					// if it's a holder, convert its value, and prepare the unmarshaller
+					unm = new VariantUnmarshaller();
+					pvar = convertToVariant(env,jholder(arg)->get(env));
+					*static_cast<VARIANT*>(unm->addr()) = *pvar;	// transfer the ownership to unm
+					delete pvar;
+					add( new OutParamHandler( jholder(arg), unm ) );	// after the method call unmarshal it back to Variant
+					pvar = static_cast<VARIANT*>(unm->addr());
 				} else {
-					// otherwise convert a value to a VARIANT
+					// otherwise convert a value to a VARIANT, and just assume it's an [in] only semantics
 					pvar = convertToVariant(env,arg);
 					add(new VARIANTCleanUp(pvar));
 				}
@@ -300,8 +315,8 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 					retUnm = new GUIDUnmarshaller();
 					break;
 
-				case cvVARIANT_byRef:
-					retUnm = new VariantUnmarshaller(retType);
+				case cvVARIANT:
+					retUnm = new VariantUnmarshaller();
 					break;
 
 				default:

@@ -303,4 +303,37 @@ library com4j
 		[helpstring("gets the definition of the interface")]
 		HRESULT getType([out,retval] ITypeDecl** ppType );
 	};
+
+	[
+		uuid(43863047-F4CF-4309-BCE6-7C7E2B11EE28),
+		helpstring("_ITestObjectEvents Interface")
+	]
+	dispinterface _ITestObjectEvents
+	{
+		properties:
+		methods:
+	};
+
+	[
+		object,
+		uuid(55167E25-E6D1-4672-86C8-242AE001B7AB),
+		dual,
+		nonextensible,
+		helpstring("ITestObject Interface"),
+		pointer_default(unique)
+	]
+	interface ITestObject : IDispatch{
+		[id(1), helpstring("moves v2 to v3, then v1 to v2.")]
+		HRESULT TestVariant([in] VARIANT v1, [in,out] VARIANT* v2, [out,retval] VARIANT* v3);
+	};
+
+	[
+		uuid(E069E52A-704B-42DC-BF03-CE5C14C3B7B3),
+		helpstring("for testing com4j")
+	]
+	coclass TestObject
+	{
+		[default] interface ITestObject;
+		[default, source] dispinterface _ITestObjectEvents;
+	};
 };

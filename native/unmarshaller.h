@@ -6,6 +6,7 @@
 
 #include "cleanup.h"
 #include "xducer.h"
+#include "variant.h"
 
 // wraps the com4j.Holder object for convenient access
 class Holder : public _jobject {
@@ -135,15 +136,17 @@ public:
 };
 
 class VariantUnmarshaller : public Unmarshaller {
-	// the return type that the caller is expecting.
-	jclass const		retType;
 	// we expect the invoked method to set this VARIANT
 	VARIANT v;
 public:
-	VariantUnmarshaller( jclass _retType ) : retType(_retType) {
+	VariantUnmarshaller() {
 		VariantInit(&v);
 	}
-	virtual jobject unmarshal( JNIEnv* env );
+	virtual jobject unmarshal( JNIEnv* env ) {
+		jobject var = com4j_Variant_new(env);
+		*com4jVariantToVARIANT(env,var) = v;	// direct copy, so no need to VariantClear(v);
+		return var;
+	}
 	virtual void* addr() {
 		return &v;
 	}

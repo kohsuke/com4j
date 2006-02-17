@@ -1,0 +1,7 @@
+LIBRARY	"com4j"
+
+EXPORTS
+		DllGetClassObject       @2
+		DllCanUnloadNow         @3
+		DllRegisterServer       @4
+		DllUnregisterServer     @5
