@@ -16,8 +16,6 @@ BOOL APIENTRY DllMain( HINSTANCE hModule,
 	return TRUE;
 }
 
-#ifdef _DEBUG
-
 STDAPI DllCanUnloadNow(void)
 {
   return (_Module.GetLockCount()==0) ? S_OK :S_FALSE;
@@ -37,4 +35,3 @@ STDAPI DllUnregisterServer(void)
 {
   return _Module.UnregisterServer(TRUE);
 }
-#endif
