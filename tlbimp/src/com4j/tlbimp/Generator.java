@@ -1050,6 +1050,13 @@ public final class Generator {
             return new VariableBinding( getTypeName(enumdef), NativeType.Int32, true );
         }
 
+        // a few other random checks
+        String name = getTypeString(t);
+        if(name.equals("GUID")) {
+            return new VariableBinding( "GUID", NativeType.GUID, true );
+        }
+
+
         ITypeDecl declt = t.queryInterface(ITypeDecl.class);
         if(declt!=null) {
             // TODO: not clear how we should handle this
