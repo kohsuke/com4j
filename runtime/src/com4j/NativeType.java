@@ -294,7 +294,18 @@ public enum NativeType {
      * </table>
      * TODO: expand the list
      */
-    VARIANT(302,16),
+    VARIANT(302,16) {
+        Object unmassage(Class<?> signature, Type genericSignature, Object param) {
+            if(param==null)
+                return null;
+            if(param instanceof Variant) {
+                Variant v = (Variant)param;
+                return v.convertTo(signature);
+            } else {
+                return param;
+            }
+        }
+    },
 
     /**
      * <tt>VARIANT*</tt>.

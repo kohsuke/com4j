@@ -44,7 +44,7 @@ class Native {
      */
     static native Object invoke( int pComObject, int vtIndex,
          Object[] args, int[] parameterConversions,
-         Class returnType, int returnIndex, boolean returnIsInOut, int returnConversion );
+         int returnIndex, boolean returnIsInOut, int returnConversion );
 
     /**
      * Gets the error info.

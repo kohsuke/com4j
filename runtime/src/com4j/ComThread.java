@@ -96,6 +96,10 @@ final class ComThread extends Thread {
         return die || (!peer.isAlive() && liveObjects==0);
     }
 
+    /**
+     * Kills this {@link ComThread} gracefully
+     * and blocks until a thread dies.
+     */
     public void kill() {
         new Task<Void>() {
             public Void call() {
@@ -105,7 +109,7 @@ final class ComThread extends Thread {
                 die = true;
                 return null;
             }
-        }.execute();
+        }.execute(this);
 
         // wait for it to die. if someone interrupts us, process that later.
         try {

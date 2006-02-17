@@ -93,7 +93,7 @@ final class StandardComMethod extends ComMethod {
 
         try {
             Object r = Native.invoke( ptr, vtIndex, args, paramConvs,
-                method.getReturnType(), returnIndex, returnIsInOut, returnConv.code );
+                returnIndex, returnIsInOut, returnConv.code );
             return returnConv.unmassage(method.getReturnType(), method.getGenericReturnType(), r);
         } catch( ComException e ) {
             IErrorInfo pErrorInfo = Native.getErrorInfo(ptr, (Class)method.getDeclaringClass());

@@ -46,7 +46,7 @@ public class DefaultedComMethod extends ComMethod {
         for (int vtid : vtids) {
             int newPtr = (Integer) Native.invoke(
                 ptr, vtid, EMPTY_ARRAY, EMPTY_INTARRAY,
-                Com4jObject.class, 0, false, NativeType.ComObject.code);
+                0, false, NativeType.ComObject.code);
             Native.release(ptr);
             ptr = newPtr;
         }

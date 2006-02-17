@@ -9,7 +9,7 @@ import java.nio.ByteOrder;
  *
  * This class allows you to deal with the raw VARIANT type in case you need it,
  * but in general you should bind <tt>VARIANT*</tt> to {@link Object} or
- * {@link Holder<Object>} for more natural Java binding.
+ * {@link Holder}&lt;Object> for more natural Java binding.
  *
  * TODO: more documentation.
  *
@@ -142,6 +142,11 @@ public final class Variant extends Number {
     public int intValue() {
         changeType(Type.VT_I4);
         return image.getInt(8);
+    }
+
+    public void set(int i) {
+        changeType(Type.VT_I4);
+        image.putInt(8,i);
     }
 
     public long longValue() {
