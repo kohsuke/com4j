@@ -3,6 +3,8 @@ package com4j;
 import java.io.File;
 import java.lang.reflect.Proxy;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.net.URLDecoder;
 
 /**
  * The root of the COM4J library.
@@ -240,7 +242,7 @@ public abstract class COM4J {
      * @throws IllegalArgumentException
      *      If the listener is not currently registered.
      *
-     * @see #addListener(ComObjectListener) 
+     * @see #addListener(ComObjectListener)
      */
     public static void removeListener( ComObjectListener listener ) {
         ComThread.get().removeListener(listener);
@@ -297,11 +299,18 @@ public abstract class COM4J {
         // try loading com4j.dll in the same directory as com4j.jar
         URL res = COM4J.class.getClassLoader().getResource("com4j/COM4J.class");
         String url = res.toExternalForm();
-        if(url.startsWith("jar://")) {
+        if(url.startsWith("jar:")) {
             int idx = url.lastIndexOf('!');
-            String filePortion = url.substring(6,idx);
-            if(filePortion.startsWith("file://")) {
-                File jarFile = new File(filePortion.substring(7));
+            String filePortion = url.substring(4,idx);
+            while(filePortion.startsWith("/"))
+                filePortion = filePortion.substring(1);
+
+            if(filePortion.startsWith("file:/")) {
+                filePortion = filePortion.substring(6);
+                if(filePortion.startsWith("//"))
+                    filePortion = filePortion.substring(2);
+                filePortion = URLDecoder.decode(filePortion);
+                File jarFile = new File(filePortion);
                 File dllFile = new File(jarFile.getParentFile(),"com4j.dll");
                 System.load(dllFile.getPath());
                 return;
