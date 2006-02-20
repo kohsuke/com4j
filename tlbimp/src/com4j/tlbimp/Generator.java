@@ -894,8 +894,11 @@ public final class Generator {
                 // some type libraries contain IDispathc methods on DispInterface definitions.
                 // don't map them. I'm not too sure if this is the right check,
                 // but they seem to work.
+                //
+                // normal disp interfaces return 0 from this, so we need to handle QueryInterface
+                // differently
                 int vidx = m.getVtableIndex();
-                if(0<=vidx && vidx <7)
+                if((1<=vidx && vidx <7) || (vidx==0 && m.getName().toLowerCase().equals("queryinterface")))
                     continue;
 
                 try {
