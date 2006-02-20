@@ -21,7 +21,7 @@ import java.lang.reflect.InvocationTargetException;
  *
  * @author Kohsuke Kawaguchi
  */
-public final class EventProxy<T> {
+final class EventProxy<T> implements EventCookie {
 
     private final EventInterfaceDescriptor<T> descriptor;
     private final T javaObject;

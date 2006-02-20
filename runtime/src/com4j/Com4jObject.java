@@ -84,12 +84,22 @@ public interface Com4jObject {
     /**
      * Subscribes to the given event interface of this object.
      *
+     * @param eventInterface
+     *      The event interface definition. This interface/class
+     *      has to have an {@link IID} annotation that designates
+     *      the event interface GUID, and also methods annotated with
+     *      {@link DISPID} that designates what methods are event methods.
+     *      Must not be null.
+     *
+     * @param receiver
+     *      The object that receives events.
+     *
      * @throws ComException
      *      if a subscription fails.
      *
      * @return
-     *      Always non-null. Call {@link EventProxy#close()} to shut down
+     *      Always non-null. Call {@link EventCookie#close()} to shut down
      *      the event subscription.
      */
-    <T> EventProxy<?> advise( Class<T> eventInterface, T object );
+    <T> EventCookie advise( Class<T> eventInterface, T receiver );
 }
