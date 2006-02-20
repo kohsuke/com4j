@@ -403,7 +403,11 @@ public final class Generator {
                 declare(p,o);
             }
             o.out();
-            o.println(");");
+
+            if(mode==Mode.DISPATCH)
+                o.println(") {}");
+            else
+                o.println(");");
         }
 
         /**
@@ -433,6 +437,10 @@ public final class Generator {
          * Declares the return type.
          */
         private void declareReturnType(IndentingWriter o, List<IType> intermediates ) throws BindingException {
+            if(mode==Mode.DISPATCH) {
+                o.print("public ");
+            }
+
             if(retParam==-1 && intermediates==null) {
                 o.print("void ");
             } else {
@@ -867,13 +875,13 @@ public final class Generator {
         private void generateEvent( IDispInterfaceDecl t ) throws IOException {
             String typeName = getSimpleTypeName(t);
             IndentingWriter o = createWriter("events/"+typeName+".java");
-            generateHeader(o,"events");
+            generateHeader(o,".events");
 
             printJavadoc(t.getHelpString(), o);
 
             o.printf("@IID(\"%1s\")",t.getGUID());
             o.println();
-            o.printf("public interface %1s {",typeName);   // should we handle inheritance?
+            o.printf("public abstract class %1s {",typeName);   // should we handle inheritance?
             o.println();
             o.in();
 
@@ -881,6 +889,13 @@ public final class Generator {
                 IMethod m = t.getMethod(j);
                 InvokeKind kind = m.getKind();
                 if(kind!=InvokeKind.FUNC)
+                    continue;
+
+                // some type libraries contain IDispathc methods on DispInterface definitions.
+                // don't map them. I'm not too sure if this is the right check,
+                // but they seem to work.
+                int vidx = m.getVtableIndex();
+                if(0<=vidx && vidx <7)
                     continue;
 
                 try {
