@@ -117,8 +117,6 @@ final class EventProxy<T> implements EventCookie {
 
         EventInterfaceDescriptor(Class<T> eventInterface) {
             this.eventInterface = eventInterface;
-            if(!eventInterface.isInterface())
-                throw new IllegalAnnotationException(eventInterface+" is not an interface");
 
             for (Method m : eventInterface.getDeclaredMethods()) {
                 EventMethod em = new EventMethod(m);
