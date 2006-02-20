@@ -7,34 +7,34 @@ import com4j.tlbimp.def.IConstant;
 import com4j.tlbimp.def.IDispInterfaceDecl;
 import com4j.tlbimp.def.IEnumDecl;
 import com4j.tlbimp.def.IImplementedInterfaceDecl;
+import com4j.tlbimp.def.IInterface;
 import com4j.tlbimp.def.IInterfaceDecl;
 import com4j.tlbimp.def.IMethod;
 import com4j.tlbimp.def.IParam;
 import com4j.tlbimp.def.IPrimitiveType;
 import com4j.tlbimp.def.IPtrType;
+import com4j.tlbimp.def.ISafeArrayType;
 import com4j.tlbimp.def.IType;
 import com4j.tlbimp.def.ITypeDecl;
 import com4j.tlbimp.def.ITypedefDecl;
 import com4j.tlbimp.def.IWTypeLib;
+import com4j.tlbimp.def.InvokeKind;
 import com4j.tlbimp.def.TypeKind;
 import com4j.tlbimp.def.VarType;
-import com4j.tlbimp.def.ISafeArrayType;
-import com4j.tlbimp.def.InvokeKind;
-import com4j.tlbimp.def.IInterface;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.Buffer;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.nio.Buffer;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Type library importer.
@@ -53,7 +53,7 @@ public final class Generator {
     /**
      * {@link IWTypeLib}s specified to the {@link #generate(IWTypeLib)} method.
      */
-    private final Set<TypeLibInfo> generatedTypeLibs = new HashSet<TypeLibInfo>();
+    private final Set<LibBinder> generatedTypeLibs = new HashSet<LibBinder>();
 
     public Generator( CodeWriter writer, ReferenceResolver resolver, ErrorListener el ) {
         this.el = el;
@@ -65,11 +65,11 @@ public final class Generator {
      * Call this method repeatedly to generate classes from each type library.
      */
     public void generate( IWTypeLib lib ) throws BindingException, IOException {
-        TypeLibInfo tli = getTypeLibInfo(lib);
+        LibBinder tli = getTypeLibInfo(lib);
         if(referenceResolver.suppress(lib))
             return; // skip code generation
         if(generatedTypeLibs.add(tli))
-            new PackageBinder(tli).generate();
+            tli.generate();
     }
 
     /**
@@ -89,15 +89,14 @@ public final class Generator {
 
         // for( Map.Entry<String,Set<TypeLibInfo>> e : byPackage.entrySet() ) {
         for( Package pkg : packages.values() ) {
-            TypeLibInfo lib1 = pkg.typeLibs.iterator().next();
-            PackageBinder pb = new PackageBinder(lib1);
+            LibBinder lib1 = pkg.typeLibs.iterator().next();
 
             if(referenceResolver.suppress(lib1.lib))
                 continue;
 
             // generate ClassFactory
             IndentingWriter o = pkg.createWriter(lib1,"ClassFactory.java");
-            pb.generateHeader(o);
+            lib1.generateHeader(o);
 
             printJavadoc("Defines methods to create COM objects",o);
             o.println("public abstract class ClassFactory {");
@@ -106,7 +105,7 @@ public final class Generator {
             o.println("private ClassFactory() {} // instanciation is not allowed");
             o.println();
 
-            for( TypeLibInfo lib : pkg.typeLibs ) {
+            for( LibBinder lib : pkg.typeLibs ) {
                 int len = lib.lib.count();
                 for( int i=0; i<len; i++ ) {
                     ICoClassDecl t = lib.lib.getType(i).queryInterface(ICoClassDecl.class);
@@ -121,215 +120,6 @@ public final class Generator {
             o.out();
             o.println("}");
             o.close();
-        }
-    }
-
-    /**
-     * Generates a Java package from a type library.
-     */
-    private class PackageBinder {
-        private final TypeLibInfo lib;
-
-        public PackageBinder(TypeLibInfo lib) {
-            this.lib = lib;
-        }
-
-        public void generate() throws IOException {
-            IWTypeLib tlib = lib.lib;
-            generatePackageHtml();
-
-            int len = tlib.count();
-            for( int i=0; i<len; i++ ) {
-                ITypeDecl t = tlib.getType(i);
-                switch(t.getKind()) {
-                case DISPATCH:
-                    generate( t.queryInterface(IDispInterfaceDecl.class) );
-                    break;
-                case INTERFACE:
-                    generate( t.queryInterface(IInterfaceDecl.class) );
-                    break;
-                case ENUM:
-                    generate( t.queryInterface(IEnumDecl.class) );
-                    break;
-                case ALIAS:
-                    {
-//                    ITypedefDecl alias = t.queryInterface(ITypedefDecl.class);
-//                    System.out.printf("typedef %1s %2s", alias.getName(),
-//                        getTypeString(alias.getDefinition()));
-                        break;
-                    }
-                }
-                t.dispose();
-            }
-        }
-
-
-        private void generatePackageHtml() throws IOException {
-            PrintWriter o = lib.createWriter("package.html");
-            o.println("<html><body>");
-            o.printf("<h2>%1s</h2>",lib.lib.getName());
-            o.printf("<p>%1s</p>",lib.lib.getHelpString());
-            o.println("</html></body>");
-            o.close();
-        }
-
-        private void generate( IEnumDecl t ) throws IOException {
-
-            // load all the constants first
-            int len = t.countConstants();
-            IConstant[] cons = new IConstant[len];
-
-            for( int i=0; i<len; i++ )
-                cons[i] = t.getConstant(i);
-
-            // check if we need to use ComEnum
-            boolean needComEnum = false;
-            for( int i=0; i<len; i++ ) {
-                if( cons[i].getValue()!=i ) {
-                    needComEnum = true;
-                    break;
-                }
-            }
-
-            // generate the prolog
-            String typeName = lib.getTypeName(t);
-            IndentingWriter o = lib.createWriter(typeName+".java");
-            generateHeader(o);
-
-            printJavadoc(t.getHelpString(), o);
-
-            o.printf("public enum %1s ",typeName);
-            if(needComEnum)
-                o.print("implements ComEnum ");
-            o.println("{");
-            o.in();
-
-            // generate constants
-            for( IConstant con : cons ) {
-                printJavadoc(con.getHelpString(),o);
-                o.print(con.getName());
-                if(needComEnum) {
-                    o.printf("(%1d),",con.getValue());
-                } else {
-                    o.print(", // ");
-                    o.print(con.getValue());
-                }
-                o.println();
-            }
-
-            if(needComEnum) {
-                // the rest of the boiler-plate code
-                o.println(";");
-                o.println();
-                o.println("private final int value;");
-                o.println(typeName+"(int value) { this.value=value; }");
-                o.println("public int comEnumValue() { return value; }");
-            }
-
-            o.out();
-            o.println("}");
-
-            // clean up
-            for( IConstant con : cons)
-                con.dispose();
-
-            o.close();
-        }
-
-        private void generate( IInterfaceDecl t ) throws IOException {
-            String typeName = lib.getTypeName(t);
-            IndentingWriter o = lib.createWriter(typeName+".java");
-            generateHeader(o);
-
-            printJavadoc(t.getHelpString(), o);
-
-            boolean hasEnum = false;
-            for( int j=0; j<t.countMethods() && !hasEnum; j++ ) {
-                IMethod m = t.getMethod(j);
-                hasEnum = isEnum(m);
-            }
-
-
-            o.printf("@IID(\"%1s\")",t.getGUID());
-            o.println();
-            o.printf("public interface %1s",typeName);
-            if(t.countBaseInterfaces()!=0) {
-                o.print(" extends ");
-                o.beginCommaMode();
-                for( int i=0; i<t.countBaseInterfaces(); i++ ) {
-                    o.comma();
-                    String baseName;
-                    try {
-                        baseName = getTypeName(t.getBaseInterface(i));
-                    } catch (BindingException e) {
-                        e.addContext("interface "+typeName);
-                        el.error(e);
-                        baseName = "Com4jObject";
-                    }
-                    o.print(baseName);
-                }
-                if(hasEnum) {
-                    o.comma();
-                    o.print("Iterable<Com4jObject>");
-                }
-                o.endCommaMode();
-            }
-            o.println(" {");
-            o.in();
-
-            // see issue 15.
-            // to avoid binding both propput and propputref,
-            // we'll use this to keep track of what we generated.
-            // TODO: what was the difference between propput and propputref?
-            Set<String> putMethods = new HashSet<String>();
-
-            for( int j=0; j<t.countMethods(); j++ ) {
-                IMethod m = t.getMethod(j);
-                InvokeKind kind = m.getKind();
-                if(kind== InvokeKind.PROPERTYPUT || kind== InvokeKind.PROPERTYPUTREF) {
-                    if(!putMethods.add(m.getName()))
-                        continue;   // already added
-                }
-                try {
-                    o.startBuffering();
-                    Generator.this.generate(m,o);
-                    o.commit();
-                } catch( BindingException e ) {
-                    o.cancel();
-                    e.addContext("interface "+t.getName());
-                    el.error(e);
-                }
-                m.dispose();
-            }
-
-            o.out();
-            o.println("}");
-
-            o.close();
-        }
-
-        private void generate( IDispInterfaceDecl t ) throws IOException {
-            if(t.isDual())
-                generate( t.getVtblInterface() );
-            else {
-                // TODO: how should we handle this?
-            }
-//        } catch( BindingException e ) {
-//            throw new BindingException(
-//                Messages.FAILED_TO_BIND.format(t.getName()),
-//                e );
-//        }
-        }
-
-        private void generateHeader(IndentingWriter o) {
-            if(!lib.pkg.isRoot()) {
-                o.printf("package %1s;",lib.pkg.name);
-                o.println();
-                o.println();
-            }
-
-            o.println("import com4j.*;");
-            o.println();
         }
     }
 
@@ -432,8 +222,10 @@ public final class Generator {
     }
 
 
-
-
+    /**
+     * {@link MethodBinder} generation mode.
+     */
+    enum Mode { CUSTOM /*for custom interface*/, DISPATCH/*for IDispatch*/ }
 
     /**
      * Binds a native method to a Java method.
@@ -449,8 +241,12 @@ public final class Generator {
          */
         private final IType returnType;
 
-        public MethodBinder(IMethod method) throws BindingException {
+        private final Mode mode;
+
+
+        public MethodBinder(IMethod method, Mode mode) throws BindingException {
             this.method = method;
+            this.mode = mode;
 
             int len = method.getParamCount();
             params = new IParam[len];
@@ -502,7 +298,7 @@ public final class Generator {
             List<IType> intermediates = new ArrayList<IType>();
 
             while(true) {
-                MethodBinder mb = new MethodBinder(m);
+                MethodBinder mb = new MethodBinder(m, Mode.CUSTOM);
                 // only handle methods of the form "HRESULT foo([out,retval]IFoo** ppOut);
                 if (m.getParamCount() != 1 || mb.retParam != 0 || mb.params[mb.retParam].isIn())
                     break;
@@ -550,7 +346,7 @@ public final class Generator {
                 method.getVtableIndex());
             o.println();
 
-            MethodBinder mb = new MethodBinder(m);
+            MethodBinder mb = new MethodBinder(m, Mode.CUSTOM);
             mb.declareReturnType(o,intermediates);
             this.declareMethodName(o);
             mb.declareParameters(o);
@@ -560,8 +356,12 @@ public final class Generator {
         public void declare( IndentingWriter o ) throws BindingException {
             printJavadoc(method.getHelpString(), o);
 //            o.println("// "+method.getKind());
-            o.printf("@VTID(%1d)",
-                method.getVtableIndex());
+
+            if(mode==Mode.CUSTOM) {
+                o.printf("@VTID(%1d)",method.getVtableIndex());
+            } else {
+                o.printf("@DISPID(%1d)",method.getDispId());
+            }
             o.println();
 
             int dispId = method.getDispId();
@@ -611,7 +411,7 @@ public final class Generator {
          */
         private void declare( IParam p, IndentingWriter o ) throws BindingException {
             VariableBinding vb = bind(p.getType(),p.getName());
-            if(!vb.isDefault) {
+            if(!vb.isDefault && mode==Mode.CUSTOM) {
                 o.printf("@MarshalAs(NativeType.%1s) ",vb.nativeType.name());
             }
 
@@ -643,7 +443,7 @@ public final class Generator {
                 if(!retBinding.isDefault || params[retParam].isIn() || retParam!=params.length-1 || intermediates!=null) {
                     o.print("@ReturnValue(");
                     o.beginCommaMode();
-                    if(!retBinding.isDefault) {
+                    if(!retBinding.isDefault && mode== Mode.CUSTOM) {
                         o.comma();
                         o.print("type=NativeType."+retBinding.nativeType.name());
                     }
@@ -692,6 +492,9 @@ public final class Generator {
         return p;
     }
 
+    /**
+     * Represents a Java package.
+     */
     private final class Package {
         /**
          * Java package name of this type library.
@@ -705,12 +508,12 @@ public final class Generator {
          * Used to detect collisions. The value is the type that
          * generated it.
          */
-        private final Map<String,TypeLibInfo> fileNames = new HashMap<String,TypeLibInfo>();
+        private final Map<String,LibBinder> fileNames = new HashMap<String,LibBinder>();
 
         /**
          * Type libraries generated into this package.
          */
-        final Set<TypeLibInfo> typeLibs = new HashSet<TypeLibInfo>();
+        final Set<LibBinder> typeLibs = new HashSet<LibBinder>();
 
         public Package(String name) {
             this.name = name;
@@ -736,8 +539,8 @@ public final class Generator {
          * @param fileName
          *      such as "Foo.java"
          */
-        public IndentingWriter createWriter(TypeLibInfo lib, String fileName) throws IOException {
-            TypeLibInfo tli = fileNames.get(fileName);
+        public IndentingWriter createWriter(LibBinder lib, String fileName) throws IOException {
+            LibBinder tli = fileNames.get(fileName);
             if(tli!=null)
                 el.error(new BindingException(Messages.FILE_CONFLICT.format(
                     fileName, tli.lib.getName(), lib.lib.getName(), name )));
@@ -751,10 +554,10 @@ public final class Generator {
     /**
      * Type library information.
      */
-    private final Map<IWTypeLib,TypeLibInfo> typeLibs = new HashMap<IWTypeLib,TypeLibInfo>();
+    private final Map<IWTypeLib,LibBinder> typeLibs = new HashMap<IWTypeLib,LibBinder>();
 
     /**
-     * Information about a type library.
+     * Generates code from a type library.
      *
      * <p>
      * Processing a type library often requires references to other
@@ -765,7 +568,7 @@ public final class Generator {
      * An instance of this class is created for each type library
      * (including the one that we are binding.)
      */
-    private final class TypeLibInfo {
+    private final class LibBinder {
         final IWTypeLib lib;
 
         /**
@@ -779,7 +582,7 @@ public final class Generator {
          */
         private final Map<ITypeDecl,String> aliases = new HashMap<ITypeDecl,String>();
 
-        public TypeLibInfo(IWTypeLib lib) throws BindingException {
+        public LibBinder(IWTypeLib lib) throws BindingException {
             this.lib = lib;
             this.pkg = getPackage(referenceResolver.resolve(lib));
             this.pkg.typeLibs.add(this);
@@ -832,7 +635,7 @@ public final class Generator {
         /**
          * Gets the simple name of the type (as opposed to FQCN.)
          */
-        private String getTypeName(ITypeDecl decl) {
+        private String getSimpleTypeName(ITypeDecl decl) {
             assert decl.getParent().equals(lib);
 
             String name;
@@ -848,6 +651,271 @@ public final class Generator {
 
         public IndentingWriter createWriter(String fileName) throws IOException {
             return pkg.createWriter(this,fileName);
+        }
+
+        /**
+         * Generates all the code from this type library.
+         */
+        public void generate() throws IOException {
+            IWTypeLib tlib = lib;
+            generatePackageHtml();
+
+            int len = tlib.count();
+            for( int i=0; i<len; i++ ) {
+                ITypeDecl t = tlib.getType(i);
+                switch(t.getKind()) {
+                case DISPATCH:
+                    generate( t.queryInterface(IDispInterfaceDecl.class) );
+                    break;
+                case INTERFACE:
+                    generate( t.queryInterface(IInterfaceDecl.class) );
+                    break;
+                case ENUM:
+                    generate( t.queryInterface(IEnumDecl.class) );
+                    break;
+                case COCLASS:
+                    // look for event interfaces to generate
+                    generateEventsFrom( t.queryInterface(ICoClassDecl.class) );
+                    break;
+                case ALIAS:
+                    {
+//                    ITypedefDecl alias = t.queryInterface(ITypedefDecl.class);
+//                    System.out.printf("typedef %1s %2s", alias.getName(),
+//                        getTypeString(alias.getDefinition()));
+                        break;
+                    }
+                }
+                t.dispose();
+            }
+        }
+
+        private void generatePackageHtml() throws IOException {
+            PrintWriter o = createWriter("package.html");
+            o.println("<html><body>");
+            o.printf("<h2>%1s</h2>",lib.getName());
+            o.printf("<p>%1s</p>",lib.getHelpString());
+            o.println("</html></body>");
+            o.close();
+        }
+
+        private void generate( IEnumDecl t ) throws IOException {
+
+            // load all the constants first
+            int len = t.countConstants();
+            IConstant[] cons = new IConstant[len];
+
+            for( int i=0; i<len; i++ )
+                cons[i] = t.getConstant(i);
+
+            // check if we need to use ComEnum
+            boolean needComEnum = false;
+            for( int i=0; i<len; i++ ) {
+                if( cons[i].getValue()!=i ) {
+                    needComEnum = true;
+                    break;
+                }
+            }
+
+            // generate the prolog
+            String typeName = getSimpleTypeName(t);
+            IndentingWriter o = createWriter(typeName+".java");
+            generateHeader(o);
+
+            printJavadoc(t.getHelpString(), o);
+
+            o.printf("public enum %1s ",typeName);
+            if(needComEnum)
+                o.print("implements ComEnum ");
+            o.println("{");
+            o.in();
+
+            // generate constants
+            for( IConstant con : cons ) {
+                printJavadoc(con.getHelpString(),o);
+                o.print(con.getName());
+                if(needComEnum) {
+                    o.printf("(%1d),",con.getValue());
+                } else {
+                    o.print(", // ");
+                    o.print(con.getValue());
+                }
+                o.println();
+            }
+
+            if(needComEnum) {
+                // the rest of the boiler-plate code
+                o.println(";");
+                o.println();
+                o.println("private final int value;");
+                o.println(typeName+"(int value) { this.value=value; }");
+                o.println("public int comEnumValue() { return value; }");
+            }
+
+            o.out();
+            o.println("}");
+
+            // clean up
+            for( IConstant con : cons)
+                con.dispose();
+
+            o.close();
+        }
+
+        private void generate( IInterfaceDecl t ) throws IOException {
+            String typeName = getSimpleTypeName(t);
+            IndentingWriter o = createWriter(typeName+".java");
+            generateHeader(o);
+
+            printJavadoc(t.getHelpString(), o);
+
+            boolean hasEnum = false;
+            for( int j=0; j<t.countMethods() && !hasEnum; j++ ) {
+                IMethod m = t.getMethod(j);
+                hasEnum = isEnum(m);
+            }
+
+
+            o.printf("@IID(\"%1s\")",t.getGUID());
+            o.println();
+            o.printf("public interface %1s",typeName);
+            if(t.countBaseInterfaces()!=0) {
+                o.print(" extends ");
+                o.beginCommaMode();
+                for( int i=0; i<t.countBaseInterfaces(); i++ ) {
+                    o.comma();
+                    String baseName;
+                    try {
+                        baseName = getTypeName(t.getBaseInterface(i));
+                    } catch (BindingException e) {
+                        e.addContext("interface "+typeName);
+                        el.error(e);
+                        baseName = "Com4jObject";
+                    }
+                    o.print(baseName);
+                }
+                if(hasEnum) {
+                    o.comma();
+                    o.print("Iterable<Com4jObject>");
+                }
+                o.endCommaMode();
+            }
+            o.println(" {");
+            o.in();
+
+            // see issue 15.
+            // to avoid binding both propput and propputref,
+            // we'll use this to keep track of what we generated.
+            // TODO: what was the difference between propput and propputref?
+            Set<String> putMethods = new HashSet<String>();
+
+            for( int j=0; j<t.countMethods(); j++ ) {
+                IMethod m = t.getMethod(j);
+                InvokeKind kind = m.getKind();
+                if(kind== InvokeKind.PROPERTYPUT || kind== InvokeKind.PROPERTYPUTREF) {
+                    if(!putMethods.add(m.getName()))
+                        continue;   // already added
+                }
+                try {
+                    o.startBuffering();
+                    Generator.this.generate(m,o);
+                    o.commit();
+                } catch( BindingException e ) {
+                    o.cancel();
+                    e.addContext("interface "+t.getName());
+                    el.error(e);
+                }
+                m.dispose();
+            }
+
+            o.out();
+            o.println("}");
+
+            o.close();
+        }
+
+        private void generate( IDispInterfaceDecl t ) throws IOException {
+            if(t.isDual())
+                generate( t.getVtblInterface() );
+            else {
+                // TODO: how should we handle this?
+            }
+//        } catch( BindingException e ) {
+//            throw new BindingException(
+//                Messages.FAILED_TO_BIND.format(t.getName()),
+//                e );
+//        }
+        }
+
+        /**
+         * Generates the event sink interfaces from this object.
+         */
+        private void generateEventsFrom(ICoClassDecl co) throws IOException {
+            int len = co.countImplementedInterfaces();
+            for( int i=0; i<len; i++ ) {
+                IImplementedInterfaceDecl item = co.getImplementedInterface(i);
+                if(item.isSource()) {
+                    IDispInterfaceDecl di = item.getType().queryInterface(IDispInterfaceDecl.class);
+                    if(di!=null)    // can this ever be null?
+                        generateEvent(di);
+                }
+            }
+        }
+
+        /**
+         * Generates the event sink interface.
+         */
+        private void generateEvent( IDispInterfaceDecl t ) throws IOException {
+            String typeName = getSimpleTypeName(t);
+            IndentingWriter o = createWriter("events/"+typeName+".java");
+            generateHeader(o,"events");
+
+            printJavadoc(t.getHelpString(), o);
+
+            o.printf("@IID(\"%1s\")",t.getGUID());
+            o.println();
+            o.printf("public interface %1s {",typeName);   // should we handle inheritance?
+            o.println();
+            o.in();
+
+            for( int j=0; j<t.countMethods(); j++ ) {
+                IMethod m = t.getMethod(j);
+                InvokeKind kind = m.getKind();
+                if(kind!=InvokeKind.FUNC)
+                    continue;
+
+                try {
+                    o.startBuffering();
+                    MethodBinder mb = new MethodBinder(m, Mode.DISPATCH);
+                    mb.declare(o);
+                    o.println();
+                    o.commit();
+                } catch( BindingException e ) {
+                    o.cancel();
+                    e.addContext("event interface "+t.getName());
+                    el.error(e);
+                }
+                m.dispose();
+            }
+
+            o.out();
+            o.println("}");
+
+            o.close();
+        }
+
+        private void generateHeader(IndentingWriter o) {
+            generateHeader(o,null);
+        }
+        private void generateHeader(IndentingWriter o,String subPackage) {
+            if(!pkg.isRoot() || subPackage!=null) {
+                if(subPackage==null)    subPackage="";
+                o.printf("package %1s%2s;",pkg.name,subPackage);
+                o.println();
+                o.println();
+            }
+
+            o.println("import com4j.*;");
+            o.println();
         }
     }
 
@@ -867,21 +935,21 @@ public final class Generator {
      * </ul>
      */
     private String getTypeName(ITypeDecl decl) throws BindingException {
-        Generator.TypeLibInfo tli = getTypeLibInfo(decl.getParent());
+        Generator.LibBinder tli = getTypeLibInfo(decl.getParent());
         String name = tli.pkg.name;
         if(name.length()>0) name+='.';
-        name += tli.getTypeName(decl);
+        name += tli.getSimpleTypeName(decl);
         return name;
     }
 
     /**
-     * Gets or creates a {@link TypeLibInfo} object for the given
+     * Gets or creates a {@link LibBinder} object for the given
      * type library.
      */
-    private TypeLibInfo getTypeLibInfo(IWTypeLib p) throws BindingException {
-        TypeLibInfo tli = typeLibs.get(p);
+    private LibBinder getTypeLibInfo(IWTypeLib p) throws BindingException {
+        LibBinder tli = typeLibs.get(p);
         if(tli==null) {
-            typeLibs.put(p,tli=new TypeLibInfo(p));
+            typeLibs.put(p,tli=new LibBinder(p));
         }
         return tli;
     }
@@ -1099,7 +1167,7 @@ public final class Generator {
 
     private void generate(IMethod m, IndentingWriter o) throws BindingException {
         try {
-            MethodBinder mb = new MethodBinder(m);
+            MethodBinder mb = new MethodBinder(m, Mode.CUSTOM);
             mb.declare(o);
             o.println();
 
