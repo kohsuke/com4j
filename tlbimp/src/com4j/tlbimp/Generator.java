@@ -2,6 +2,7 @@ package com4j.tlbimp;
 
 import com4j.Com4jObject;
 import com4j.NativeType;
+import com4j.GUID;
 import com4j.tlbimp.def.ICoClassDecl;
 import com4j.tlbimp.def.IConstant;
 import com4j.tlbimp.def.IDispInterfaceDecl;
@@ -651,10 +652,26 @@ public final class Generator {
                 name = aliases.get(decl);
             else
                 name = decl.getName();
-            if(STDOLE_TYPES.contains(name))
+
+            // check GUID
+            GUID guid = getGUID(decl);
+
+            if(guid!=null && STDOLE_TYPES.contains(guid))
                 return "Com4jObject";
             else
                 return name;
+        }
+
+        private GUID getGUID(ITypeDecl decl) {
+            IDispInterfaceDecl di = decl.queryInterface(IDispInterfaceDecl.class);
+            if(di!=null)
+                return di.getGUID();
+
+            IInterfaceDecl ii = decl.queryInterface(IInterfaceDecl.class);
+            if(ii!=null)
+                return ii.getGUID();
+
+            return null;
         }
 
         public IndentingWriter createWriter(String fileName) throws IOException {
@@ -938,8 +955,13 @@ public final class Generator {
     }
 
     // TODO: map IFont and IPicture correctly
-    private static final Set<String> STDOLE_TYPES = new HashSet<String>(
-        Arrays.asList("IUnknown","IDispatch","IFont","IPicture","IFontDisp","IPictureDisp"));
+    private static final Set<GUID> STDOLE_TYPES = new HashSet<GUID>(
+        Arrays.asList(
+            new GUID("00000000-0000-0000-C000-000000000046"),   // IUnknown
+            new GUID("00020400-0000-0000-C000-000000000046"),   // IDispatch
+            new GUID("BEF6E002-A874-101A-8BBA-00AA00300CAB"),   // IFont
+            new GUID("7BF80980-BF32-101A-8BBB-00AA00300CAB")    // IPicture
+        ));
 
 
     /**
