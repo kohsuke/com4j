@@ -50,6 +50,10 @@ public class AntTaskImpl extends Task implements ErrorListener {
         this.libver = libver;
     }
 
+    public void setLocale(String locale) {
+        driver.setLocale(locale);
+    }
+
     public void addConfiguredLib( Lib r ) {
         r.validate();
         driver.addLib(r);

@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Locale;
 
 /**
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
@@ -24,12 +25,23 @@ final class Driver {
 
     private String packageName="";
 
+    private Locale locale = Locale.getDefault();
+
     public void addLib( Lib r ) {
         libs.put(r.getLibid(),r);
     }
 
     public void setPackageName(String packageName) {
         this.packageName = packageName;
+    }
+
+    public void setLocale(String locale) {
+        String[] tokens = locale.split("_");
+        this.locale = new Locale(
+            tokens.length>0 ? tokens[0] : "",
+            tokens.length>1 ? tokens[1] : "",
+            tokens.length>2 ? tokens[2] : ""
+        );
     }
 
 
@@ -73,7 +85,7 @@ final class Driver {
             }
         };
 
-        Generator generator = new Generator(cw,resolver,el);
+        Generator generator = new Generator(cw,resolver,el,getLocale());
 
         // repeatedly generate all the libraries that need to be generated
         Set<IWTypeLib> generatedLibs = new HashSet<IWTypeLib>();

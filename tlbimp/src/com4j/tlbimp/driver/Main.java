@@ -40,6 +40,9 @@ public class Main implements ErrorListener {
     @Option(name="-libver")
     public String libVersion = null;
 
+    @Option(name="-locale")
+    public String locale = null;
+
     @Argument
     private List<String> files = new ArrayList<String>();
 
@@ -118,6 +121,8 @@ public class Main implements ErrorListener {
 
 
         try {
+            if(locale!=null)
+                driver.setLocale(locale);
             driver.run(cw,this);
         } catch( ComException e ) {
             return handleException(e);
