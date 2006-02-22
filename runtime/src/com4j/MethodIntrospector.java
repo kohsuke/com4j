@@ -18,7 +18,7 @@ class MethodIntrospector {
     protected MethodIntrospector(Method method) {
         this.method = method;
         this.pa = method.getParameterAnnotations();
-        this.paramTypes = method.getParameterTypes();
+        this.paramTypes = method.getGenericParameterTypes();
     }
 
     protected final MarshalAs getMarshalAs(int idx) {
