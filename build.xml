@@ -42,6 +42,7 @@
       <fileset dir="runtime/build" includes="com4j.jar, com4j-src.zip"/>
       <fileset dir="tlbimp/build" includes="tlbimp.jar, tlbimp-src.zip"/>
       <fileset dir="tlbimp/lib" includes="args4j-*.jar"/>
+      <fileset dir="native/Release" includes="com4j.dll" />
     </copy>
     <ant dir="build/dist/samples" target="compile"/>
     
@@ -49,7 +50,6 @@
       <fileset dir="../www" includes="LICENSE.txt" />
       <fileset dir="build" includes="javadoc/**/*"/>
       <fileset dir="build/dist" includes="**/*"/>
-      <fileset dir="native/Release" includes="com4j.dll" />
     </zip>
   </target>
   
