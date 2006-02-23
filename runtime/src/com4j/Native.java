@@ -1,6 +1,6 @@
 package com4j;
 
-
+import java.nio.ByteBuffer;
 
 
 /**
@@ -43,8 +43,8 @@ class Native {
      *      is not HRESULT.
      */
     static native Object invoke( int pComObject, int vtIndex,
-         Object[] args, int[] parameterConversions,
-         int returnIndex, boolean returnIsInOut, int returnConversion );
+                                 Object[] args, int[] parameterConversions,
+                                 int returnIndex, boolean returnIsInOut, int returnConversion );
 
     /**
      * Gets the error info.
@@ -109,4 +109,9 @@ class Native {
      * Shuts down the event subscription by calling IConnectionPoint::Unadvise.
      */
     static native void unadvise(int nativeProxy);
+
+    /**
+     * Creates a direct buffer.
+     */
+    static native ByteBuffer createBuffer(int ptr, int size);
 }
