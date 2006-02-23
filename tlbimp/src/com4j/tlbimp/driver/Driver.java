@@ -85,7 +85,7 @@ final class Driver {
             }
         };
 
-        Generator generator = new Generator(cw,resolver,el,getLocale());
+        Generator generator = new Generator(cw,resolver,el,locale);
 
         // repeatedly generate all the libraries that need to be generated
         Set<IWTypeLib> generatedLibs = new HashSet<IWTypeLib>();

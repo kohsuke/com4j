@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Locale;
 
 /**
  * Type library importer.
@@ -51,15 +52,18 @@ public final class Generator {
 
     private final DefaultMethodFinder dmf = new DefaultMethodFinder();
 
+    private final Locale locale;
+
     /**
      * {@link IWTypeLib}s specified to the {@link #generate(IWTypeLib)} method.
      */
     private final Set<LibBinder> generatedTypeLibs = new HashSet<LibBinder>();
 
-    public Generator( CodeWriter writer, ReferenceResolver resolver, ErrorListener el ) {
+    public Generator( CodeWriter writer, ReferenceResolver resolver, ErrorListener el, Locale locale ) {
         this.el = el;
         this.writer = writer;
         this.referenceResolver = resolver;
+        this.locale = locale;
     }
 
     /**
@@ -1251,18 +1255,18 @@ public final class Generator {
         return "N/A";
     }
 
-    private static String camelize(String s) {
+    private String camelize(String s) {
         int idx = 0;
 
         while(idx<s.length() && Character.isUpperCase(s.charAt(idx)))
             idx++;
 
         if(idx==s.length())
-            return s.toLowerCase();
+            return s.toLowerCase(locale);
         if(idx>0) {
             if(idx==1)  idx=2;
             // s=="HTMLProject" then idx==5
-            return s.substring(0,idx-1).toLowerCase()+s.substring(idx-1);
+            return s.substring(0,idx-1).toLowerCase(locale)+s.substring(idx-1);
         }
 
         return s;
