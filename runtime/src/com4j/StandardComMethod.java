@@ -157,14 +157,19 @@ final class StandardComMethod extends ComMethod {
             if( p.getRawType()==Holder.class ) {
                 // let p=Holder<V>
                 Type v = p.getActualTypeArguments()[0];
-                if( v instanceof Class && Com4jObject.class.isAssignableFrom((Class<?>)v))
-                    return NativeType.ComObject_ByRef;
-                if(String.class==v)
-                    return NativeType.BSTR_ByRef;
-                if(Integer.class==v || Enum.class.isAssignableFrom((Class<?>)v))
-                    return NativeType.Int32_ByRef;
-                if(Boolean.class==v)
-                    return NativeType.VariantBool_ByRef;
+                Class<?> c = (v instanceof Class) ? (Class<?>)v : null;
+                if(c!=null) {
+                    if(Com4jObject.class.isAssignableFrom(c))
+                        return NativeType.ComObject_ByRef;
+                    if(String.class==c)
+                        return NativeType.BSTR_ByRef;
+                    if(Integer.class==c || Enum.class.isAssignableFrom(c))
+                        return NativeType.Int32_ByRef;
+                    if(Boolean.class==c)
+                        return NativeType.VariantBool_ByRef;
+                    if(Buffer.class.isAssignableFrom(c))
+                        return NativeType.PVOID_ByRef;
+                }
             }
             if( p.getRawType()==Iterator.class ) {
                 return NativeType.ComObject;
