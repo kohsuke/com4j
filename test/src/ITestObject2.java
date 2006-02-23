@@ -18,4 +18,7 @@ public interface ITestObject2 extends Com4jObject {
     int testVariant2(
         @MarshalAs(NativeType.VARIANT) int v1,
         @MarshalAs(NativeType.VARIANT_ByRef) Holder<Integer> v2);
+
+    @VTID(8)
+    int outByteBuf( String s, Holder<Integer> size );
 }
