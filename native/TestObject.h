@@ -55,6 +55,8 @@ public:
 
 public:
 	STDMETHOD(raw_TestVariant)(VARIANT v1, VARIANT* v2, VARIANT* v3);
+public:
+	STDMETHOD(raw_outWcharBuf)(BSTR bstrEncodedData, long* plSize, unsigned char** ppbData);
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(TestObject), CTestObject)

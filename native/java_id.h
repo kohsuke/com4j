@@ -23,3 +23,5 @@ extern JMethodID<jobject> com4jWrapper_queryInterface;
 
 extern JClassID javaLangClass;
 extern JMethodID<jstring> javaLangClass_getName;
+
+extern JClassID javaLangObject;

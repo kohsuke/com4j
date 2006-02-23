@@ -3,6 +3,7 @@
 #include "xducer.h"
 #include "com4j.h"
 #include "java_id.h"
+#include "variant.h"
 
 namespace xducer {
 
@@ -16,9 +17,9 @@ namespace xducer {
 			return *convertToVariant(env,value);
 		}
 
-//		TODO
-//		static inline JavaType toJava( JNIEnv* env, NativeType value ) {
-//		}
+		static inline JavaType toJava( JNIEnv* env, NativeType value ) {
+			return variantToObject(env,javaLangObject,value);
+		}
 	};
 
 

@@ -242,3 +242,7 @@ JNIEXPORT void JNICALL Java_com4j_Native_unadvise( JNIEnv* env, jclass _, jint p
 	er->Disconnect(env);
 	delete er;
 }
+
+JNIEXPORT jobject JNICALL Java_com4j_Native_createBuffer(JNIEnv* env, jclass _, jint ptr, jint size) {
+	return env->NewDirectByteBuffer(reinterpret_cast<void*>(ptr),size);
+}

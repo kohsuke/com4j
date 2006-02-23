@@ -33,6 +33,7 @@ enum Conv {
 	cvVARIANT_byRef = 302|BYREF,
 	cvDISPATCH = 303,
 	cvPVOID = 304,
+	cvPVOID_byRef = 304|BYREF,
 
 	cvDATE = 400,
 

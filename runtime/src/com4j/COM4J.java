@@ -5,6 +5,7 @@ import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.net.URLDecoder;
+import java.nio.ByteBuffer;
 
 /**
  * The root of the COM4J library.
@@ -203,6 +204,34 @@ public abstract class COM4J {
                     Native.loadTypeLibrary(typeLibraryFile.getAbsolutePath()));
             }
         }.execute();
+    }
+
+    /**
+     * Maps the memory region into {@link ByteBuffer} so that it can be
+     * then accessed nicely from Java code.
+     *
+     * <p>
+     * When bridging native code to Java, it's often necessary to be able
+     * to read/write arbitrary portion of the memory, and this method
+     * lets you do that.
+     *
+     * <p>
+     * Neither this code nor {@link ByteBuffer} does anything about
+     * making sure that the memory region pointed by {@code ptr} remains
+     * valid. It's the caller's responsibility.
+     *
+     * @see http://java.sun.com/j2se/1.4.2/docs/guide/jni/jni-14.html#NewDirectByteBuffer
+     *
+     * @param ptr
+     *      The pointer value that points to the top of the buffer.
+     * @param size
+     *      The size of the memory region to be mapped to {@link ByteBuffer}.
+     *
+     * @return
+     *      always non-null valid {@link ByteBuffer}.
+     */
+    public static ByteBuffer createBuffer( int ptr, int size ) {
+        return Native.createBuffer(ptr,size);
     }
 
     /**

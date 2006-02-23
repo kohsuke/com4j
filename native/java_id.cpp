@@ -3,6 +3,7 @@
 #include <oaidl.h>
 
 
+JClassID javaLangObject("java/lang/Object");
 
 JClassID com4j_COM4J("com4j/COM4J");
 JStaticMethodID<jint> com4j_COM4J_getPtr(com4j_COM4J,"getPtr","(Lcom4j/Com4jObject;)I");

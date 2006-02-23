@@ -119,6 +119,14 @@ JNIEXPORT jint JNICALL Java_com4j_Native_advise
 JNIEXPORT void JNICALL Java_com4j_Native_unadvise
   (JNIEnv *, jclass, jint);
 
+/*
+ * Class:     com4j_Native
+ * Method:    createBuffer
+ * Signature: (II)Ljava/nio/ByteBuffer;
+ */
+JNIEXPORT jobject JNICALL Java_com4j_Native_createBuffer
+  (JNIEnv *, jclass, jint, jint);
+
 #ifdef __cplusplus
 }
 #endif

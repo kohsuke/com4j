@@ -91,7 +91,13 @@ class ComObjectVariandHandlerImpl : public VariantHandlerImpl<VT_DISPATCH,xducer
 	}
 	jobject get( JNIEnv* env, VARIANT* v, jclass retType ) {
 		jobject o = BASE::get(env,v,retType);
-		return com4jWrapper_queryInterface(env,o,retType);
+
+		// if the return type is an interface, use that to create a strongly typed object.
+		// otherwise just return it as Com4jObject
+		if(env->IsSameObject(retType,javaLangObject))
+			return o;
+		else
+			return com4jWrapper_queryInterface(env,o,retType);
 	}
 };
 
@@ -173,6 +179,11 @@ jobject variantToObject( JNIEnv* env, jclass retType, VARIANT& v ) {
 		if( v.vt==p->vt ) {
 			return p->handler->get(env,&v,retType);
 		}
+	}
+
+	// consider a conversion from SAFEARRAY
+	if((v.vt&VT_ARRAY)!=0) {
+		return safearray::SafeArrayXducer::toJava(env,v.parray);
 	}
 
 	// everything failed

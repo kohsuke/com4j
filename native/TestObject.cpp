@@ -29,3 +29,11 @@ STDMETHODIMP CTestObject::raw_TestVariant(VARIANT v1, VARIANT* v2, VARIANT* v3)
 	return S_OK;
 }
 #endif
+
+STDMETHODIMP CTestObject::raw_outWcharBuf(BSTR bstrEncodedData, long* plSize, unsigned char** ppbData)
+{
+	*plSize = 30;
+	*ppbData = (BYTE*)"Hello, World!";
+
+	return S_OK;
+}

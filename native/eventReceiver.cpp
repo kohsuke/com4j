@@ -45,15 +45,17 @@ STDMETHODIMP CEventReceiver::Invoke( DISPID dispid, REFIID riid, LCID lcid, WORD
 	jthrowable t = pEnv->ExceptionOccurred();
 	if(t!=NULL) {
 		pEnv->ExceptionClear();
-		pExcepInfo->wCode = 1000;	// Java doesn't have any notion of 'error code'
-		pExcepInfo->wReserved = 0;
-		pExcepInfo->bstrSource		= SysAllocString(JString(pEnv,com4jEventProxy_getErrorSource(pEnv,t)));
-		pExcepInfo->bstrDescription = SysAllocString(JString(pEnv,com4jEventProxy_getErrorDetail(pEnv,t)));
-		pExcepInfo->bstrHelpFile = NULL;
-		pExcepInfo->dwHelpContext = 0;
-		pExcepInfo->pvReserved = NULL;
-		pExcepInfo->pfnDeferredFillIn = NULL;
-		pExcepInfo->scode = 0;
+		if(pExcepInfo!=NULL) {
+			pExcepInfo->wCode = 1000;	// Java doesn't have any notion of 'error code'
+			pExcepInfo->wReserved = 0;
+			pExcepInfo->bstrSource		= SysAllocString(JString(pEnv,com4jEventProxy_getErrorSource(pEnv,t)));
+			pExcepInfo->bstrDescription = SysAllocString(JString(pEnv,com4jEventProxy_getErrorDetail(pEnv,t)));
+			pExcepInfo->bstrHelpFile = NULL;
+			pExcepInfo->dwHelpContext = 0;
+			pExcepInfo->pvReserved = NULL;
+			pExcepInfo->pfnDeferredFillIn = NULL;
+			pExcepInfo->scode = 0;
+		}
 
 		return DISP_E_EXCEPTION;
 	}
