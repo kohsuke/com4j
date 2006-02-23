@@ -28,12 +28,12 @@ STDMETHODIMP CTestObject::raw_TestVariant(VARIANT v1, VARIANT* v2, VARIANT* v3)
 	VariantCopy(v2,&v1);
 	return S_OK;
 }
-#endif
 
-STDMETHODIMP CTestObject::raw_outWcharBuf(BSTR bstrEncodedData, long* plSize, unsigned char** ppbData)
+STDMETHODIMP CTestObject::raw_outByteBuf(BSTR bstrEncodedData, long* plSize, unsigned char** ppbData)
 {
 	*plSize = 30;
 	*ppbData = (BYTE*)"Hello, World!";
 
 	return S_OK;
 }
+#endif

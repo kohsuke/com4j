@@ -24,6 +24,9 @@ IType* createType( CTypeDecl* containingType, TYPEDESC& t ) {
 
 	case VT_PTR:
 		return static_cast<IPtrType*>(CComObject<CPtrType>::create(containingType,*t.lptdesc,true));
+
+	case VT_CARRAY:
+		return static_cast<IPtrType*>(CComObject<CPtrType>::create(containingType,t.lpadesc->tdescElem,true)); // ???
 	
 	case VT_SAFEARRAY:
 		return static_cast<ISafeArrayType*>(CComObject<CPtrType>::create(containingType,*t.lptdesc,false));
