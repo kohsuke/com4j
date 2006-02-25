@@ -1,45 +1,39 @@
 package com4j.tlbimp;
 
 import com4j.Com4jObject;
-import com4j.NativeType;
 import com4j.GUID;
 import com4j.tlbimp.def.ICoClassDecl;
 import com4j.tlbimp.def.IConstant;
 import com4j.tlbimp.def.IDispInterfaceDecl;
 import com4j.tlbimp.def.IEnumDecl;
 import com4j.tlbimp.def.IImplementedInterfaceDecl;
-import com4j.tlbimp.def.IInterface;
 import com4j.tlbimp.def.IInterfaceDecl;
-import com4j.tlbimp.def.IMethod;
-import com4j.tlbimp.def.IParam;
-import com4j.tlbimp.def.IPrimitiveType;
-import com4j.tlbimp.def.IPtrType;
-import com4j.tlbimp.def.ISafeArrayType;
-import com4j.tlbimp.def.IType;
 import com4j.tlbimp.def.ITypeDecl;
 import com4j.tlbimp.def.ITypedefDecl;
 import com4j.tlbimp.def.IWTypeLib;
-import com4j.tlbimp.def.InvokeKind;
 import com4j.tlbimp.def.TypeKind;
-import com4j.tlbimp.def.VarType;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.Buffer;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.Locale;
+import java.util.List;
 
 /**
  * Type library importer.
+ *
+ * <p>
+ * One instance of this class is created for one invocation of type library generation.
+ * This object keeps track of what type libraries are compiled into what packages,
+ * and keeps other "global" (per tlbimp invocation) state.
+ *
+ * <p>
+ * The actual details of the generation is delegated to other generator objects.
  *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
@@ -48,11 +42,19 @@ public final class Generator {
 
     private final ReferenceResolver referenceResolver;
 
-    private final ErrorListener el;
+    /**
+     * Errors should be reported to this object.
+     * Always non-null.
+     */
+    protected final ErrorListener el;
 
-    private final DefaultMethodFinder dmf = new DefaultMethodFinder();
+    final DefaultMethodFinder dmf = new DefaultMethodFinder();
 
-    private final Locale locale;
+    /**
+     * Locale for manipulating strings.
+     * Always non-null.
+     */
+    final Locale locale;
 
     /**
      * {@link IWTypeLib}s specified to the {@link #generate(IWTypeLib)} method.
@@ -103,7 +105,7 @@ public final class Generator {
             IndentingWriter o = pkg.createWriter(lib1,"ClassFactory.java");
             lib1.generateHeader(o);
 
-            printJavadoc("Defines methods to create COM objects",o);
+            o.printJavadoc("Defines methods to create COM objects");
             o.println("public abstract class ClassFactory {");
             o.in();
 
@@ -134,7 +136,7 @@ public final class Generator {
      * @return
      *      null if none is found.
      */
-    private ITypeDecl getDefaultInterface( ICoClassDecl t ) {
+    ITypeDecl getDefaultInterface( ICoClassDecl t ) {
         final int count = t.countImplementedInterfaces();
         // look for the default interface first.
         for( int i=0; i<count; i++ ) {
@@ -198,7 +200,7 @@ public final class Generator {
         }
 
         o.println();
-        printJavadoc(t.getHelpString(),o);
+        o.printJavadoc(t.getHelpString());
 
         o.printf("public static %1s create%2s() {", primaryIntf, t.getName() );
         o.println();
@@ -226,272 +228,6 @@ public final class Generator {
 //        }
     }
 
-
-    /**
-     * {@link MethodBinder} generation mode.
-     */
-    enum Mode { CUSTOM /*for custom interface*/, DISPATCH/*for IDispatch*/ }
-
-    /**
-     * Binds a native method to a Java method.
-     */
-    private class MethodBinder {
-        private final IMethod method;
-        private final IParam[] params;
-        private int retParam;
-        /**
-         * The return type.
-         *
-         * "T" of "[out,retval]T* ..."
-         */
-        private final IType returnType;
-
-        private final Mode mode;
-
-
-        public MethodBinder(IMethod method, Mode mode) throws BindingException {
-            this.method = method;
-            this.mode = mode;
-
-            int len = method.getParamCount();
-            params = new IParam[len];
-            for( int i=0; i<len; i++ )
-                params[i] = method.getParam(i);
-
-            retParam = getReturnParam();
-            returnType = getReturnTypeBinding();
-        }
-
-        private IType getReturnTypeBinding() throws BindingException {
-            if(retParam==-1)
-                return null;
-            IPtrType pt = params[retParam].getType().queryInterface(IPtrType.class);
-            if(pt==null)
-                throw new BindingException(Messages.RETVAL_MUST_BY_REFERENCE.format());
-            return pt.getPointedAtType();
-        }
-
-        /**
-         * Returns the index of the return value parameter,
-         * or -1 if none.
-         */
-        private int getReturnParam() {
-            // look for [retval] attribute
-            for( int i=0; i<params.length; i++ ) {
-                if(params[i].isRetval())
-                    return i;
-            }
-
-            // sometimes a COM method has only one [out] param.
-            // treat that as the return value.
-            // this is seen frequently in MSHTML (see IHTMLChangeLog, for example)
-            int outIdx=-1;
-            for( int i=0; i<params.length; i++ ) {
-                if(params[i].isOut() && !params[i].isIn()) {
-                    if(outIdx==-1)
-                        outIdx=i;
-                    else
-                        return -1;  // more than one out. no return value
-                }
-            }
-
-            return outIdx;
-        }
-
-        public void generateDefaultInterfaceFacade( IndentingWriter o ) throws BindingException {
-            IMethod m = method;
-            List<IType> intermediates = new ArrayList<IType>();
-
-            while(true) {
-                MethodBinder mb = new MethodBinder(m, Mode.CUSTOM);
-                // only handle methods of the form "HRESULT foo([out,retval]IFoo** ppOut);
-                if (m.getParamCount() != 1 || mb.retParam != 0 || mb.params[mb.retParam].isIn())
-                    break;
-
-                // we expect it to be an interface pointer.
-                IPtrType pt = mb.returnType.queryInterface(IPtrType.class);
-                IDispInterfaceDecl di = null;
-                IInterfaceDecl ii = null;
-                if (pt != null) {
-                    IType t = pt.getPointedAtType();
-                    di = t.queryInterface(IDispInterfaceDecl.class);
-                    ii = t.queryInterface(IInterfaceDecl.class);
-                }
-
-                if (di == null && ii == null)
-                    break;
-
-                IInterface intf;
-                if (ii != null) {
-                    intf = ii;
-                } else {
-                    if(di.isDual())
-                        intf = di.getVtblInterface();
-                    else
-                        break;
-                }
-
-                // does this target interface has a default method?
-                IMethod dm = dmf.getDefaultMethod(intf);
-                if (dm == null)
-                    return;
-
-                // recursively check...
-                m = dm;
-                intermediates.add(pt);
-            }
-
-            if(intermediates.isEmpty())
-                return; // no default method to generate
-
-            if(m.getParamCount()<2)
-                return; // the default method has to have at least one in param and one ret val
-
-            o.printf("@VTID(%1d)",
-                method.getVtableIndex());
-            o.println();
-
-            MethodBinder mb = new MethodBinder(m, Mode.CUSTOM);
-            mb.declareReturnType(o,intermediates);
-            this.declareMethodName(o);
-            mb.declareParameters(o);
-            o.println();
-        }
-
-        public void declare( IndentingWriter o ) throws BindingException {
-            printJavadoc(method.getHelpString(), o);
-//            o.println("// "+method.getKind());
-
-            if(mode==Mode.CUSTOM) {
-                o.printf("@VTID(%1d)",method.getVtableIndex());
-            } else {
-                o.printf("@DISPID(%1d)",method.getDispId());
-            }
-            o.println();
-
-            int dispId = method.getDispId();
-            if(dispId==0)
-                o.println("@DefaultMethod");
-
-            if(isEnum(method)) {
-                // this is an enumerator. handle it differently.
-                o.println("java.util.Iterator<Com4jObject> iterator();");
-                return;
-            }
-
-            declareReturnType(o,null);
-            declareMethodName(o);
-            declareParameters(o);
-        }
-
-        private void declareMethodName(IndentingWriter o) {
-            String name = escape(camelize(method.getName()));
-            if(reservedMethods.contains(name))
-                name += '_';
-            o.print(name);
-        }
-
-        private void declareParameters(IndentingWriter o) throws BindingException {
-            o.print('(');
-            o.in();
-
-            boolean first = true;
-            // declare parameters
-            for( IParam p : params ) {
-                if( retParam!=-1 && p==params[retParam] && !p.isIn() )
-                    continue;   // skip, cause it's showing up as the return value
-                if(!first)
-                    o.println(',');
-                else
-                    o.println();
-                first = false;
-                declare(p,o);
-            }
-            o.out();
-
-            if(mode==Mode.DISPATCH)
-                o.println(") {}");
-            else
-                o.println(");");
-        }
-
-        /**
-         * Declares a parameter.
-         */
-        private void declare( IParam p, IndentingWriter o ) throws BindingException {
-            VariableBinding vb = bind(p.getType(),p.getName());
-            if(!vb.isDefault && mode==Mode.CUSTOM) {
-                o.printf("@MarshalAs(NativeType.%1s) ",vb.nativeType.name());
-            }
-
-            String javaType = vb.javaType;
-
-            if(method.isVarArg() && p==params[params.length-1]) {
-                // use varargs if applicable
-                if( javaType.endsWith("[]") )
-                    javaType = javaType.substring(0,javaType.length()-2)+"...";
-            }
-            o.print(javaType);
-            o.print(' ');
-            String name = p.getName();
-            if(name==null)  name="rhs";
-            o.print(escape(camelize(name)));
-        }
-
-        /**
-         * Declares the return type.
-         */
-        private void declareReturnType(IndentingWriter o, List<IType> intermediates ) throws BindingException {
-            if(mode==Mode.DISPATCH) {
-                o.print("public ");
-            }
-
-            if(retParam==-1 && intermediates==null) {
-                o.print("void ");
-            } else {
-                // we assume that the [retval] param to be passed by reference
-                VariableBinding retBinding = bind(returnType,null);
-
-                // add @ReturnValue if necessary
-                if(!retBinding.isDefault || params[retParam].isIn() || retParam!=params.length-1 || intermediates!=null) {
-                    o.print("@ReturnValue(");
-                    o.beginCommaMode();
-                    if(!retBinding.isDefault && mode== Mode.CUSTOM) {
-                        o.comma();
-                        o.print("type=NativeType."+retBinding.nativeType.name());
-                    }
-                    if(params[retParam].isIn()) {
-                        o.comma();
-                        o.print("inout=true");
-                    }
-                    if(retParam!=params.length-1) {
-                        o.comma();
-                        o.print("index="+retParam);
-                    }
-
-                    if(intermediates!=null) {
-                        o.comma();
-                        o.print("defaultPropertyThrough={");
-                        o.beginCommaMode();
-                        for (IType im : intermediates) {
-                            VariableBinding vb = bind(im, null);
-                            o.comma();
-                            o.print(vb.javaType);
-                            o.print(".class");
-                        }
-                        o.endCommaMode();
-                        o.print("}");
-                    }
-
-                    o.endCommaMode();
-                    o.println(")");
-                }
-
-                o.print(retBinding.javaType);
-                o.print(' ');
-            }
-        }
-    }
 
     /**
      * All {@link Package}s keyed by their names.
@@ -581,7 +317,7 @@ public final class Generator {
      * An instance of this class is created for each type library
      * (including the one that we are binding.)
      */
-    private final class LibBinder {
+    /*package*/ final class LibBinder {
         final IWTypeLib lib;
 
         /**
@@ -594,6 +330,12 @@ public final class Generator {
          * Java type name.
          */
         private final Map<ITypeDecl,String> aliases = new HashMap<ITypeDecl,String>();
+
+        /**
+         * Generated event interfaces,
+         * so that we don't generate them as invocable interfaces.
+         */
+        private Set<ITypeDecl> eventInterfaces = new HashSet<ITypeDecl>();
 
         public LibBinder(IWTypeLib lib) throws BindingException {
             this.lib = lib;
@@ -648,7 +390,7 @@ public final class Generator {
         /**
          * Gets the simple name of the type (as opposed to FQCN.)
          */
-        private String getSimpleTypeName(ITypeDecl decl) {
+        String getSimpleTypeName(ITypeDecl decl) {
             assert decl.getParent().equals(lib);
 
             String name;
@@ -690,6 +432,15 @@ public final class Generator {
             generatePackageHtml();
 
             int len = tlib.count();
+            // generate event interface first,
+            // so that we don't generate same interface as invocable ones.
+            for( int i=0; i<len; i++ ) {
+                ITypeDecl t = tlib.getType(i);
+                if(t.getKind()== TypeKind.COCLASS) {
+                    generateEventsFrom( t.queryInterface(ICoClassDecl.class) );
+                }
+            }
+
             for( int i=0; i<len; i++ ) {
                 ITypeDecl t = tlib.getType(i);
                 switch(t.getKind()) {
@@ -697,22 +448,11 @@ public final class Generator {
                     generate( t.queryInterface(IDispInterfaceDecl.class) );
                     break;
                 case INTERFACE:
-                    generate( t.queryInterface(IInterfaceDecl.class) );
+                    new CustomInterfaceGenerator(this,t.queryInterface(IInterfaceDecl.class)).generate();
                     break;
                 case ENUM:
                     generate( t.queryInterface(IEnumDecl.class) );
                     break;
-                case COCLASS:
-                    // look for event interfaces to generate
-                    generateEventsFrom( t.queryInterface(ICoClassDecl.class) );
-                    break;
-                case ALIAS:
-                    {
-//                    ITypedefDecl alias = t.queryInterface(ITypedefDecl.class);
-//                    System.out.printf("typedef %1s %2s", alias.getName(),
-//                        getTypeString(alias.getDefinition()));
-                        break;
-                    }
                 }
                 t.dispose();
             }
@@ -750,7 +490,7 @@ public final class Generator {
             IndentingWriter o = createWriter(typeName+".java");
             generateHeader(o);
 
-            printJavadoc(t.getHelpString(), o);
+            o.printJavadoc(t.getHelpString());
 
             o.printf("public enum %1s ",typeName);
             if(needComEnum)
@@ -760,7 +500,7 @@ public final class Generator {
 
             // generate constants
             for( IConstant con : cons ) {
-                printJavadoc(con.getHelpString(),o);
+                o.printJavadoc(con.getHelpString());
                 o.print(con.getName());
                 if(needComEnum) {
                     o.printf("(%1d),",con.getValue());
@@ -790,89 +530,15 @@ public final class Generator {
             o.close();
         }
 
-        private void generate( IInterfaceDecl t ) throws IOException {
-            String typeName = getSimpleTypeName(t);
-            IndentingWriter o = createWriter(typeName+".java");
-            generateHeader(o);
-
-            printJavadoc(t.getHelpString(), o);
-
-            boolean hasEnum = false;
-            for( int j=0; j<t.countMethods() && !hasEnum; j++ ) {
-                IMethod m = t.getMethod(j);
-                hasEnum = isEnum(m);
-            }
-
-
-            o.printf("@IID(\"%1s\")",t.getGUID());
-            o.println();
-            o.printf("public interface %1s",typeName);
-            if(t.countBaseInterfaces()!=0) {
-                o.print(" extends ");
-                o.beginCommaMode();
-                for( int i=0; i<t.countBaseInterfaces(); i++ ) {
-                    o.comma();
-                    String baseName;
-                    try {
-                        baseName = getTypeName(t.getBaseInterface(i));
-                    } catch (BindingException e) {
-                        e.addContext("interface "+typeName);
-                        el.error(e);
-                        baseName = "Com4jObject";
-                    }
-                    o.print(baseName);
-                }
-                if(hasEnum) {
-                    o.comma();
-                    o.print("Iterable<Com4jObject>");
-                }
-                o.endCommaMode();
-            }
-            o.println(" {");
-            o.in();
-
-            // see issue 15.
-            // to avoid binding both propput and propputref,
-            // we'll use this to keep track of what we generated.
-            // TODO: what was the difference between propput and propputref?
-            Set<String> putMethods = new HashSet<String>();
-
-            for( int j=0; j<t.countMethods(); j++ ) {
-                IMethod m = t.getMethod(j);
-                InvokeKind kind = m.getKind();
-                if(kind== InvokeKind.PROPERTYPUT || kind== InvokeKind.PROPERTYPUTREF) {
-                    if(!putMethods.add(m.getName()))
-                        continue;   // already added
-                }
-                try {
-                    o.startBuffering();
-                    Generator.this.generate(m,o);
-                    o.commit();
-                } catch( BindingException e ) {
-                    o.cancel();
-                    e.addContext("interface "+t.getName());
-                    el.error(e);
-                }
-                m.dispose();
-            }
-
-            o.out();
-            o.println("}");
-
-            o.close();
-        }
-
         private void generate( IDispInterfaceDecl t ) throws IOException {
-            if(t.isDual())
-                generate( t.getVtblInterface() );
-            else {
-                // TODO: how should we handle this?
+            // if dual, always prefer the custom binding
+            if(eventInterfaces.contains(t))
+                return; // avoid generating the same interface twice, once as event, once as normal
+            if(t.isDual()) {
+                new CustomInterfaceGenerator(this,t.getVtblInterface()).generate();
+            } else {
+                new DispInterfaceGenerator(this,t).generate();
             }
-//        } catch( BindingException e ) {
-//            throw new BindingException(
-//                Messages.FAILED_TO_BIND.format(t.getName()),
-//                e );
-//        }
         }
 
         /**
@@ -883,71 +549,22 @@ public final class Generator {
             for( int i=0; i<len; i++ ) {
                 IImplementedInterfaceDecl item = co.getImplementedInterface(i);
                 if(item.isSource()) {
-                    IDispInterfaceDecl di = item.getType().queryInterface(IDispInterfaceDecl.class);
+                    ITypeDecl it = item.getType();
+                    eventInterfaces.add(it);
+                    IDispInterfaceDecl di = it.queryInterface(IDispInterfaceDecl.class);
                     if(di!=null)    // can this ever be null?
-                        generateEvent(di);
+                        new EventInterfaceGenerator(this,di).generate();
                 }
             }
         }
 
-        /**
-         * Generates the event sink interface.
-         */
-        private void generateEvent( IDispInterfaceDecl t ) throws IOException {
-            String typeName = getSimpleTypeName(t);
-            IndentingWriter o = createWriter("events/"+typeName+".java");
-            generateHeader(o,".events");
-
-            printJavadoc(t.getHelpString(), o);
-
-            o.printf("@IID(\"%1s\")",t.getGUID());
-            o.println();
-            o.printf("public abstract class %1s {",typeName);   // should we handle inheritance?
-            o.println();
-            o.in();
-
-            for( int j=0; j<t.countMethods(); j++ ) {
-                IMethod m = t.getMethod(j);
-                InvokeKind kind = m.getKind();
-                if(kind!=InvokeKind.FUNC)
-                    continue;
-
-                // some type libraries contain IDispathc methods on DispInterface definitions.
-                // don't map them. I'm not too sure if this is the right check,
-                // but they seem to work.
-                //
-                // normal disp interfaces return 0 from this, so we need to handle QueryInterface
-                // differently
-                int vidx = m.getVtableIndex();
-                if((1<=vidx && vidx <7) || (vidx==0 && m.getName().toLowerCase().equals("queryinterface")))
-                    continue;
-
-                try {
-                    o.startBuffering();
-                    MethodBinder mb = new MethodBinder(m, Mode.DISPATCH);
-                    mb.declare(o);
-                    o.println();
-                    o.commit();
-                } catch( BindingException e ) {
-                    o.cancel();
-                    e.addContext("event interface "+t.getName());
-                    el.error(e);
-                }
-                m.dispose();
-            }
-
-            o.out();
-            o.println("}");
-
-            o.close();
-        }
-
-        private void generateHeader(IndentingWriter o) {
+        void generateHeader(IndentingWriter o) {
             generateHeader(o,null);
         }
-        private void generateHeader(IndentingWriter o,String subPackage) {
+        void generateHeader(IndentingWriter o,String subPackage) {
             if(!pkg.isRoot() || subPackage!=null) {
                 if(subPackage==null)    subPackage="";
+                else                    subPackage='.'+subPackage;
                 o.printf("package %1s%2s;",pkg.name,subPackage);
                 o.println();
                 o.println();
@@ -955,6 +572,10 @@ public final class Generator {
 
             o.println("import com4j.*;");
             o.println();
+        }
+
+        public final Generator parent() {
+            return Generator.this;
         }
     }
 
@@ -978,7 +599,7 @@ public final class Generator {
      *  <li>types in other type libs.
      * </ul>
      */
-    private String getTypeName(ITypeDecl decl) throws BindingException {
+    /*package*/ String getTypeName(ITypeDecl decl) throws BindingException {
         Generator.LibBinder tli = getTypeLibInfo(decl.getParent());
         String name = tli.pkg.name;
         if(name.length()>0) name+='.';
@@ -996,299 +617,5 @@ public final class Generator {
             typeLibs.put(p,tli=new LibBinder(p));
         }
         return tli;
-    }
-
-
-
-
-    private static class VariableBinding {
-        public final String javaType;
-        public final NativeType nativeType;
-        /**
-         * True if the {@link #nativeType} is the default native type
-         * for the {@link #javaType}.
-         */
-        public final boolean isDefault;
-
-        public VariableBinding(Class javaType, NativeType nativeType, boolean isDefault) {
-            this(javaType.getName(),nativeType,isDefault);
-        }
-
-        public VariableBinding(String javaType, NativeType nativeType, boolean isDefault) {
-            this.javaType = javaType;
-            this.nativeType = nativeType;
-            this.isDefault = isDefault;
-        }
-
-        public VariableBinding createByRef() {
-            String t = javaType;
-            if(boxTypeMap.containsKey(t))
-                t = boxTypeMap.get(t);
-            return new VariableBinding( "Holder<"+t+">", nativeType.byRef(), isDefault );
-        }
-
-        private static final Map<String,String> boxTypeMap = new HashMap<String,String>();
-
-        static {
-            boxTypeMap.put("byte","Byte");
-            boxTypeMap.put("short","Short");
-            boxTypeMap.put("int","Integer");
-            boxTypeMap.put("long","Long");
-            boxTypeMap.put("float","Float");
-            boxTypeMap.put("double","Double");
-            boxTypeMap.put("boolean","Boolean");
-            boxTypeMap.put("char","Character");
-        }
-    }
-
-    /**
-     * Defines the type bindings for the primitive types.
-     */
-    private static final Map<VarType,VariableBinding> primitiveTypeBindings
-        = new EnumMap<VarType,VariableBinding>(VarType.class);
-
-    static {
-        // initialize the primitive binding
-        pbind( VarType.VT_I2, Short.TYPE, NativeType.Int16, true );
-        pbind( VarType.VT_I4, Integer.TYPE, NativeType.Int32, true );
-        pbind( VarType.VT_BSTR, String.class, NativeType.BSTR, true );
-        pbind( VarType.VT_LPSTR, String.class, NativeType.CSTR, false );
-        pbind( VarType.VT_LPWSTR, String.class, NativeType.Unicode, false );
-        // TODO: is it OK to map UI2 to short?
-        pbind( VarType.VT_UI1, Byte.TYPE, NativeType.Int8, true );
-        pbind( VarType.VT_UI2, Short.TYPE, NativeType.Int16, true );
-        pbind( VarType.VT_UI4, Integer.TYPE, NativeType.Int32, true );
-        pbind( VarType.VT_INT, Integer.TYPE, NativeType.Int32, true );
-        pbind( VarType.VT_UINT, Integer.TYPE, NativeType.Int32, true );
-        pbind( VarType.VT_BOOL, Boolean.TYPE, NativeType.VariantBool, true );
-        pbind( VarType.VT_R4, Float.TYPE, NativeType.Float, true );
-        pbind( VarType.VT_R8, Double.TYPE, NativeType.Double, true );
-        pbind( VarType.VT_VARIANT, Object.class, NativeType.VARIANT, false );
-        pbind( VarType.VT_DISPATCH, Com4jObject.class, NativeType.Dispatch, false );
-        pbind( VarType.VT_UNKNOWN, Com4jObject.class, NativeType.ComObject, true );
-        pbind( VarType.VT_DATE, Date.class, NativeType.Date, true );
-        // TODO
-//        pbind( VarType.VT_R4, Float.TYPE, NativeType.Float );
-//        pbind( VarType.VT_R8, Double.TYPE, NativeType.Double );
-    }
-
-    private static void pbind( VarType vt, Class c, NativeType n, boolean isDefault ) {
-        primitiveTypeBindings.put(vt,new VariableBinding(c,n,isDefault));
-    }
-
-    private static boolean isPsz( String hint ) {
-        if(hint==null)  return false;
-        return hint.startsWith("psz") || hint.startsWith("lpsz");
-    }
-
-    /**
-     * Binds the native type to a Java type and its conversion.
-     *
-     * @param nameHint
-     *      Optional parameter name of the type. If non-null,
-     *      this is used to disambiguate common mistake
-     *      like declaring LPWSTR as "ushort*", etc.
-     */
-    private VariableBinding bind( IType t, String nameHint ) throws BindingException {
-        IPrimitiveType pt = t.queryInterface(IPrimitiveType.class);
-        if(pt!=null) {
-            // primitive
-            VariableBinding r = primitiveTypeBindings.get(pt.getVarType());
-            if(r!=null)     return r;
-
-            throw new BindingException(Messages.UNSUPPORTED_VARTYPE.format(pt.getVarType()));
-        }
-
-        IPtrType ptrt = t.queryInterface(IPtrType.class);
-        if(ptrt!=null) {
-            // pointer type
-            IType comp = ptrt.getPointedAtType();
-            IInterfaceDecl compDecl = comp.queryInterface(IInterfaceDecl.class);
-            if( compDecl!=null ) {
-                // t = T* where T is a declared interface
-                return new VariableBinding( getTypeName(compDecl), NativeType.ComObject, true );
-            }
-
-            IDispInterfaceDecl dispDecl = comp.queryInterface(IDispInterfaceDecl.class);
-            if( dispDecl!=null ) {
-                // t = T* where T is a declared interface
-                return new VariableBinding( getTypeName(dispDecl), NativeType.ComObject,  true );
-            }
-
-            // t = coclass*
-            ICoClassDecl classdecl = comp.queryInterface(ICoClassDecl.class);
-            if(classdecl!=null) {
-                // bind to its default interface
-                ITypeDecl di = getDefaultInterface(classdecl);
-                if(di==null)
-                    // no primary interface known. treat it as IUnknown
-                    return new VariableBinding(Com4jObject.class, NativeType.ComObject, true);
-                else
-                    return new VariableBinding( getTypeName(di), NativeType.ComObject, true );
-            }
-
-            IPrimitiveType compPrim = comp.queryInterface(IPrimitiveType.class);
-            if( compPrim!=null ) {
-                if( compPrim.getVarType()==VarType.VT_VARIANT ) {
-                    // T = VARIANT*
-                    return new VariableBinding(Object.class, NativeType.VARIANT_ByRef, true);
-                }
-                if( compPrim.getVarType()==VarType.VT_VOID ) {
-                    // T = void*
-                    return new VariableBinding(Buffer.class,  NativeType.PVOID, true );
-                }
-                if( compPrim.getVarType()==VarType.VT_UI2 ) {
-                    // T = ushort*
-                    if( isPsz(nameHint) )
-                        // this is a common mistake
-                        return new VariableBinding( String.class, NativeType.Unicode, false );
-                }
-                if( compPrim.getVarType()==VarType.VT_BOOL ) {
-                    return new VariableBinding("Holder<Boolean>", NativeType.VariantBool_ByRef, true );
-                }
-            }
-
-            // a few other random checks
-            String name = getTypeString(ptrt);
-            if( name.equals("_RemotableHandle*") ) {
-                // marshal as the raw pointer value
-                return new VariableBinding( Integer.TYPE, NativeType.Int32,  true );
-            }
-            if(name.equals("GUID*")) {
-                return new VariableBinding( "GUID", NativeType.GUID, true );
-            }
-
-            // otherwise use a holder
-            VariableBinding b = bind(comp,null);
-            if(b!=null && b.nativeType.byRef()!=null )
-                return b.createByRef();
-        }
-
-        ISafeArrayType at = t.queryInterface(ISafeArrayType.class);
-        if(at!=null) {
-            // T=SAFEARRAY(...)
-            IType comp = at.getComponentType();
-
-            IPrimitiveType compPrim = comp.queryInterface(IPrimitiveType.class);
-            if( compPrim!=null ) {
-                VariableBinding r = primitiveTypeBindings.get(compPrim.getVarType());
-                if(r!=null) {
-                    return new VariableBinding(r.javaType+"[]", NativeType.SafeArray, true );
-                }
-            }
-        }
-
-        // T = typedef
-        ITypedefDecl typedef = t.queryInterface(ITypedefDecl.class);
-        if(typedef!=null) {
-            return bind(typedef.getDefinition(),nameHint);
-        }
-
-        // T = enum
-        IEnumDecl enumdef = t.queryInterface(IEnumDecl.class);
-        if(enumdef!=null) {
-            // TODO: we should probably check the size of the enum.
-            // there's no guarantee it's 32 bit.
-            return new VariableBinding( getTypeName(enumdef), NativeType.Int32, true );
-        }
-
-        // a few other random checks
-        String name = getTypeString(t);
-        if(name.equals("GUID")) {
-            return new VariableBinding( "GUID", NativeType.GUID, true );
-        }
-
-
-        ITypeDecl declt = t.queryInterface(ITypeDecl.class);
-        if(declt!=null) {
-            // TODO: not clear how we should handle this
-            throw new BindingException(Messages.UNSUPPORTED_TYPE.format(getTypeString(t)));
-        }
-
-        throw new BindingException(Messages.UNSUPPORTED_TYPE.format(getTypeString(t)));
-    }
-
-
-    private void generate(IMethod m, IndentingWriter o) throws BindingException {
-        try {
-            MethodBinder mb = new MethodBinder(m, Mode.CUSTOM);
-            mb.declare(o);
-            o.println();
-
-            mb.generateDefaultInterfaceFacade(o);
-        } catch (BindingException e) {
-            e.addContext("method "+m.getName());
-            throw e;
-        }
-    }
-
-    private void printJavadoc(String doc, PrintWriter o) {
-        if(doc!=null) {
-            o.println("/**");
-            o.println(" * "+doc);
-            o.println(" */");
-        }
-    }
-
-    /**
-     * Returns a human-readable identifier of the type,
-     * but it's not necessarily a correct Java id.
-     *
-     * This is mainly for debugging.
-     */
-    private String getTypeString(IType t) {
-        if(t==null)
-            return "null";
-
-        IPtrType pt = t.queryInterface(IPtrType.class);
-        if(pt!=null)
-            return getTypeString(pt.getPointedAtType())+"*";
-
-        IPrimitiveType prim = t.queryInterface(IPrimitiveType.class);
-        if(prim!=null)
-            return prim.getName();
-
-        ITypeDecl decl = t.queryInterface(ITypeDecl.class);
-        if(decl!=null)
-            return decl.getName();
-
-        return "N/A";
-    }
-
-    private String camelize(String s) {
-        int idx = 0;
-
-        while(idx<s.length() && Character.isUpperCase(s.charAt(idx)))
-            idx++;
-
-        if(idx==s.length())
-            return s.toLowerCase(locale);
-        if(idx>0) {
-            if(idx==1)  idx=2;
-            // s=="HTMLProject" then idx==5
-            return s.substring(0,idx-1).toLowerCase(locale)+s.substring(idx-1);
-        }
-
-        return s;
-    }
-
-    private static String escape(String s) {
-        return Escape.escape(s);
-    }
-
-    private static final Set<String> reservedMethods = new HashSet<String>();
-
-    static {
-        reservedMethods.add("equals");
-        reservedMethods.add("getClass");
-        reservedMethods.add("hashCode");
-        reservedMethods.add("notify");
-        reservedMethods.add("notifyAll");
-        reservedMethods.add("toString");
-        reservedMethods.add("wait");
-    }
-
-    private static boolean isEnum(IMethod m) {
-        return m.getName().equals("_NewEnum");
     }
 }

@@ -161,6 +161,14 @@ public class IndentingWriter extends PrintWriter {
         needsComma = true;
         super.write(s, off, len);
     }
+
+    public void printJavadoc(String doc) {
+        if(doc!=null) {
+            println("/**");
+            println(" * "+doc);
+            println(" */");
+        }
+    }
 }
 
 class CancellableWriter extends FilterWriter {

@@ -35,4 +35,7 @@ public interface IMethod extends Com4jObject {
 
     @VTID(11)
     int getDispId();
+
+    @VTID(12)
+    int getFlags();
 }
