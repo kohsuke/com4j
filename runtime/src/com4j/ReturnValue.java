@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD})
+@Target(ElementType.METHOD)
 public @interface ReturnValue {
     /**
      * The index of the parameter with [retval] marker.

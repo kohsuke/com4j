@@ -10,5 +10,15 @@ package com4j;
  * @author Kohsuke Kawaguchi
  */
 abstract class ComMethod {
+    /**
+     * Invokes a method and returns a value.
+     *
+     * @param ptr
+     *      The interface pointer. {@link ComMethod} has apriori knowledge
+     *      of what interface it points to.
+     *
+     * @param args
+     *      The invocation arguments.
+     */
     abstract Object invoke( int ptr, Object[] args );
 }

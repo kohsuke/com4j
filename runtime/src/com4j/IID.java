@@ -22,8 +22,14 @@ import java.lang.annotation.Inherited;
 @Target({ElementType.TYPE})
 @Inherited
 public @interface IID {
+
     /**
      * GUID as a string like "<tt>{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}</tt>".
      */
     String value();
+
+    /**
+     * GUID of IDispatch.
+     */
+    public static final String IDispatch = "{00020400-0000-0000-C000-000000000046}";
 }

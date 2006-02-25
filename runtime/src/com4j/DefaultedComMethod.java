@@ -3,6 +3,13 @@ package com4j;
 import java.lang.reflect.Method;
 
 /**
+ * {@link ComMethod} that calls default methods.
+ *
+ * <p>
+ * This is used so that the user cna do {@code foo()}
+ * whereas the real COM method invocation goes like
+ * {@code foo().bar().zot()}. 
+ *
  * @author Kohsuke Kawaguchi
  */
 public class DefaultedComMethod extends ComMethod {

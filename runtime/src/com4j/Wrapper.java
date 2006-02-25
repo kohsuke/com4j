@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 /**
- *
+ * {@link InvocationHandler} that backs up a COM object.
  *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
@@ -21,7 +21,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
     private int ptr;
 
     /**
-     * Cached hash code. The value of IUnknown*
+     * Cached hash code. The value of {@code IUnknown*}.
      */
     private int hashCode=0;
 
@@ -128,6 +128,11 @@ final class Wrapper implements InvocationHandler, Com4jObject {
         ReturnValue rv = method.getAnnotation(ReturnValue.class);
         if(rv!=null && rv.defaultPropertyThrough().length>0)
             return new DefaultedComMethod(method,rv);
+
+        DISPID id = method.getAnnotation(DISPID.class);
+        if(id!=null)
+            return new DispatchComMethod(method);
+        
         return new StandardComMethod(method);
     }
 

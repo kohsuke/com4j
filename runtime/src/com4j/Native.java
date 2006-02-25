@@ -26,12 +26,12 @@ class Native {
     static native int getActiveObject( long clsid1, long clsid2 );
 
     /**
-     * Calls <tt>AddRef</tt>.
+     * Calls <tt>IUnknown.AddRef</tt>.
      */
     static native void addRef( int pComObject );
 
     /**
-     * Calls <tt>Release</tt>.
+     * Calls <tt>IUnknown.Release</tt>.
      */
     static native void release( int pComObject );
 
@@ -45,6 +45,12 @@ class Native {
     static native Object invoke( int pComObject, int vtIndex,
                                  Object[] args, int[] parameterConversions,
                                  int returnIndex, boolean returnIsInOut, int returnConversion );
+
+    /**
+     * Invokes {@code IDispatch.Invoke}.
+     */
+    static native Variant invokeDispatch(
+        int pComObject, int dispId, int flag, Object[] args );
 
     /**
      * Gets the error info.
