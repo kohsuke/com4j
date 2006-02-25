@@ -20,6 +20,7 @@
   </target>
   
   <target name="-exec-target">
+    <ant dir="excel" target="${target}"/>
     <ant dir="iTunes" target="${target}"/>
     <ant dir="jnlp" target="${target}"/>
     <ant dir="powerPoint" target="${target}"/>

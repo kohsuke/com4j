@@ -299,6 +299,7 @@
   </component>
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/samples/excel/excel.iml" filepath="$PROJECT_DIR$/samples/excel/excel.iml" />
       <module fileurl="file://$PROJECT_DIR$/samples/iTunes/iTunes.iml" filepath="$PROJECT_DIR$/samples/iTunes/iTunes.iml" />
       <module fileurl="file://$PROJECT_DIR$/samples/jnlp/jnlp.iml" filepath="$PROJECT_DIR$/samples/jnlp/jnlp.iml" />
       <module fileurl="file://$PROJECT_DIR$/samples/powerPoint/powerPoint.iml" filepath="$PROJECT_DIR$/samples/powerPoint/powerPoint.iml" />

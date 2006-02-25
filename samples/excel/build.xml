@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<project name="excel" default="run" basedir=".">
+  
+  <path id="com4j">
+    <fileset dir="../.." includes="*.jar"/>
+    <pathelement location="build/classes"/>
+    <pathelement path="${java.class.path}"/><!-- this line is just to allow the sample inside the workspace -->
+  </path>
+  
+  <taskdef resource="com4j/tlbimp/ant.properties">
+    <classpath refid="com4j" />
+  </taskdef>
+  
+  
+  <target name="tlbimp">
+    <mkdir dir="build/src"/>
+    <!-- compile Excel type library -->
+    <tlbimp destdir="build/src">
+      <lib libid="00020813-0000-0000-C000-000000000046" package="excel" />
+      <lib libid="0002E157-0000-0000-C000-000000000046" package="vba" />
+      <lib libid="2DF8D04C-5BFA-101B-BDE5-00AA0044DE52" package="office" />
+    </tlbimp>
+  </target>
+  
+  <target name="compile" depends="tlbimp">
+    <mkdir dir="build/classes"/>
+    <javac srcdir="build/src" destdir="build/classes"
+           debug="on">
+      <classpath refid="com4j" />
+    </javac>
+    <javac srcdir="src" destdir="build/classes"
+           debug="on">
+      <classpath refid="com4j" />
+    </javac>
+  </target>
+  
+  <target name="run" depends="compile">
+    <java classname="ExcelDemo" fork="true">
+      <classpath>
+        <path refid="com4j"/>
+      </classpath>
+    </java>
+  </target>
+  
+  <target name="clean">
+    <delete dir="build"/>
+  </target>
+</project>
