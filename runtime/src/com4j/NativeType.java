@@ -186,6 +186,8 @@ public enum NativeType {
     ComObject(300,4) {
         // the native code will see the raw pointer value as Integer
         Object massage(Object param) {
+            if(param==null)
+                return 0;
             return COM4J.unwrap((Com4jObject)param).getPtr();
         }
 
