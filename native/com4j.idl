@@ -208,6 +208,7 @@ library com4j
 		HRESULT isVarArg([out,retval]VARIANT_BOOL* pOut);
 
 		HRESULT getDispId([out,retval]int* pDispId);
+		HRESULT getFlags([out,retval]int* pflags);
 	};
 
 

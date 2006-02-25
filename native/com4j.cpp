@@ -33,6 +33,50 @@ JNIEXPORT jobject JNICALL Java_com4j_Native_invoke(JNIEnv* env,
 	return r;
 }
 
+JNIEXPORT jobject JNICALL Java_com4j_Native_invokeDispatch( JNIEnv* env, jclass _, jint pComObject, jint dispId, jint flag, jobjectArray args) {
+	
+	DISPPARAMS params;
+	DISPID dispIdPropertyPut = DISPID_PROPERTYPUT;
+	
+	params.cArgs = env->GetArrayLength(args);
+	params.cNamedArgs = 0;
+	params.rgdispidNamedArgs = NULL;
+	VARIANT* p = new VARIANT[params.cArgs];
+	params.rgvarg = p;
+
+	for( int i=0; i<params.cArgs; i++ ) {
+		VARIANT* v = convertToVariant(env,env->GetObjectArrayElement(args,i));
+		if(v==NULL) {
+			// VariantInit(&p[i]);
+			p[i] = vtMissing;
+		} else {
+			p[i] = *v;	// just transfer the ownership
+			delete v;
+		}
+	}
+
+	if(flag==DISPATCH_PROPERTYPUT || flag==DISPATCH_PROPERTYPUTREF) {
+		params.cNamedArgs = 1;
+		params.rgdispidNamedArgs = &dispIdPropertyPut;
+	}
+
+	EXCEPINFO excepInfo;
+	memset(&excepInfo,0,sizeof(EXCEPINFO));
+
+	jobject retVal = com4j_Variant_new(env);
+
+	HRESULT hr = reinterpret_cast<IDispatch*>(pComObject)->Invoke(
+		dispId, IID_NULL, 0, flag, &params, com4jVariantToVARIANT(env,retVal), &excepInfo, NULL );
+
+	if(FAILED(hr)) {
+		error(env,__FILE__,__LINE__,hr,"Invocation failed: %s",(LPCSTR)_bstr_t(excepInfo.bstrDescription));
+	}
+
+	delete p;
+
+	return retVal;
+}
+
 JNIEXPORT void JNICALL Java_com4j_Native_init( JNIEnv* env, jclass __unused__ ) {
 	com4j_Holder_value = env->GetFieldID(com4j_Holder,"value","Ljava/lang/Object;");
 

@@ -212,6 +212,10 @@ public:
 		*pDispid = m_pDesc->memid;
 		return S_OK;
 	}
+	STDMETHOD(raw_getFlags)(int* pflags) {
+		*pflags = m_pDesc->wFuncFlags;
+		return S_OK;
+	}
 };
 
 

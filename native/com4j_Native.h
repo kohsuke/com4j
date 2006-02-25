@@ -57,6 +57,14 @@ JNIEXPORT jobject JNICALL Java_com4j_Native_invoke
 
 /*
  * Class:     com4j_Native
+ * Method:    invokeDispatch
+ * Signature: (III[Ljava/lang/Object;)Lcom4j/Variant;
+ */
+JNIEXPORT jobject JNICALL Java_com4j_Native_invokeDispatch
+  (JNIEnv *, jclass, jint, jint, jint, jobjectArray);
+
+/*
+ * Class:     com4j_Native
  * Method:    getErrorInfo
  * Signature: (IJJ)I
  */

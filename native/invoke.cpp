@@ -209,7 +209,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				_asm mov [pvar],ESP;
 
 				if(arg==NULL) {
-					VariantCopy(pvar,&vtMissing);
+					*pvar = vtMissing;
 				} else {
 					// otherwise convert a value to a VARIANT, and simply use that for the stack var.
 					// since we aren't using VariantCopy, there's no need to VariantClear pSrc.
@@ -228,7 +228,10 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 
 			case cvVARIANT_byRef:
 				if(arg==NULL) {
-					pvar = &vtMissing;
+					pvar = new VARIANT();
+					VariantInit(pvar);
+					pvar->vt = VT_ERROR;
+					add(new VARIANTCleanUp(pvar));
 				} else
 				if(env->IsSameObject(env->GetObjectClass(arg),com4j_Variant)) {
 					// if we got a com4j.Variant object, pass its image.

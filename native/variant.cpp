@@ -116,6 +116,16 @@ public:
 	}
 };
 
+class NullVariantHandlerImpl : public VariantHandler {
+public:
+	VARIANT* set( JNIEnv* env, jobject src ) {
+		_ASSERT(FALSE);
+		return NULL;
+	}
+	jobject get( JNIEnv* env, VARIANT* v, jclass retType ) {
+		return NULL;
+	}
+};
 // conversion table for variant
 // from Java->native, we look for the cls field that can accept the current object,
 // then if they match, we'll call the handler.
@@ -138,11 +148,12 @@ static SetterEntry setters[] = {
 	// see issue 2 on java.net. I used to convert a COM object to VT_UNKNOWN
 	{ &com4j_Com4jObject,VT_DISPATCH,	new ComObjectVariandHandlerImpl() },
 	{ &com4j_Com4jObject,VT_UNKNOWN,	new ComObjectVariandHandlerImpl() },
-	{ &com4j_Variant,	0/*don't match from native->Java*/,		new NoopVariantHandlerImpl() },
+	{ &com4j_Variant,	-1,				new NoopVariantHandlerImpl() }, // don't match from native->Java
 	// TODO: Holder support
 	{ NULL, 0, NULL }
 };
 
+// returns a VARIANT allocated by 'new'
 VARIANT* convertToVariant( JNIEnv* env, jobject o ) {
 	jclass cls = env->GetObjectClass(o);
 	
@@ -167,6 +178,9 @@ VARIANT* convertToVariant( JNIEnv* env, jobject o ) {
 }
 
 jobject variantToObject( JNIEnv* env, jclass retType, VARIANT& v ) {
+	if(v.vt==VT_ERROR)
+		return NULL;
+
 	// return type driven
 	for( SetterEntry* p = setters; p->cls!=NULL; p++ ) {
 		if( env->IsAssignableFrom( retType, *(p->cls) ) ) {
