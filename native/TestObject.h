@@ -57,6 +57,12 @@ public:
 	STDMETHOD(raw_TestVariant)(VARIANT v1, VARIANT* v2, VARIANT* v3);
 public:
 	STDMETHOD(raw_outByteBuf)(BSTR bstrEncodedData, long* plSize, unsigned char** ppbData);
+	STDMETHOD(raw_echoInterface)(IUnknown* arg, IUnknown** result) {
+		*result = arg;
+		if(arg!=NULL)
+			arg->AddRef();	// for the return value
+		return S_OK;
+	}
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(TestObject), CTestObject)

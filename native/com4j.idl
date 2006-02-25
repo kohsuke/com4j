@@ -328,6 +328,8 @@ library com4j
 		HRESULT TestVariant([in] VARIANT v1, [in,out] VARIANT* v2, [out,retval] VARIANT* v3);
 		[id(2), helpstring("Can tlbimp handle wchar_t**?")]
 		HRESULT outByteBuf([in] BSTR bstrEncodedData, [out] long* plSize, [out] unsigned char** ppbData);
+		[id(3), helpstring("Passing in an interface pointer")]
+		HRESULT echoInterface([in] IUnknown* arg, [out,retval] IUnknown** result);
 	};
 
 	[
