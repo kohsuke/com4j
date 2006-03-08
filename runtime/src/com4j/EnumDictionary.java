@@ -37,6 +37,14 @@ abstract class EnumDictionary<T extends Enum<T>> {
     }
 
     /**
+     * Convenience method to be invokd by JNI.
+     */
+    static <T extends Enum<T>>
+    T get( Class<T> clazz, int v ) {
+        return get(clazz).constant(v);
+    }
+
+    /**
      * Gets the integer value for the given enum constant.
      */
     abstract int value( Enum t );
