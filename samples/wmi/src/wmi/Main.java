@@ -1,6 +1,7 @@
 package wmi;
 
 import com4j.Com4jObject;
+import wmi.events.ISWbemSinkEvents;
 
 /**
  * Uses Microsoft WMI Scripting Library to access the system information.
@@ -20,25 +21,39 @@ import com4j.Com4jObject;
  * @author Kohsuke Kawaguchi
  */
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         System.out.println("Connecting to WMI repository");
         ISWbemLocator wbemLocator = ClassFactory.createSWbemLocator();
-        ISWbemNamedValueSet nvs = ClassFactory.createSWbemNamedValueSet();
+
         // connecting to WMI repository
-        ISWbemServices wbemServices = wbemLocator.connectServer("localhost","Root\\CIMv2","","","","",0,nvs);
+        ISWbemServices wbemServices = wbemLocator.connectServer("localhost","Root\\CIMv2","","","","",0,null);
         System.out.println("connected");
 
+        {// query - what disks do we have?
+            System.out.println("Listing logical disks");
+            ISWbemObjectSet result = wbemServices.execQuery("Select * from Win32_LogicalDisk","WQL",16,null);
 
+            for( Com4jObject obj : result ) {
+                ISWbemObject wo = obj.queryInterface(ISWbemObject.class);
+                System.out.println(wo.getObjectText_(0));
+            }
+        }
 
-        // gathering all 'System' log events
-        System.out.println("Listing logical disks");
-        ISWbemObjectSet result = wbemServices.execQuery("Select * from Win32_LogicalDisk","WQL",16,nvs);
+        {// monitor events - what processes are being created?
+            ISWbemSink sink = ClassFactory.createSWbemSink();
+            sink.advise(ISWbemSinkEvents.class,new ISWbemSinkEvents() {
+                public void onObjectReady(ISWbemObject wmiObject, ISWbemNamedValueSet objWbemAsyncContext) {
+                    System.out.println("Received event: "+wmiObject.getObjectText_(0));
+                }
+            });
+            wbemServices.execNotificationQueryAsync(sink,
+                "SELECT * FROM __InstanceCreationEvent WITHIN 1 WHERE TargetInstance ISA 'Win32_Process'","WQL",0,null,null);
 
-        for( Com4jObject obj : result ) {
-            ISWbemObject wo = obj.queryInterface(ISWbemObject.class);
-            System.out.println(wo.getObjectText_(0));
-//            Object o = wo.properties_().item("Description", 0).value();
-//            System.out.println(o);
+            System.out.println("waiting for process creation events");
+            System.out.println("will exit in 15 seconds. Try to launch new program and see what happens");
+            Thread.sleep(15000);
+            System.out.println("exiting");
+            sink.cancel();
         }
     }
 }
