@@ -328,6 +328,7 @@ public enum NativeType {
     Dispatch(303,4) {
         // the native code will see the raw pointer value as Integer
         Object massage(Object param) {
+            if(param==null) return 0;
             int ptr = COM4J.unwrap((Com4jObject)param).getPtr();
             int disp = COM4J.queryInterface( ptr, COM4J.IID_IDispatch );
             return disp;
