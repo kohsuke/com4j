@@ -122,6 +122,23 @@ public:
 	}
 };
 
+class ComEnumHandlerImpl : public VariantHandler {
+public:
+	VARIANT* set( JNIEnv* env, jobject src ) {
+		VARIANT* pv = new VARIANT();
+		VariantClear(pv);
+		pv->vt = VT_I4;
+		pv->intVal = com4j_ComEnum_comEnumValue(env,src);
+		return pv;
+	}
+	jobject get( JNIEnv* env, VARIANT* v, jclass retType ) {
+		_variant_t dst(v);
+		dst.ChangeType(VT_I4);
+		
+		return com4j_enumDictionary_get(env,retType,dst.intVal);
+	}
+};
+
 class NullVariantHandlerImpl : public VariantHandler {
 public:
 	VARIANT* set( JNIEnv* env, jobject src ) {
@@ -155,6 +172,7 @@ static SetterEntry setters[] = {
 	{ &com4j_Com4jObject,VT_DISPATCH,	new ComObjectVariandHandlerImpl() },
 	{ &com4j_Com4jObject,VT_UNKNOWN,	new ComObjectVariandHandlerImpl() },
 	{ &com4j_Variant,	-1,				new NoopVariantHandlerImpl() }, // don't match from native->Java
+	{ &com4j_ComEnum,	-1,				new ComEnumHandlerImpl() }, // don't match from native->Java
 	// TODO: Holder support
 	{ NULL, 0, NULL }
 };

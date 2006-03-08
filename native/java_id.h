@@ -24,4 +24,10 @@ extern JMethodID<jobject> com4jWrapper_queryInterface;
 extern JClassID javaLangClass;
 extern JMethodID<jstring> javaLangClass_getName;
 
+extern JClassID com4j_ComEnum;
+extern JMethodID<jint> com4j_ComEnum_comEnumValue;
+
+extern JClassID com4j_enumDictionary;
+extern JStaticMethodID<jobject> com4j_enumDictionary_get;
+
 extern JClassID javaLangObject;
