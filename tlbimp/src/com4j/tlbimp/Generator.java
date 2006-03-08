@@ -22,7 +22,6 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.List;
 
 /**
  * Type library importer.
@@ -333,7 +332,8 @@ public final class Generator {
 
         /**
          * Generated event interfaces,
-         * so that we don't generate them as invocable interfaces.
+         * so that we don't generate them as invocable interfaces,
+         * and we don't generate them twice.
          */
         private Set<ITypeDecl> eventInterfaces = new HashSet<ITypeDecl>();
 
@@ -550,10 +550,11 @@ public final class Generator {
                 IImplementedInterfaceDecl item = co.getImplementedInterface(i);
                 if(item.isSource()) {
                     ITypeDecl it = item.getType();
-                    eventInterfaces.add(it);
-                    IDispInterfaceDecl di = it.queryInterface(IDispInterfaceDecl.class);
-                    if(di!=null)    // can this ever be null?
-                        new EventInterfaceGenerator(this,di).generate();
+                    if(eventInterfaces.add(it)) {
+                        IDispInterfaceDecl di = it.queryInterface(IDispInterfaceDecl.class);
+                        if(di!=null)    // can this ever be null?
+                            new EventInterfaceGenerator(this,di).generate();
+                    }
                 }
             }
         }
