@@ -26,27 +26,31 @@ public class ErrorInfo implements Serializable {
         try {
             this.guid = ei.guid();
         } catch (ComException e) {
-            ;   // ignore
+            // ignore
         }
         try {
             this.source = ei.source();
         } catch (ComException e) {
-            ;   // ignore
+            // ignore
         }
         try {
             this.description = ei.description();
         } catch (ComException e) {
-            ;   // ignore
+            // ignore
         }
         try {
-            this.helpFile = new File(ei.helpFile());
+            String pathname = ei.helpFile();
+            if(pathname!=null)
+                this.helpFile = new File(pathname);
+            else
+                this.helpFile = null;
         } catch (ComException e) {
-            ;   // ignore
+            // ignore
         }
         try {
             this.helpContext = ei.helpContext();
         } catch (ComException e) {
-            ;   // ignore
+            // ignore
         }
     }
 
