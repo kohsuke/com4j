@@ -33,9 +33,10 @@ STDMETHODIMP CEventReceiver::Invoke( DISPID dispid, REFIID riid, LCID lcid, WORD
 
 	{// copy arguments into com4j Variant types, since we may later change their types
 		LockedArray<jobject> data(pEnv,ar);
-		for( int i=0; i < pDispParams->cArgs; i++ ) {
-			data[i] = com4j_Variant_new(pEnv);
-			::VariantCopy(com4jVariantToVARIANT(pEnv,data[i]), &pDispParams->rgvarg[i]);
+		int len = pDispParams->cArgs;
+		for( int i=0; i<len; i++ ) {
+			data[len-i-1] = com4j_Variant_new(pEnv);
+			::VariantCopy(com4jVariantToVARIANT(pEnv,data[len-i-1]), &pDispParams->rgvarg[i]);
 		}
 	}
 

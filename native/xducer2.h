@@ -43,6 +43,7 @@ namespace xducer {
 
 		static inline JavaType toJava( JNIEnv* env, NativeType value ) {
 			if(value==NULL)	return NULL;
+			value->AddRef();	// for the newly created object
 			return com4jWrapper_new(env,reinterpret_cast<int>(value));
 		}
 	};

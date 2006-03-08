@@ -30,13 +30,18 @@ JNIEXPORT void JNICALL Java_com4j_Variant_changeType0(JNIEnv* env, jclass, jint 
 }
 
 JNIEXPORT jobject JNICALL Java_com4j_Variant_convertTo(JNIEnv* env, jobject instance, jclass target) {
-	jobject r = variantToObject(env,target,*com4jVariantToVARIANT(env,instance));
-	if(r==reinterpret_cast<jobject>(-1)) {
-		jstring name = javaLangClass_getName(env,target);
-		error(env,__FILE__,__LINE__,E_FAIL,"Unable to convert to the %s",LPCSTR(JString(env,name)));
+	try {
+		jobject r = variantToObject(env,target,*com4jVariantToVARIANT(env,instance));
+		if(r==reinterpret_cast<jobject>(-1)) {
+			jstring name = javaLangClass_getName(env,target);
+			error(env,__FILE__,__LINE__,E_FAIL,"Unable to convert to the %s",LPCSTR(JString(env,name)));
+			return NULL;
+		}
+		return r;
+	} catch( _com_error& e ) {
+		error(env,__FILE__,__LINE__,e.Error(),"%s",(LPCSTR)_bstr_t(e.ErrorMessage()));
 		return NULL;
 	}
-	return r;
 }
 
 
@@ -91,6 +96,7 @@ class ComObjectVariandHandlerImpl : public VariantHandlerImpl<VT_DISPATCH,xducer
 	}
 	jobject get( JNIEnv* env, VARIANT* v, jclass retType ) {
 		jobject o = BASE::get(env,v,retType);
+		if(o==NULL)		return NULL;
 
 		// if the return type is an interface, use that to create a strongly typed object.
 		// otherwise just return it as Com4jObject
