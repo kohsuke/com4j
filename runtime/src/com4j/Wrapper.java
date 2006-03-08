@@ -43,6 +43,9 @@ final class Wrapper implements InvocationHandler, Com4jObject {
     private Map<Method,ComMethod> cache = Collections.synchronizedMap(
         new WeakHashMap<Method,ComMethod>());
 
+    /**
+     * Wraps a new COM object. The pointer needs to be addref-ed by the caller if needed.
+     */
     private Wrapper(int ptr) {
         if(ptr==0)   throw new IllegalArgumentException();
         assert ComThread.isComThread();
