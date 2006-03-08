@@ -61,7 +61,11 @@ final class EventInterfaceGenerator extends InterfaceGenerator<IDispInterfaceDec
 
         @Override
         protected final void terminate(IndentingWriter o) {
-            o.println(" {}");
+            o.println(" {");
+            o.in();
+            o.println("    throw new UnsupportedOperationException();");
+            o.out();
+            o.println("}");
         }
 
         @Override
@@ -76,7 +80,7 @@ final class EventInterfaceGenerator extends InterfaceGenerator<IDispInterfaceDec
         }
     }
 
-    static final boolean isBogusDispatchMethod(IMethod m) {
+    static boolean isBogusDispatchMethod(IMethod m) {
         // some type libraries contain IDispatch methods on DispInterface definitions.
         // don't map them. I'm not too sure if this is the right check,
         // but they seem to work.
