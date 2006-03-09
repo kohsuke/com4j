@@ -150,6 +150,8 @@ final class StandardComMethod extends ComMethod {
                 return NativeType.PVOID;
             if(Calendar.class.isAssignableFrom(c))
                 return NativeType.Date;
+            if(c.isArray())
+                return NativeType.SafeArray;
         }
 
         if( t instanceof ParameterizedType ) {
