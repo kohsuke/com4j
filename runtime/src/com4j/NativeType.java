@@ -141,7 +141,7 @@ public enum NativeType {
      *      {@link Boolean}
      */
     VariantBool(104,2),
-    VariantBool_ByRef(104|BYREF,2),
+    VariantBool_ByRef(104|BYREF,4),
 
     /**
      * <tt>float</tt>.
@@ -152,6 +152,7 @@ public enum NativeType {
      *      {@link Number}
      */
     Float(120,4),
+    Float_ByRef(120|BYREF,4),
 
     /**
      * <tt>double</tt>.
@@ -162,6 +163,7 @@ public enum NativeType {
      *      {@link Number}
      */
     Double(121,8),
+    Double_ByRef(121|BYREF,4),
 
     /**
      * Used only with {@link ReturnValue} for returning
