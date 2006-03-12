@@ -100,6 +100,7 @@ final class TypeBinding {
 
             IPrimitiveType compPrim = comp.queryInterface(IPrimitiveType.class);
             if( compPrim!=null ) {
+                // T = PRIMITIVE*
                 if( compPrim.getVarType()== VarType.VT_VARIANT ) {
                     // T = VARIANT*
                     return new TypeBinding(Object.class, NativeType.VARIANT_ByRef, true);
@@ -236,6 +237,7 @@ final class TypeBinding {
         pbind( VarType.VT_UI2, Short.TYPE, NativeType.Int16, true );
         pbind( VarType.VT_UI4, Integer.TYPE, NativeType.Int32, true );
         pbind( VarType.VT_INT, Integer.TYPE, NativeType.Int32, true );
+        pbind( VarType.VT_HRESULT, Integer.TYPE, NativeType.Int32, true );
         pbind( VarType.VT_UINT, Integer.TYPE, NativeType.Int32, true );
         pbind( VarType.VT_BOOL, Boolean.TYPE, NativeType.VariantBool, true );
         pbind( VarType.VT_R4, Float.TYPE, NativeType.Float, true );
