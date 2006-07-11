@@ -1,8 +1,13 @@
-import junit.framework.TestCase;
+import com4j.Holder;
+import com4j.Variant;
 import com4j_idl.ClassFactory;
 import com4j_idl.ITestObject;
-import com4j.Variant;
-import com4j.Holder;
+import junit.framework.TestCase;
+
+import java.math.BigInteger;
+import java.math.BigDecimal;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -35,5 +40,42 @@ public class VariantTest extends TestCase {
 
         assertEquals(1,(int)v.value);
         assertEquals(5,r);
+    }
+
+    /**
+     * Tests the conversion of ulonglong
+     */
+    public void testUI8() throws Exception {
+        BigInteger bi = new BigInteger("2147483648"); // MAX_LONG +1
+
+        ITestObject t = ClassFactory.createTestObject();
+        BigInteger bi2 = (BigInteger) t.testUI8Conv(bi);
+
+        assertEquals(bi,bi2);
+    }
+
+    public void testUI1() throws Exception {
+        ITestObject t = ClassFactory.createTestObject();
+
+        Short b = (Short)t.testUI1Conv(null);
+        assertEquals((short)b,1);
+    }
+
+    /**
+     * Tests the currency type conversion.
+     */
+    public void testCurrency() throws Exception {
+        System.out.println("Waiting");
+        new BufferedReader(new InputStreamReader(System.in)).readLine();
+
+        ITestObject t = ClassFactory.createTestObject();
+
+        BigDecimal const199 = new BigDecimal("1.99");
+
+        BigDecimal bd = t.testCurrency(null,const199);
+        assertTrue(bd.compareTo(new BigDecimal("5.3"))==0); // $5.30
+
+        bd = new BigDecimal("1.99");
+        assertTrue(bd.compareTo(t.testCurrency(new Holder<BigDecimal>(bd),const199))==0);
     }
 }
