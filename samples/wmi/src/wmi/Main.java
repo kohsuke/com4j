@@ -21,7 +21,9 @@ import wmi.events.ISWbemSinkEvents;
  * @author Kohsuke Kawaguchi
  */
 public class Main {
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws Exception {
+        listEventLog();
+
         System.out.println("Connecting to WMI repository");
         ISWbemLocator wbemLocator = ClassFactory.createSWbemLocator();
 
@@ -54,6 +56,30 @@ public class Main {
             Thread.sleep(15000);
             System.out.println("exiting");
             sink.cancel();
+        }
+    }
+
+    public static void listEventLog() throws Exception {
+        System.out.println("Connecting to WMI repository");
+        ISWbemLocator wbemLocator = ClassFactory.createSWbemLocator();
+
+        // connecting to WMI repository
+        ISWbemServices wbemServices = wbemLocator.connectServer("localhost","Root\\CIMv2","","","","",0,null);
+        System.out.println("connected");
+
+        ISWbemObjectSet result = wbemServices.execQuery("Select * from Win32_NTLogEvent",
+            "WQL", 16, null);
+
+        for( Com4jObject obj : result ) {
+            ISWbemObject wo = obj.queryInterface(ISWbemObject.class);
+            System.out.println(wo.getObjectText_(0)); // I saw EventType value is  "3"
+
+            wo.properties_("EventType", 0); //I can write this , I didn't get Exception
+
+            ISWbemProperty s = wo.properties_("EventType", 0); // This is ok ...
+
+            System.out.println(s.value());
+
         }
     }
 }
