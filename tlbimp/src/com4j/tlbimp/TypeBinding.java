@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.EnumMap;
 import java.util.Date;
 import java.nio.Buffer;
+import java.math.BigDecimal;
 
 /**
  * Represents how a type is bound between native type
@@ -246,6 +247,7 @@ final class TypeBinding {
         pbind( VarType.VT_DISPATCH, Com4jObject.class, NativeType.Dispatch, false );
         pbind( VarType.VT_UNKNOWN, Com4jObject.class, NativeType.ComObject, true );
         pbind( VarType.VT_DATE, Date.class, NativeType.Date, true );
+        pbind( VarType.VT_CY, BigDecimal.class, NativeType.Currency, false );
         pbind( VarType.VT_VOID, void.class, NativeType.Bool/*dummy*/, true );
         // TODO
 //        pbind( VarType.VT_R4, Float.TYPE, NativeType.Float );

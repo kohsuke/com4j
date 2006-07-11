@@ -10,6 +10,7 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.Map;
 import java.util.HashMap;
+import java.math.BigDecimal;
 
 import static com4j.Const.BYREF;
 
@@ -429,6 +430,25 @@ public enum NativeType {
             }
         }
     },
+
+    /**
+     * <tt>CURRENCY</tt>.
+     *
+     * According to MSDN:
+     * <blockquote>
+     * CURRENCY is implemented as an 8-byte two's-complement integer value scaled
+     * by 10,000. This gives a fixed-point number with 15 digits to the left of
+     * the decimal point and 4 digits to the right. The CURRENCY data type is
+     * extremely useful for calculations involving money, or for any fixed-point
+     * calculations where accuracy is important.
+     * </blockquote>
+     *
+     * <p>
+     * Expected Java type:
+     *      {@link BigDecimal}
+     */
+    Currency(401,8),
+    Currency_ByRef(401|BYREF,8),
 
 
     /**
