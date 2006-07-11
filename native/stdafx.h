@@ -16,6 +16,8 @@
 #include <atlbase.h>
 extern CComModule _Module;
 #include <atlcom.h>
+#include <atlwin.h>
+#include <atlcur.h>
 
 #include <map>
 #include <set>

@@ -4,7 +4,7 @@
 
 #include "com4j.h"
 #include "_ITestObjectEvents_CP.h"
-
+#include <atlcur.h>
 
 
 
@@ -61,6 +61,29 @@ public:
 		*result = arg;
 		if(arg!=NULL)
 			arg->AddRef();	// for the return value
+		return S_OK;
+	}
+public:
+	STDMETHOD(raw_testUI8Conv)(VARIANT*,VARIANT*);
+	STDMETHOD(raw_testUI1Conv)(VARIANT* in,VARIANT* out) {
+		if(in!=NULL && in->vt!=VT_ERROR) {
+			return VariantCopy(out,in);
+		} else {
+			VariantClear(out);
+			out->vt = VT_UI1;
+			out->intVal = 0xcdcd; // set corrupt values to other fields
+			out->bVal = 1;
+			return S_OK;
+		}
+	}
+	STDMETHOD(raw_testCurrency)(CURRENCY* in1, CURRENCY in2, CURRENCY* out) {
+		if(in2.int64!=19900)
+			return E_INVALIDARG; // assert to $1.99
+
+		if(in1==NULL) {
+			out->int64 = 53000L; // $5.30
+		} else
+			*out = *in1;
 		return S_OK;
 	}
 };

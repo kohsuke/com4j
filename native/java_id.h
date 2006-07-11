@@ -31,3 +31,11 @@ extern JClassID com4j_enumDictionary;
 extern JStaticMethodID<jobject> com4j_enumDictionary_get;
 
 extern JClassID javaLangObject;
+
+extern JClassID javaMathBigInteger;
+extern JMethodID<jstring> javaMathBigInteger_toString;
+extern JConstructorID javaMathBigInteger_new;
+
+extern JClassID javaMathBigDecimal;
+extern JMethodID<jstring> javaMathBigDecimal_toString;
+extern JConstructorID javaMathBigDecimal_new;

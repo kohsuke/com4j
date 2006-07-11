@@ -36,4 +36,13 @@ STDMETHODIMP CTestObject::raw_outByteBuf(BSTR bstrEncodedData, long* plSize, uns
 
 	return S_OK;
 }
+
+STDMETHODIMP CTestObject::raw_testUI8Conv(VARIANT* in, VARIANT* out)
+{
+	if(in->vt!=VT_UI8 || in->ullVal!=((ULONGLONG)LONG_MAX)+1)
+		return E_INVALIDARG;
+
+	return ::VariantCopy(out,in);
+}
+
 #endif

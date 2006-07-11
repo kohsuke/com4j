@@ -15,6 +15,8 @@
 	}
 */
 
+#include "java_id.h"
+
 namespace xducer {
 	
 	// transducer that doesn't invole any JNI method call.
@@ -96,6 +98,28 @@ namespace xducer {
 			if(value==NULL)
 				return NULL;
 			return env->NewString((jchar*)value,SysStringLen(value));
+		}
+	};
+
+	// ULONGLONG <-> java.math.BigInteger
+	class BigIntegerXducer {
+	public:
+		typedef ULONGLONG NativeType;
+		typedef jobject JavaType;
+
+		static inline NativeType toNative( JNIEnv* env, JavaType value ) {
+			if(value==NULL)
+				return 0;
+
+			ULONGLONG val = 0;
+			sscanf(JString(env,javaMathBigInteger_toString(env,value)),"%Lu",&val);
+			return val;
+		}
+
+		static inline JavaType toJava( JNIEnv* env, NativeType value ) {
+			char w[128];
+			sprintf(w,"%Lu",value);
+			return javaMathBigInteger_new(env,env->NewStringUTF(w));
 		}
 	};
 

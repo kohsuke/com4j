@@ -32,3 +32,11 @@ JStaticMethodID<jobject> com4j_enumDictionary_get(com4j_enumDictionary,"get","(L
 
 JClassID javaLangClass("java/lang/Class");
 JMethodID<jstring> javaLangClass_getName(javaLangClass,"getName","()Ljava/lang/String;");
+
+JClassID javaMathBigInteger("java/math/BigInteger");
+JMethodID<jstring> javaMathBigInteger_toString(javaMathBigInteger,"toString","()Ljava/lang/String;");
+JConstructorID javaMathBigInteger_new(javaMathBigInteger,"(Ljava/lang/String;)V");
+
+JClassID javaMathBigDecimal("java/math/BigDecimal");
+JMethodID<jstring> javaMathBigDecimal_toString(javaMathBigDecimal,"toString","()Ljava/lang/String;");
+JConstructorID javaMathBigDecimal_new(javaMathBigDecimal,"(Ljava/math/BigInteger;I)V");

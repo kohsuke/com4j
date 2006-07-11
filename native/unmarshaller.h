@@ -135,6 +135,25 @@ public:
 	}
 };
 
+// unmarshals CURRENCY into a BigDecimal
+class CurrencyUnmarshaller : public Unmarshaller {
+	CComCurrency cy;
+public:
+	CurrencyUnmarshaller() {}
+	CurrencyUnmarshaller(CComCurrency _cy) : cy(_cy) {}
+
+	virtual jobject unmarshal( JNIEnv* env ) {
+		char w[128];
+		sprintf(w,"%Lu",cy.m_currency.int64);
+
+		jobject absolute = javaMathBigInteger_new(env,env->NewStringUTF(w));
+		return javaMathBigDecimal_new(env,absolute,4);
+	}
+	virtual void* addr() {
+		return &(cy.m_currency);
+	}
+};
+
 class VariantUnmarshaller : public Unmarshaller {
 	// we expect the invoked method to set this VARIANT
 	VARIANT v;

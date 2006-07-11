@@ -222,6 +222,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\oleControl.cpp"
+				>
+			</File>
+			<File
 				RelativePath="registry.cpp"
 				>
 			</File>
@@ -280,6 +284,10 @@
 			</File>
 			<File
 				RelativePath="com4j.h"
+				>
+			</File>
+			<File
+				RelativePath=".\com4j_ActiveXControl.h"
 				>
 			</File>
 			<File

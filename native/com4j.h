@@ -22,7 +22,9 @@ enum Conv {
 	cvVariantBool = 104,
 	cvVariantBool_byRef = 104|BYREF,
 	cvFloat = 120,
+	cvFloat_byRef = 120|BYREF,
 	cvDouble = 121,
+	cvDouble_byRef = 121|BYREF,
 
 	cvHRESULT = 200,
 
@@ -36,6 +38,8 @@ enum Conv {
 	cvPVOID_byRef = 304|BYREF,
 
 	cvDATE = 400,
+	cvCURRENCY = 401,
+	cvCURRENCY_byRef = 401|BYREF,
 
 	cvSAFEARRAY = 500,
 };

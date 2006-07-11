@@ -31,10 +31,13 @@ JNIEXPORT void JNICALL Java_com4j_Variant_changeType0(JNIEnv* env, jclass, jint 
 
 JNIEXPORT jobject JNICALL Java_com4j_Variant_convertTo(JNIEnv* env, jobject instance, jclass target) {
 	try {
-		jobject r = variantToObject(env,target,*com4jVariantToVARIANT(env,instance));
+		VARIANT* v = com4jVariantToVARIANT(env,instance);
+		jobject r = variantToObject(env,target,*v);
 		if(r==reinterpret_cast<jobject>(-1)) {
 			jstring name = javaLangClass_getName(env,target);
-			error(env,__FILE__,__LINE__,E_FAIL,"Unable to convert to the %s",LPCSTR(JString(env,name)));
+			error(env,__FILE__,__LINE__,E_FAIL,"Unable to convert VARIANT %d to the %s",
+				v->vt,
+				LPCSTR(JString(env,name)));
 			return NULL;
 		}
 		return r;
@@ -173,6 +176,11 @@ static SetterEntry setters[] = {
 	{ &com4j_Com4jObject,VT_UNKNOWN,	new ComObjectVariandHandlerImpl() },
 	{ &com4j_Variant,	-1,				new NoopVariantHandlerImpl() }, // don't match from native->Java
 	{ &com4j_ComEnum,	-1,				new ComEnumHandlerImpl() }, // don't match from native->Java
+	// unsigned versions. when converting from Java, prefer signed versions
+	{ &javaLangShort,	VT_UI1,			new VariantHandlerImpl<VT_I2,		xducer::BoxedShortXducer>() }, // use VT_I2 for VariantHandlerImpl since that's what BoxedShortXducer expect
+	{ &javaLangInteger,	VT_UI2,			new VariantHandlerImpl<VT_I4,		xducer::BoxedIntXducer>() },
+	{ &javaLangLong,	VT_UI4,			new VariantHandlerImpl<VT_I8,		xducer::BoxedLongXducer>() },
+	{ &javaMathBigInteger,VT_UI8,		new VariantHandlerImpl<VT_UI8,		xducer::BigIntegerXducer>() },
 	// TODO: Holder support
 	{ NULL, 0, NULL }
 };

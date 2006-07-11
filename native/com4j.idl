@@ -330,6 +330,12 @@ library com4j
 		HRESULT outByteBuf([in] BSTR bstrEncodedData, [out] long* plSize, [out] unsigned char** ppbData);
 		[id(3), helpstring("Passing in an interface pointer")]
 		HRESULT echoInterface([in] IUnknown* arg, [out,retval] IUnknown** result);
+		[id(4), helpstring("Make sure ULONGLONG conversion works")]
+		HRESULT testUI8Conv([in] VARIANT* pIn, [out,retval] VARIANT* ret);
+		[id(5), helpstring("Make sure unsigned byte conversion works")]
+		HRESULT testUI1Conv([in] VARIANT* pIn, [out,retval] VARIANT* ret);
+		[id(6), helpstring("currency")]
+		HRESULT testCurrency([in]CURRENCY* in1, [in] CURRENCY in2, [out,retval] CURRENCY* out);
 	};
 
 	[

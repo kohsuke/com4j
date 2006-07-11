@@ -162,9 +162,31 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				_asm push f;
 				break;
 
+			case cvDouble_byRef:
+				if(arg==NULL) {
+					pv = NULL;
+				} else {
+					unm = new DoubleUnmarshaller(env,jholder(arg)->get(env));
+					add(new OutParamHandler( jholder(arg), unm ));
+					pv = unm->addr();
+				}
+				_asm push pv;
+				break;
+
 			case cvFloat:
 				f = javaLangNumber_floatValue(env,arg);
 				_asm push f;
+				break;
+
+			case cvFloat_byRef:
+				if(arg==NULL) {
+					pv = NULL;
+				} else {
+					unm = new FloatUnmarshaller(env,jholder(arg)->get(env));
+					add(new OutParamHandler( jholder(arg), unm ));
+					pv = unm->addr();
+				}
+				_asm push pv;
 				break;
 
 			case cvBool:
@@ -200,6 +222,34 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				_ASSERT( sizeof(GUID)==sizeof(jlong)*2 );
 				pv = env->GetLongArrayElements( (jlongArray)arg, NULL );
 				add(new LongArrayCleanUp((jlongArray)arg,pv));
+				_asm push pv;
+				break;
+
+			case cvCURRENCY:
+				if(arg==NULL) {
+					// push 0 for 8 bytes
+					int32 = 0;
+					_asm push int32;
+					_asm push int32;
+				} else {
+					jstring strRep = javaMathBigDecimal_toString(env,arg);
+					CComCurrency cy((LPCSTR)JString(env,strRep));
+					_asm push cy.m_currency.Hi;
+					_asm push cy.m_currency.Lo;
+				}
+				break;
+
+			case cvCURRENCY_byRef:
+				if(arg==NULL) {
+					pv = NULL;
+				} else {
+					jstring strRep = javaMathBigDecimal_toString(env,jholder(arg)->get(env));
+					CComCurrency cy((LPCSTR)JString(env,strRep));
+					
+					unm = new CurrencyUnmarshaller(cy);
+					add(new OutParamHandler( jholder(arg), unm ));
+					pv = unm->addr();
+				}
 				_asm push pv;
 				break;
 
@@ -296,6 +346,14 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 					retUnm = new ComObjectUnmarshaller();
 					break;
 
+				case cvINT8:
+					retUnm = new ByteUnmarshaller(env,NULL);
+					break;
+
+				case cvINT16:
+					retUnm = new ShortUnmarshaller(env,NULL);
+					break;
+
 				case cvINT32:
 					retUnm = new IntUnmarshaller(env,NULL);
 					break;
@@ -312,6 +370,10 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				case cvDouble:
 				case cvDATE:
 					retUnm = new DoubleUnmarshaller(env,NULL);
+					break;
+
+				case cvCURRENCY:
+					retUnm = new CurrencyUnmarshaller();
 					break;
 
 				case cvGUID:
