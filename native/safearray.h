@@ -66,7 +66,7 @@ namespace safearray {
 			hr = SafeArrayGetLBound(psa,1,&lbound);
 			hr = SafeArrayGetUBound(psa,1,&ubound);
 			// sometimes SafeArrayGetUBound returns -1 with S_OK. I haven't figured out what that means
-			int size = max(0,ubound-lbound);
+			int size = max(0,ubound-lbound+1);	// the range of index is [lbound,ubound]
 
 			JARRAY::ARRAY a = JARRAY::newArray(env,size);
 			XDUCER::JavaType* pDst = JARRAY::lock(env,a);
