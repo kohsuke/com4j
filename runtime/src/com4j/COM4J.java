@@ -315,13 +315,14 @@ public abstract class COM4J {
     }
 
     private static void loadNativeLibrary() {
+        Throwable cause = null;
         try {
             // load the native part of the code.
             // first try java.library.path
             System.loadLibrary("com4j");
             return;
         } catch( Throwable t ) {
-            ;
+            cause = t;
         }
 
         // try loading com4j.dll in the same directory as com4j.jar
@@ -345,6 +346,8 @@ public abstract class COM4J {
             }
         }
 
-        throw new UnsatisfiedLinkError("Unable to load com4j.dll");
+        UnsatisfiedLinkError error = new UnsatisfiedLinkError("Unable to load com4j.dll");
+        error.initCause(cause);
+        throw error;
     }
 }

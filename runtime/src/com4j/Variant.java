@@ -2,6 +2,9 @@ package com4j;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 
 /**
@@ -63,7 +66,22 @@ public final class Variant extends Number {
         VT_UI4(19),
         VT_INT(22),
         VT_UINT(23),
-//        VT_ARRAY(),
+        VT_ARRAY_I2(0x2000|2),
+        VT_ARRAY_I4(0x2000|3),
+        VT_ARRAY_R4(0x2000|4),
+        VT_ARRAY_R8(0x2000|5),
+        VT_ARRAY_CY(0x2000|6),
+        VT_ARRAY_DATE(0x2000|7),
+        VT_ARRAY_BSTR(0x2000|8),
+        VT_ARRAY_BOOL(0x2000|11),
+        VT_ARRAY_VARIANT(0x2000|12),
+        VT_ARRAY_DECIMAL(0x2000|14),
+        VT_ARRAY_I1(0x2000|16),
+        VT_ARRAY_UI1(0x2000|17),
+        VT_ARRAY_UI2(0x2000|18),
+        VT_ARRAY_UI4(0x2000|19),
+        VT_ARRAY_INT(0x2000|22),
+        VT_ARRAY_UINT(0x2000|23),
 //        VT_BYREF
         ;
 
@@ -180,6 +198,26 @@ public final class Variant extends Number {
 
     public String stringValue() {
         return convertTo(String.class);
+    }
+
+    /**
+     * Reads this VARIANT as a VT_DATE value.
+     */
+    public Date dateValue() {
+        double d = convertTo(Double.class);
+        GregorianCalendar ret = new GregorianCalendar(1899,11,30);
+        int days = (int)d;
+        d -= days;
+        ret.add(Calendar.DATE,days);
+        d *= 24;
+        int hours = (int)d;
+        ret.add(Calendar.HOUR,hours);
+        d -= hours;
+        d *= 60;
+        d += 0.5; // round
+        int min = (int)d;
+        ret.add(Calendar.MINUTE,min);
+        return(ret.getTime());
     }
 
     /**

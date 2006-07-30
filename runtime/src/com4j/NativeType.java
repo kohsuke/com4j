@@ -101,7 +101,7 @@ public enum NativeType {
         // the native code will see the raw pointer value as Integer
         Object massage(Object param) {
             if(param==null)     return null;
-            
+
             Class<?> clazz = param.getClass();
 
             if( Enum.class.isAssignableFrom(clazz) ) {
@@ -305,7 +305,11 @@ public enum NativeType {
                 return null;
             if(param instanceof Variant) {
                 Variant v = (Variant)param;
-                return v.convertTo(signature);
+                if (v.getType() == Variant.Type.VT_DATE) {
+                    return v.dateValue();
+                } else {
+                    return v.convertTo(signature);
+                }
             } else {
                 return param;
             }
@@ -344,7 +348,7 @@ public enum NativeType {
 
             Class<? extends Com4jObject> itf = (Class<? extends Com4jObject>) type;
             Com4jObject r = Wrapper.create(itf, Native.queryInterface(disp, COM4J.getIID(itf)) );
-            
+
             Native.release( disp );
             return r;
         }
