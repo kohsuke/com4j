@@ -305,7 +305,9 @@ public enum NativeType {
                 return null;
             if(param instanceof Variant) {
                 Variant v = (Variant)param;
-                return v.convertTo(signature);
+                Object r = v.convertTo(signature);
+                v.clear();
+                return r;
             } else {
                 return param;
             }
