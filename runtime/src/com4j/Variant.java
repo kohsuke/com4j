@@ -201,26 +201,6 @@ public final class Variant extends Number {
     }
 
     /**
-     * Reads this VARIANT as a VT_DATE value.
-     */
-    public Date dateValue() {
-        double d = convertTo(Double.class);
-        GregorianCalendar ret = new GregorianCalendar(1899,11,30);
-        int days = (int)d;
-        d -= days;
-        ret.add(Calendar.DATE,days);
-        d *= 24;
-        int hours = (int)d;
-        ret.add(Calendar.HOUR,hours);
-        d -= hours;
-        d *= 60;
-        d += 0.5; // round
-        int min = (int)d;
-        ret.add(Calendar.MINUTE,min);
-        return(ret.getTime());
-    }
-
-    /**
      * Reads this VARIANT as a COM interface pointer.
      */
     public <T extends Com4jObject> T object( Class<T> type ) {
@@ -238,4 +218,32 @@ public final class Variant extends Number {
 
     // TODO: this isn't quite working
     public static final Variant MISSING = new Variant(Type.VT_ERROR);
+
+
+    /**
+     * Called from the native code to assist VT_DATE -> Date conversion.
+     */
+    static Date toDate(double d) {
+        GregorianCalendar ret = new GregorianCalendar(1899,11,30);
+        int days = (int)d;
+        d -= days;
+        ret.add(Calendar.DATE,days);
+        d *= 24;
+        int hours = (int)d;
+        ret.add(Calendar.HOUR,hours);
+        d -= hours;
+        d *= 60;
+        d += 0.5; // round
+        int min = (int)d;
+        ret.add(Calendar.MINUTE,min);
+        return ret.getTime();
+    }
+
+    /**
+     * Opposite of the {@link #toDate(double)} method.
+     */
+    static double fromDate(Date dt) {
+        // TODO: implement this method later
+        throw new UnsupportedOperationException();
+    }
 }
