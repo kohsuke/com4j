@@ -305,11 +305,7 @@ public enum NativeType {
                 return null;
             if(param instanceof Variant) {
                 Variant v = (Variant)param;
-                if (v.getType() == Variant.Type.VT_DATE) {
-                    return v.dateValue();
-                } else {
-                    return v.convertTo(signature);
-                }
+                return v.convertTo(signature);
             } else {
                 return param;
             }
