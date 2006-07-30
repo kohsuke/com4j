@@ -19,6 +19,8 @@ JClassID com4j_Com4jObject("com4j/Com4jObject");
 JClassID com4j_Variant("com4j/Variant");
 JConstructorID com4j_Variant_new(com4j_Variant,"()V");
 JFieldID<jobject> com4j_Variant_image(com4j_Variant,"image","Ljava/nio/ByteBuffer;");
+JStaticMethodID<jobject> com4j_Variant_toDate(com4j_Variant,"toDate","(D)Ljava/util/Date;");
+JStaticMethodID<jdouble> com4j_Variant_fromDate(com4j_Variant,"fromDate","(Ljava/util/Date;)D");
 
 JClassID com4jWrapper("com4j/Wrapper");
 JConstructorID com4jWrapper_new(com4jWrapper,"(I)V");
@@ -40,3 +42,5 @@ JConstructorID javaMathBigInteger_new(javaMathBigInteger,"(Ljava/lang/String;)V"
 JClassID javaMathBigDecimal("java/math/BigDecimal");
 JMethodID<jstring> javaMathBigDecimal_toString(javaMathBigDecimal,"toString","()Ljava/lang/String;");
 JConstructorID javaMathBigDecimal_new(javaMathBigDecimal,"(Ljava/math/BigInteger;I)V");
+
+JClassID javaUtilDate("java/util/Date");

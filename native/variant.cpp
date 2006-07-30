@@ -142,6 +142,23 @@ public:
 	}
 };
 
+class DateHandlerImpl : public VariantHandler {
+public:
+	VARIANT* set( JNIEnv* env, jobject src ) {
+		jdouble d = com4j_Variant_fromDate(env,src);
+		VARIANT* pv = new VARIANT();
+		VariantClear(pv);
+		pv->vt = VT_DATE;
+		pv->date = d;
+		return pv;
+	}
+	jobject get( JNIEnv* env, VARIANT* v, jclass retType ) {
+		_variant_t dst(v);
+		dst.ChangeType(VT_DATE);
+		return com4j_Variant_toDate(env,dst.date);
+	}
+};
+
 class NullVariantHandlerImpl : public VariantHandler {
 public:
 	VARIANT* set( JNIEnv* env, jobject src ) {
@@ -171,6 +188,7 @@ static SetterEntry setters[] = {
 	{ &javaLangShort,	VT_I2,			new VariantHandlerImpl<VT_I2,		xducer::BoxedShortXducer>() },
 	{ &javaLangInteger,	VT_I4,			new VariantHandlerImpl<VT_I4,		xducer::BoxedIntXducer>() },
 	{ &javaLangLong,	VT_I8,			new VariantHandlerImpl<VT_I8,		xducer::BoxedLongXducer>() },
+	{ &javaUtilDate,	VT_DATE,		new DateHandlerImpl() },
 	// see issue 2 on java.net. I used to convert a COM object to VT_UNKNOWN
 	{ &com4j_Com4jObject,VT_DISPATCH,	new ComObjectVariandHandlerImpl() },
 	{ &com4j_Com4jObject,VT_UNKNOWN,	new ComObjectVariandHandlerImpl() },

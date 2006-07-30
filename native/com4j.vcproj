@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="com4j"
 	ProjectGUID="{8BEE0260-8D37-446E-843C-C35E98CE097B}"
+	RootNamespace="com4j"
 	Keyword="Win32Proj"
 	>
 	<Platforms>

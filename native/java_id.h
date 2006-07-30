@@ -16,6 +16,8 @@ extern JClassID com4j_Com4jObject;
 extern JClassID com4j_Variant;
 extern JConstructorID com4j_Variant_new;
 extern JFieldID<jobject> com4j_Variant_image;
+extern JStaticMethodID<jobject> com4j_Variant_toDate;
+extern JStaticMethodID<jdouble> com4j_Variant_fromDate;
 
 extern JClassID com4jWrapper;
 extern JConstructorID com4jWrapper_new;
@@ -39,3 +41,5 @@ extern JConstructorID javaMathBigInteger_new;
 extern JClassID javaMathBigDecimal;
 extern JMethodID<jstring> javaMathBigDecimal_toString;
 extern JConstructorID javaMathBigDecimal_new;
+
+extern JClassID javaUtilDate;
