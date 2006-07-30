@@ -228,7 +228,7 @@ VARIANT* convertToVariant( JNIEnv* env, jobject o ) {
 }
 
 jobject variantToObject( JNIEnv* env, jclass retType, VARIANT& v ) {
-	if(v.vt==VT_ERROR)
+	if(v.vt==VT_ERROR || v.vt==VT_EMPTY || v.vt==VT_NULL)
 		return NULL;
 
 	// return type driven
