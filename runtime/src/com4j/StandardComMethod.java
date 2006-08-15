@@ -96,10 +96,15 @@ final class StandardComMethod extends ComMethod {
                 returnIndex, returnIsInOut, returnConv.code );
             return returnConv.unmassage(method.getReturnType(), method.getGenericReturnType(), r);
         } catch( ComException e ) {
-            IErrorInfo pErrorInfo = Native.getErrorInfo(ptr, (Class)method.getDeclaringClass());
-            if(pErrorInfo!=null) {
-                e.setErrorInfo(new ErrorInfo(pErrorInfo));
-                pErrorInfo.dispose();   // don't keep it for too long
+            try {
+                IErrorInfo pErrorInfo = Native.getErrorInfo(ptr, (Class)method.getDeclaringClass());
+                if(pErrorInfo!=null) {
+                    e.setErrorInfo(new ErrorInfo(pErrorInfo));
+                    pErrorInfo.dispose();   // don't keep it for too long
+                }
+            } catch (ComException x) {
+                // some user reported that some program fails to report error info.
+                // originally error information is normally more useful, so just report that.
             }
             throw e;
         } finally {
