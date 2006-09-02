@@ -204,7 +204,10 @@ public enum NativeType {
                     if(it instanceof Class)
                         itemType = (Class)it;
                 }
-                return new ComCollection(itemType,Wrapper.create(IEnumVARIANT.class, (Integer)param ));
+                Com4jObject base = Wrapper.create((Integer) param);
+                IEnumVARIANT enumVar = base.queryInterface(IEnumVARIANT.class);
+                base.dispose();
+                return new ComCollection(itemType,enumVar);
             }
             return Wrapper.create( (Class<? extends Com4jObject>)type, (Integer)param );
         }
