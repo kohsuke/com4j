@@ -36,7 +36,6 @@ abstract class Task<T> implements Callable<T> {
      * Called from {@link ComThread} to run the task.
      */
     final synchronized void invoke() {
-        assert next!=null;
         next = null;
 
         result = null;
