@@ -203,12 +203,17 @@ public final class Variant extends Number {
     /**
      * Reads this VARIANT as a COM interface pointer.
      */
-    public <T extends Com4jObject> T object( Class<T> type ) {
-        changeType(Type.VT_UNKNOWN);
-        int ptr = image.getInt(8);
-        if(ptr==0)  return null;
-        Native.addRef(ptr);
-        return Wrapper.create(type,ptr);
+    public <T extends Com4jObject> T object( final Class<T> type ) {
+        // native method invocation like addRef and changeType needs to happen in the COM thread 
+        return ComThread.get().execute(new Task<T>() {
+            public T call() {
+                changeType(Type.VT_UNKNOWN);
+                int ptr = image.getInt(8);
+                if(ptr==0)  return null;
+                Native.addRef(ptr);
+                return Wrapper.create(type,ptr);
+            }
+        });
     }
 
     /**
