@@ -132,7 +132,10 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				break;
 
 			case cvPVOID:
-				pv = env->GetDirectBufferAddress(arg);
+				if(arg==NULL)
+					pv = NULL;
+				else
+					pv = env->GetDirectBufferAddress(arg);
 				if(pv==NULL) {
 					error(env,__FILE__,__LINE__,"the given Buffer object is not a direct buffer");
 					__asm mov ESP,[spBefore];
