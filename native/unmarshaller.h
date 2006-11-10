@@ -7,6 +7,7 @@
 #include "cleanup.h"
 #include "xducer.h"
 #include "variant.h"
+#include <atlcur.h>
 
 // wraps the com4j.Holder object for convenient access
 class Holder : public _jobject {
