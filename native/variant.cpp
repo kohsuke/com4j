@@ -32,6 +32,8 @@ JNIEXPORT void JNICALL Java_com4j_Variant_changeType0(JNIEnv* env, jclass, jint 
 JNIEXPORT jobject JNICALL Java_com4j_Variant_convertTo(JNIEnv* env, jobject instance, jclass target) {
 	try {
 		VARIANT* v = com4jVariantToVARIANT(env,instance);
+		while(v->vt & VT_BYREF) // unpeel VT_BYREF to get to the nested VARIANT
+			v = reinterpret_cast<VARIANT*>(v->byref);
 		jobject r = variantToObject(env,target,*v);
 		if(r==reinterpret_cast<jobject>(-1)) {
 			jstring name = javaLangClass_getName(env,target);
