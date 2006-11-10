@@ -38,6 +38,10 @@ public class WordDemo {
 
         app.visible(true);
 
+        // to open a file
+        // Variant _ = Variant.MISSING;
+        // app.documents().open("c:\\foo.doc", _, _, _, _, _, _, _, _, _, _, _);
+
         app.documents().add( null, false, false, true);
         app.selection().typeText("Welcome to com4j");
         app.selection().typeParagraph();
