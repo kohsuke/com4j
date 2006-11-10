@@ -42,6 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="../jnitl/include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;COM4J_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -127,6 +128,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				OmitFramePointers="true"
+				AdditionalIncludeDirectories="../jnitl/include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;COM4J_EXPORTS"
 				StringPooling="true"
 				RuntimeLibrary="0"

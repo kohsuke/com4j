@@ -78,8 +78,6 @@ JNIEXPORT jobject JNICALL Java_com4j_Native_invokeDispatch( JNIEnv* env, jclass 
 }
 
 JNIEXPORT void JNICALL Java_com4j_Native_init( JNIEnv* env, jclass __unused__ ) {
-	com4j_Holder_value = env->GetFieldID(com4j_Holder,"value","Ljava/lang/Object;");
-
 	HRESULT hr = CoInitialize(NULL);
 	if(FAILED(hr)) {
 		error(env,__FILE__,__LINE__,hr,"failed to initialize COM");

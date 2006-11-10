@@ -12,7 +12,8 @@ JClassID comexception("com4j/ComException");
 JConstructorID comexception_new_hr(comexception,"(Ljava/lang/String;ILjava/lang/String;I)V");
 JConstructorID comexception_new(comexception,"(Ljava/lang/String;Ljava/lang/String;I)V");
 JClassID com4j_Holder("com4j/Holder");
-jfieldID com4j_Holder_value;
+JFieldID<jobject> com4j_Holder_value(com4j_Variant,"value","Ljava/lang/Object;");
+
 
 JClassID com4j_Com4jObject("com4j/Com4jObject");
 
@@ -42,5 +43,6 @@ JConstructorID javaMathBigInteger_new(javaMathBigInteger,"(Ljava/lang/String;)V"
 JClassID javaMathBigDecimal("java/math/BigDecimal");
 JMethodID<jstring> javaMathBigDecimal_toString(javaMathBigDecimal,"toString","()Ljava/lang/String;");
 JConstructorID javaMathBigDecimal_new(javaMathBigDecimal,"(Ljava/math/BigInteger;I)V");
+JConstructorID javaMathBigDecimal_new_Str(javaMathBigDecimal,"(Ljava/lang/String;)V");
 
 JClassID javaUtilDate("java/util/Date");

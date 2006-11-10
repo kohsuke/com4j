@@ -9,7 +9,7 @@ extern JClassID comexception;
 extern JConstructorID comexception_new;
 extern JConstructorID comexception_new_hr;
 extern JClassID com4j_Holder;
-extern jfieldID com4j_Holder_value;
+extern JFieldID<jobject> com4j_Holder_value;
 
 extern JClassID com4j_Com4jObject;
 
@@ -41,5 +41,6 @@ extern JConstructorID javaMathBigInteger_new;
 extern JClassID javaMathBigDecimal;
 extern JMethodID<jstring> javaMathBigDecimal_toString;
 extern JConstructorID javaMathBigDecimal_new;
+extern JConstructorID javaMathBigDecimal_new_Str;
 
 extern JClassID javaUtilDate;

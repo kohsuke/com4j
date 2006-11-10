@@ -161,6 +161,30 @@ public:
 	}
 };
 
+class DecimalHandlerImpl : public VariantHandler {
+public:
+	VARIANT* set( JNIEnv* env, jobject src ) {
+		VARIANT* pv = new VARIANT();
+		VariantClear(pv);
+		pv->vt = VT_DECIMAL;
+
+		jstring s = javaMathBigDecimal_toString(env,src);
+		BSTR bs = SysAllocString(JString(env,s));
+		::VarDecFromStr( bs, LOCALE_USER_DEFAULT, 0, &(pv->decVal) );
+		SysFreeString(bs);
+		return pv;
+	}
+	jobject get( JNIEnv* env, VARIANT* v, jclass retType ) {
+		_variant_t dst(v);
+		dst.ChangeType(VT_DECIMAL);
+		BSTR bs;
+		::VarBstrFromDec(&dst.decVal, LOCALE_USER_DEFAULT, 0, &bs);
+		jobject r = javaMathBigDecimal_new_Str(env, env->NewString(bs, SysStringLen(bs)));
+		SysFreeString(bs);
+		return r;
+	}
+};
+
 class NullVariantHandlerImpl : public VariantHandler {
 public:
 	VARIANT* set( JNIEnv* env, jobject src ) {
@@ -191,6 +215,7 @@ static SetterEntry setters[] = {
 	{ &javaLangInteger,	VT_I4,			new VariantHandlerImpl<VT_I4,		xducer::BoxedIntXducer>() },
 	{ &javaLangLong,	VT_I8,			new VariantHandlerImpl<VT_I8,		xducer::BoxedLongXducer>() },
 	{ &javaUtilDate,	VT_DATE,		new DateHandlerImpl() },
+	{ &javaMathBigDecimal,	VT_DECIMAL,	new DecimalHandlerImpl() },
 	// see issue 2 on java.net. I used to convert a COM object to VT_UNKNOWN
 	{ &com4j_Com4jObject,VT_DISPATCH,	new ComObjectVariandHandlerImpl() },
 	{ &com4j_Com4jObject,VT_UNKNOWN,	new ComObjectVariandHandlerImpl() },
