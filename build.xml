@@ -31,7 +31,17 @@
     </javadoc>
   </target>
   
-  <target name="dist" depends="jar,javadoc">
+  <target name="src-zip">
+    <zip file="build/src.zip">
+      <fileset dir="." includes="native/**/*" excludes="native/Debug/**, native/Release/**, native/driver/**, native/*.ncb, native/*.suo" />
+      <fileset dir="." includes="jnitl/**/*" excludes="jnitl/build/**, jnitl/lib/**, jnitl/*.ncb, jnitl/*.suo" />
+      <fileset dir="." includes="runtime/**/*" excludes="runtime/build/**" />
+      <fileset dir="." includes="tlbimp/**/*" excludes="tlbimp/build/**" />
+      <fileset dir="." includes="build.xml, com4j.*" />
+    </zip>
+  </target>
+  
+  <target name="dist" depends="jar,javadoc,src-zip">
     <tstamp/>
     <mkdir dir="build/dist"/>
     
@@ -49,6 +59,7 @@
     <zip file="build/com4j-${DSTAMP}.zip">
       <fileset dir="../www" includes="LICENSE.txt" />
       <fileset dir="build" includes="javadoc/**/*"/>
+      <fileset dir="build" includes="src.zip"/>
       <fileset dir="build/dist" includes="**/*"/>
     </zip>
   </target>
