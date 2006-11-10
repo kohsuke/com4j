@@ -12,7 +12,7 @@ JClassID comexception("com4j/ComException");
 JConstructorID comexception_new_hr(comexception,"(Ljava/lang/String;ILjava/lang/String;I)V");
 JConstructorID comexception_new(comexception,"(Ljava/lang/String;Ljava/lang/String;I)V");
 JClassID com4j_Holder("com4j/Holder");
-JFieldID<jobject> com4j_Holder_value(com4j_Variant,"value","Ljava/lang/Object;");
+JFieldID<jobject> com4j_Holder_value(com4j_Holder,"value","Ljava/lang/Object;");
 
 
 JClassID com4j_Com4jObject("com4j/Com4jObject");
