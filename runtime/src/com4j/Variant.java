@@ -171,6 +171,11 @@ public final class Variant extends Number {
         image.putInt(8,i);
     }
 
+    private void makeError(int hresult) {
+        changeType(Type.VT_ERROR);
+        image.putInt(8,hresult);
+    }
+
     public long longValue() {
         // VARIANT doesn't seem to support 64bit int
         return intValue();
@@ -221,8 +226,12 @@ public final class Variant extends Number {
      */
     public native <T> T convertTo( Class<T> type );
 
-    // TODO: this isn't quite working
-    public static final Variant MISSING = new Variant(Type.VT_ERROR);
+    public static final Variant MISSING;
+
+    static {
+        MISSING = new Variant();
+        MISSING.makeError(0x80020004); // DISP_E_PARAMNOTFOUND
+    }
 
 
     /**
