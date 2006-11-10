@@ -171,8 +171,9 @@ public final class Variant extends Number {
         image.putInt(8,i);
     }
 
-    private void makeError(int hresult) {
-        changeType(Type.VT_ERROR);
+    /*package*/ void makeError(int hresult) {
+        clear();
+        image.putShort(0,(short)Type.VT_ERROR.comEnumValue());
         image.putInt(8,hresult);
     }
 
@@ -226,13 +227,11 @@ public final class Variant extends Number {
      */
     public native <T> T convertTo( Class<T> type );
 
-    public static final Variant MISSING;
-
-    static {
-        MISSING = new Variant();
-        MISSING.makeError(0x80020004); // DISP_E_PARAMNOTFOUND
-    }
-
+    /**
+     * Represents the special variant instance used for
+     * missing parameters.
+     */
+    public static final Variant MISSING = new Variant();
 
     /**
      * Called from the native code to assist VT_DATE -> Date conversion.
