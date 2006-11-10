@@ -218,7 +218,7 @@ public enum NativeType {
      *
      * <p>
      * Expected Java type:
-     *      {@link Holder<ComObject>}
+     *      {@code Holder<ComObject>}
      */
     ComObject_ByRef(300|BYREF,4) {
         // the native code will see the raw pointer value as Integer
