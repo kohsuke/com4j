@@ -246,9 +246,15 @@ public final class Variant extends Number {
         ret.add(Calendar.HOUR,hours);
         d -= hours;
         d *= 60;
-        d += 0.5; // round
+//        d += 0.5; // round
         int min = (int)d;
         ret.add(Calendar.MINUTE,min);
+
+        d -= min;
+        d *= 60;
+        int secs = (int) d;
+        ret.add(Calendar.SECOND, secs);
+
         return ret.getTime();
     }
 
