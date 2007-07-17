@@ -262,7 +262,27 @@ public final class Variant extends Number {
      * Opposite of the {@link #toDate(double)} method.
      */
     static double fromDate(Date dt) {
-        // TODO: implement this method later
-        throw new UnsupportedOperationException();
+
+        // the number of milliseconds since January 1, 1970, 00:00:00 GMT
+        long t = dt.getTime();
+        // the number of milliseconds since January 1, 1970, 00:00:00 Local Time
+        t -= dt.getTimezoneOffset() * 60 * 1000;
+
+        // the number of milliseconds since December 30, 1899, 00:00:00 Local Time
+        t += 2209161600000L;
+
+        // DATE is an offset from "30 December 1899"
+        if (t < 0) {
+            // -0.3 -> -0.7
+            long offset = -(t % MSPD);    // TODO: check
+            t = t - MSPD + offset;
+        }
+        double d = ((double) t) / MSPD;
+        return d;
     }
+
+    /**
+     * # of milliseconds per day.
+     */
+    private static final long MSPD = 24*60*60*1000;
 }
