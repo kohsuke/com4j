@@ -1,0 +1,207 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>net.java.com4j.maven.plugins</groupId>
+	<artifactId>com4jgen</artifactId>
+	<packaging>maven-plugin</packaging>
+	<version>1.0-SNAPSHOT</version>
+
+	<name>COM4J Code Generation Plugin</name>
+	<inceptionYear>2007</inceptionYear>
+	<url>http://www.toolsforteams.com/code/com4jgen/</url>
+	<description>
+		Maven2 Plugin for Java->COM Bridge using com4j. Com4j will
+		create .java files for a COM interface on Windows systems. This
+		will likely only work on Win32 systems at this time (Aug 3,
+		2007).
+	</description>
+	
+	<organization><name>Jason Thrasher</name></organization>
+
+	<developers>
+		<developer>
+			<name>Jason Thrasher</name>
+			<email>jason AT coachthrasher.com</email>
+			<url>http://www.coachthrasher.com</url>
+			<organizationUrl>
+				http://www.toolsforteams.com/
+			</organizationUrl>
+			<roles>
+				<role>Administrator</role>
+				<role>Developer</role>
+			</roles>
+			<timezone>-8</timezone>
+		</developer>
+	</developers>
+
+	<contributors>
+		<contributor>
+			<name>Kohsuke Kawaguchi</name>
+			<email>kk AT kohsuke.org</email>
+			<roles>
+				<role>com4j Author</role>
+			</roles>
+			<organizationUrl>http://www.kohsuke.org/</organizationUrl>
+		</contributor>
+	</contributors>
+
+	<licenses>
+		<license>
+			<name>LGPL</name>
+			<url>http://www.gnu.org/licenses/lgpl.txt</url>
+			<distribution>repo</distribution>
+			<comments>GNU LESSER GENERAL PUBLIC LICENSE</comments>
+		</license>
+	</licenses>
+
+	<distributionManagement>
+		<site>
+			<id>toolsforteams</id>
+			<name>toolsforteams.com</name>
+			<url>
+				scp://${maven.username}@www.toolsforteams.com/var/www/toolsforteams.com/code/com4jgen/
+			</url>
+		</site>
+	</distributionManagement>
+
+	<scm>
+		<!-- 
+			<connection>
+			scm:cvs:pserver:anonymous@${pom.artifactId}.cvs.sourceforge.net:/cvsroot/${pom.artifactId}
+			</connection>
+		-->
+		<developerConnection>
+			scm:cvs:ext:${maven.username}@gemini:/opt/cvsroot/${pom.artifactId}
+		</developerConnection>
+		<url>http://gemini/cvs/${pom.artifactId}/</url>
+	</scm>
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<artifactId>maven-javadoc-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>taglist-maven-plugin</artifactId>
+				<configuration>
+					<tags>
+						<tag>TODO</tag>
+						<tag>FIXME</tag>
+						<tag>@todo</tag>
+						<tag>@deprecated</tag>
+					</tags>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-plugin-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</reporting>
+
+	<ciManagement>
+		<system>CruiseControl</system>
+		<url>
+			http://gemini/cruisecontrol/buildresults/${pom.artifactId}/
+		</url>
+		<notifiers>
+			<notifier>
+				<type>mail</type>
+				<sendOnError>true</sendOnError>
+				<sendOnFailure>true</sendOnFailure>
+				<sendOnSuccess>false</sendOnSuccess>
+				<sendOnWarning>false</sendOnWarning>
+				<configuration>
+					<address>qa@toolsforteams.com</address>
+				</configuration>
+			</notifier>
+			<notifier>
+				<type>rss</type>
+				<configuration>
+					<url>
+						http://gemini/cruisecontrol/rss/${pom.artifactId}
+					</url>
+				</configuration>
+			</notifier>
+		</notifiers>
+	</ciManagement>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-plugin-api</artifactId>
+			<version>2.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-project</artifactId>
+			<version>2.0.1</version>
+		</dependency>
+
+		<!--
+			mvn install:install-file -DgroupId=net.java.com4j -DartifactId=com4j-tlbimp -Dversion=20070717 -Dpackaging=jar "-Dfile=D:\dev\public\com4j-20070717\tlbimp.jar"
+		-->
+		<dependency>
+			<groupId>net.java.com4j</groupId>
+			<artifactId>com4j-tlbimp</artifactId>
+			<version>20070717</version>
+		</dependency>
+
+		<!--
+			mvn install:install-file -DgroupId=net.java.com4j -DartifactId=com4j -Dversion=20070717 -Dpackaging=jar "-Dfile=D:\dev\public\com4j-20070717\com4j.jar" 
+		-->
+		<dependency>
+			<groupId>net.java.com4j</groupId>
+			<artifactId>com4j</artifactId>
+			<version>20070717</version>
+		</dependency>
+
+		<!--
+			mvn install:install-file -DgroupId=net.java.com4j -DartifactId=com4j-args4j -Dversion=2.0.1 -Dpackaging=jar "-Dfile=D:\dev\public\com4j-20070717\args4j-2.0.1.jar" 
+		-->
+		<dependency>
+			<groupId>net.java.com4j</groupId>
+			<artifactId>com4j-args4j</artifactId>
+			<version>2.0.1</version>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<defaultGoal>install</defaultGoal>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.0.2</version>
+				<configuration>
+					<source>1.5</source>
+					<target>1.5</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<descriptors>
+						<descriptor>
+							src/assembly/plugin-no-dependencies.xml
+						</descriptor>
+					</descriptors>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>attached</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

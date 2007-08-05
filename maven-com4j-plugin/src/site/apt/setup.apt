@@ -1,0 +1,21 @@
+ -----
+ Setup
+ -----
+ -----
+ -----
+
+Setup
+
+	This plugin relies on Windows COM and com4j.dll to generate .java files used to communicate with COM interfaces. Therefore, it will only run on a Windows system (and likely a 32 bit system at that).
+
+*Add plugin to pom.xml
+
+	Add a {{{simple.html}simple plugin configuration}} block to your pom.xml file.  To create Java-COM bridges to multiple Windows files (exe, dll, etc), you might need a {{{complex.html}complex plugin configuration}}.
+
+*Find the LIBID
+
+	To find the LIBID of your COM target, the library version, and its dependencies, use
+	{{{http://www.microsoft.com/windows2000/techinfo/reskit/tools/existing/oleview-o.asp}OleView for Windows 2000}}
+	or {{{http://www.microsoft.com/downloads/details.aspx?FamilyID=9d467a69-57ff-4ae7-96ee-b18c4790cffd&displaylang=en}OleView for Windows XP/2003}}
+
+	

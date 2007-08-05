@@ -1,0 +1,27 @@
+ -----
+ Usage
+ -----
+ -----
+ -----
+
+Usage
+
+	This plugin is bound to the "generate-sources" phase by default.  It will run whenever the generate-sources phase runs as:
+
++------------------------------------------------------------------------+
+mvn generate-sources
++------------------------------------------------------------------------+
+
+	It will naturally run when you compile all of your classes as well:
+	
++------------------------------------------------------------------------+
+mvn compile
++------------------------------------------------------------------------+
+
+	Optionally, it can be invoked directly with:
+	
++------------------------------------------------------------------------+
+mvn com4jgen:gen
++------------------------------------------------------------------------+
+
+
