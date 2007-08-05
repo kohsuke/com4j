@@ -4,59 +4,82 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>net.java.com4j.maven.plugins</groupId>
-	<artifactId>com4jgen</artifactId>
+	<groupId>net.java.dev.com4j</groupId>
+	<artifactId>maven-com4j-plugin</artifactId>
 	<packaging>maven-plugin</packaging>
 	<version>1.0-SNAPSHOT</version>
 
 	<name>COM4J Code Generation Plugin</name>
 	<inceptionYear>2007</inceptionYear>
+<!--	
 	<url>http://www.toolsforteams.com/code/com4jgen/</url>
+-->
+
 	<description>
-		Maven2 Plugin for Java->COM Bridge using com4j. Com4j will
-		create .java files for a COM interface on Windows systems. This
-		will likely only work on Win32 systems at this time (Aug 3,
-		2007).
+		Maven2 Plugin for Java->COM Bridge using com4j. This plugin will
+		create .java files for a Microsoft COM interface on Windows systems.
 	</description>
 	
-	<organization><name>Jason Thrasher</name></organization>
+	<organization>
+		<name>The COM4J Project</name>
+		<url>https://com4j.dev.java.net/</url>
+	</organization>
 
 	<developers>
 		<developer>
 			<name>Jason Thrasher</name>
 			<email>jason AT coachthrasher.com</email>
 			<url>http://www.coachthrasher.com</url>
-			<organizationUrl>
-				http://www.toolsforteams.com/
-			</organizationUrl>
 			<roles>
-				<role>Administrator</role>
 				<role>Developer</role>
 			</roles>
 			<timezone>-8</timezone>
 		</developer>
-	</developers>
-
-	<contributors>
-		<contributor>
+		<developer>
 			<name>Kohsuke Kawaguchi</name>
 			<email>kk AT kohsuke.org</email>
+			<url>http://www.kohsuke.org/</url>
 			<roles>
-				<role>com4j Author</role>
+				<role>Administrator</role>
 			</roles>
-			<organizationUrl>http://www.kohsuke.org/</organizationUrl>
-		</contributor>
-	</contributors>
-
+			<timezone>-8</timezone>
+		</developer>
+	</developers>
+	
+	<mailingLists>
+		<mailingList>
+			<name>com4j User List</name>
+			<subscribe>users-subscribe@com4j.dev.java.net</subscribe>
+			<unsubscribe>users-unsubscribe@com4j.dev.java.net</unsubscribe>
+			<post>users@com4j.dev.java.net</post>
+			<archive>https://com4j.dev.java.net/servlets/SummarizeList?listName=users</archive>
+		</mailingList>
+		<mailingList>
+			<name>com4j Issues List</name>
+			<subscribe>issues-subscribe@com4j.dev.java.net</subscribe>
+			<unsubscribe>issues-unsubscribe@com4j.dev.java.net</unsubscribe>
+			<post>issues@com4j.dev.java.net</post>
+			<archive>https://com4j.dev.java.net/servlets/SummarizeList?listName=issues</archive>
+		</mailingList>
+		<mailingList>
+			<name>com4j Issues List</name>
+			<subscribe>cvs-subscribe@com4j.dev.java.net</subscribe>
+			<unsubscribe>cvs-unsubscribe@com4j.dev.java.net</unsubscribe>
+			<post>cvs@com4j.dev.java.net</post>
+			<archive>https://com4j.dev.java.net/servlets/SummarizeList?listName=cvs</archive>
+		</mailingList>
+	</mailingLists>
+	
 	<licenses>
 		<license>
-			<name>LGPL</name>
-			<url>http://www.gnu.org/licenses/lgpl.txt</url>
+			<name>MIT</name>
+			<url>https://com4j.dev.java.net/source/browse/*checkout*/com4j/com4j/maven-com4j-plugin/license.txt?content-type=text%2Fplain</url>
 			<distribution>repo</distribution>
-			<comments>GNU LESSER GENERAL PUBLIC LICENSE</comments>
+			<comments>The MIT License is used for the maven plugin, and com4j in general.</comments>
 		</license>
 	</licenses>
 
+<!--
 	<distributionManagement>
 		<site>
 			<id>toolsforteams</id>
@@ -66,17 +89,16 @@
 			</url>
 		</site>
 	</distributionManagement>
+-->
 
 	<scm>
-		<!-- 
-			<connection>
-			scm:cvs:pserver:anonymous@${pom.artifactId}.cvs.sourceforge.net:/cvsroot/${pom.artifactId}
-			</connection>
-		-->
+		<connection>
+			scm:cvs:pserver:anonymous@cvs.dev.java.net:/cvs/${pom.artifactId}
+		</connection>
 		<developerConnection>
-			scm:cvs:ext:${maven.username}@gemini:/opt/cvsroot/${pom.artifactId}
+			scm:cvs:ext:${maven.username}@cvs.dev.java.net:/cvs/${pom.artifactId}
 		</developerConnection>
-		<url>http://gemini/cvs/${pom.artifactId}/</url>
+		<url>https://com4j.dev.java.net/source/browse/com4j/com4j/${pom.artifactId}/</url>
 	</scm>
 
 	<reporting>
@@ -103,6 +125,7 @@
 		</plugins>
 	</reporting>
 
+<!--
 	<ciManagement>
 		<system>CruiseControl</system>
 		<url>
@@ -129,6 +152,7 @@
 			</notifier>
 		</notifiers>
 	</ciManagement>
+-->
 
 	<dependencies>
 		<dependency>
