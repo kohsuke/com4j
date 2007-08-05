@@ -28,20 +28,20 @@ args4j-2.0.1.jar
 
 +------------------------------------------------------------------------+
 mvn install:install-file \
-	-DgroupId=net.java.com4j \
+	-DgroupId=net.java.dev.com4j \
 	-DartifactId=com4j-tlbimp \
 	-Dversion=20070717 \
 	-Dpackaging=jar "-Dfile=D:\dev\public\com4j-20070717\tlbimp.jar"
 	
 
 mvn install:install-file \
-	-DgroupId=net.java.com4j \
+	-DgroupId=net.java.dev.com4j \
 	-DartifactId=com4j \
 	-Dversion=20070717 \
 	-Dpackaging=jar "-Dfile=D:\dev\public\com4j-20070717\com4j.jar"
 
 mvn install:install-file \
-	-DgroupId=net.java.com4j \
+	-DgroupId=net.java.dev.com4j \
 	-DartifactId=com4j-args4j \
 	-Dversion=2.0.1 \
 	-Dpackaging=jar "-Dfile=D:\dev\public\com4j-20070717\args4j-2.0.1.jar"
@@ -50,7 +50,7 @@ mvn install:install-file \
 	The com4j.dll file, compiled form C sources in the com4j project, must be placed in the following directory:
 
 +------------------------------------------------------------------------+
-com4jgen-plugin/src/main/resources/com4j.dll
+maven-com4j-plugin/src/main/resources/com4j.dll
 +------------------------------------------------------------------------+
 
 *Maven Build

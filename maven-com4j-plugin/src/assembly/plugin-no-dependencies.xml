@@ -12,9 +12,9 @@ By not specifying the <id> element, we effectively overwrite the maven target ja
       <outputFileNameMapping></outputFileNameMapping>
       <unpack>true</unpack>
       <includes>
-      	<include>net.java.com4j:com4j</include>
-      	<include>net.java.com4j:com4j-tlbimp</include>
-      	<include>net.java.com4j:com4j-args4j</include>
+      	<include>net.java.dev.com4j:com4j</include>
+      	<include>net.java.dev.com4j:com4j-tlbimp</include>
+      	<include>net.java.dev.com4j:com4j-args4j</include>
       </includes>
     </dependencySet>
   </dependencySets>
