@@ -14,7 +14,7 @@ Simple Example
 <plugins>
 ...
 <plugin>
-  <groupId>net.java.dev.com4j</groupId>
+  <groupId>org.jvnet.com4j</groupId>
   <artifactId>maven-com4j-plugin</artifactId>
   <executions>
     <execution>

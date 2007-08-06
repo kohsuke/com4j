@@ -70,7 +70,7 @@ public class Com4jgenMojo extends AbstractMojo implements ErrorListener {
 	 * and can't be used as a variable.
 	 * 
 	 * @parameter expression="${package}" alias="package"
-	 *            default-value="net.java.dev.com4j.generated"
+	 *            default-value="org.jvnet.com4j.generated"
 	 */
 	private String _package; // reserved keyword...
 
