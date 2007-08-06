@@ -4,16 +4,14 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>net.java.dev.com4j</groupId>
+	<groupId>org.jvnet.com4j</groupId>
 	<artifactId>maven-com4j-plugin</artifactId>
 	<packaging>maven-plugin</packaging>
 	<version>1.0-SNAPSHOT</version>
 
 	<name>COM4J Code Generation Plugin</name>
 	<inceptionYear>2007</inceptionYear>
-<!--	
-	<url>http://www.toolsforteams.com/code/com4jgen/</url>
--->
+	<url>https://com4j.dev.java.net/</url>
 
 	<description>
 		Maven2 Plugin for Java->COM Bridge using com4j. This plugin will
@@ -79,26 +77,10 @@
 		</license>
 	</licenses>
 
-<!--
-	<distributionManagement>
-		<site>
-			<id>toolsforteams</id>
-			<name>toolsforteams.com</name>
-			<url>
-				scp://${maven.username}@www.toolsforteams.com/var/www/toolsforteams.com/code/com4jgen/
-			</url>
-		</site>
-	</distributionManagement>
--->
-
 	<scm>
-		<connection>
-			scm:cvs:pserver:username@cvs.dev.java.net:/cvs/com4j
-		</connection>
-		<developerConnection>
-			scm:cvs:pserver:username@cvs.dev.java.net:/cvs/com4j
-		</developerConnection>
-		<url>https://com4j.dev.java.net/source/browse/com4j/com4j/${pom.artifactId}/</url>
+		<connection>scm:cvs:pserver:guest@cvs.dev.java.net:/cvs:com4j/com4j/maven-com4j-plugin</connection>
+		<developerConnection>scm:cvs:pserver:${user.name}@cvs.dev.java.net:/cvs:com4j/com4j/maven-com4j-plugin</developerConnection>
+		<url>https://com4j.dev.java.net/source/browse/com4j/com4j/maven-com4j-plugin</url>
 	</scm>
 
 	<reporting>
@@ -125,35 +107,6 @@
 		</plugins>
 	</reporting>
 
-<!--
-	<ciManagement>
-		<system>CruiseControl</system>
-		<url>
-			http://gemini/cruisecontrol/buildresults/${pom.artifactId}/
-		</url>
-		<notifiers>
-			<notifier>
-				<type>mail</type>
-				<sendOnError>true</sendOnError>
-				<sendOnFailure>true</sendOnFailure>
-				<sendOnSuccess>false</sendOnSuccess>
-				<sendOnWarning>false</sendOnWarning>
-				<configuration>
-					<address>qa@toolsforteams.com</address>
-				</configuration>
-			</notifier>
-			<notifier>
-				<type>rss</type>
-				<configuration>
-					<url>
-						http://gemini/cruisecontrol/rss/${pom.artifactId}
-					</url>
-				</configuration>
-			</notifier>
-		</notifiers>
-	</ciManagement>
--->
-
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.maven</groupId>
@@ -168,28 +121,28 @@
 		</dependency>
 
 		<!--
-			mvn install:install-file -DgroupId=net.java.dev.com4j -DartifactId=com4j-tlbimp -Dversion=20070717 -Dpackaging=jar "-Dfile=D:\dev\public\com4j-20070717\tlbimp.jar"
+			mvn install:install-file -DgroupId=org.jvnet.com4j -DartifactId=com4j-tlbimp -Dversion=20070717 -Dpackaging=jar "-Dfile=D:\dev\public\com4j-20070717\tlbimp.jar"
 		-->
 		<dependency>
-			<groupId>net.java.dev.com4j</groupId>
+			<groupId>org.jvnet.com4j</groupId>
 			<artifactId>com4j-tlbimp</artifactId>
 			<version>20070717</version>
 		</dependency>
 
 		<!--
-			mvn install:install-file -DgroupId=net.java.dev.com4j -DartifactId=com4j -Dversion=20070717 -Dpackaging=jar "-Dfile=D:\dev\public\com4j-20070717\com4j.jar" 
+			mvn install:install-file -DgroupId=org.jvnet.com4j -DartifactId=com4j -Dversion=20070717 -Dpackaging=jar "-Dfile=D:\dev\public\com4j-20070717\com4j.jar" 
 		-->
 		<dependency>
-			<groupId>net.java.dev.com4j</groupId>
+			<groupId>org.jvnet.com4j</groupId>
 			<artifactId>com4j</artifactId>
 			<version>20070717</version>
 		</dependency>
 
 		<!--
-			mvn install:install-file -DgroupId=net.java.dev.com4j -DartifactId=com4j-args4j -Dversion=2.0.1 -Dpackaging=jar "-Dfile=D:\dev\public\com4j-20070717\args4j-2.0.1.jar" 
+			mvn install:install-file -DgroupId=org.jvnet.com4j -DartifactId=com4j-args4j -Dversion=2.0.1 -Dpackaging=jar "-Dfile=D:\dev\public\com4j-20070717\args4j-2.0.1.jar" 
 		-->
 		<dependency>
-			<groupId>net.java.dev.com4j</groupId>
+			<groupId>org.jvnet.com4j</groupId>
 			<artifactId>com4j-args4j</artifactId>
 			<version>2.0.1</version>
 		</dependency>
