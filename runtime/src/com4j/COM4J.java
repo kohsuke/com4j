@@ -171,6 +171,73 @@ public abstract class COM4J {
     }
 
     /**
+     * Returns a reference to a COM object primarily by loading a file.
+     *
+     * <p>
+     * This method implements the semantics of the {@code GetObject} Visual Basic
+     * function. See <a href="http://msdn2.microsoft.com/en-us/library/e9waz863(VS.71).aspx">MSDN reference</a>
+     * for its semantics.
+     *
+     * <p>
+     * This function really has three different mode of operation:
+     *
+     * <ul>
+     * <li>
+     * If both {@code fileName} and {@code progId} are specified,
+     * a COM object of the given progId is created and its state is loaded
+     * from the given file name. This is normally used to activate a OLE server
+     * by loading a file.
+     *
+     * <li>
+     * If just {@code fileName} is specified, it is treated as a moniker.
+     * The moniker will be bound and the resulting COM object will be returned.
+     * In a simple case a moniker is a file path, in which case the associated
+     * application is activated and loads the data. But monikers in OLE are
+     * extensible, so in more general case the semantics really depends on
+     * the moniker provider.
+     *
+     * <li>
+     * If just {@code progId} is specified, this method would just work like
+     * {@link #getActiveObject(Class, String)}.
+     *
+     * </ul>
+     *
+     * @param primaryInterface
+     *      The returned COM object is returned as this interface.
+     *      Must be non-null. Passing in {@link Com4jObject} allows
+     *      the caller to create a new instance without knowing
+     *      its primary interface.
+     *
+     * @return
+     *      non-null valid object.
+     *
+     * @throws ComException
+     *      if the retrieval fails.
+     */
+    public static <T extends Com4jObject> T getObject(Class<T> primaryInterface, String fileName, String progId ) {
+        return new GetObjectTask<T>(fileName,progId,primaryInterface).execute();
+    }
+
+    private static class GetObjectTask<T extends Com4jObject> extends Task<T> {
+        private final String fileName,progId;
+        private final Class<T> intf;
+
+        private GetObjectTask(String fileName, String progId, Class<T> intf) {
+            this.fileName = fileName;
+            this.progId = progId;
+            this.intf = intf;
+        }
+
+        public T call() {
+            GUID iid = getIID(intf);
+            int o1 = Native.getObject(fileName,progId);
+            int o2 = Native.queryInterface(o1, iid.v[0], iid.v[1]);
+            Native.release(o1);
+            return Wrapper.create(intf,o2);
+        }
+    }
+
+    /**
      * Gets the interface GUID associated with the given interface.
      *
      * <p>

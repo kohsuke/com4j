@@ -26,6 +26,13 @@ class Native {
     static native int getActiveObject( long clsid1, long clsid2 );
 
     /**
+     * Equivalent of {@code GetObject} in VB.
+     *
+     * See http://support.microsoft.com/kb/122288
+     */
+    static native int getObject( String fileName, String progId );
+
+    /**
      * Calls <tt>IUnknown.AddRef</tt>.
      */
     static native void addRef( int pComObject );
