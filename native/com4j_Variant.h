@@ -9,6 +9,8 @@ extern "C" {
 #endif
 #undef com4j_Variant_serialVersionUID
 #define com4j_Variant_serialVersionUID -8742448824652078965i64
+#undef com4j_Variant_MSPD
+#define com4j_Variant_MSPD 86400000i64
 /*
  * Class:     com4j_Variant
  * Method:    clear0

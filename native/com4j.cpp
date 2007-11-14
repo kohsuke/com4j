@@ -174,6 +174,76 @@ JNIEXPORT jint JNICALL Java_com4j_Native_getActiveObject(
 	return reinterpret_cast<jint>(pUnk);
 }
 
+JNIEXPORT jint JNICALL Java_com4j_Native_getObject(
+	JNIEnv* env, jclass __unused__, jstring _fileName, jstring _progId) {
+
+	HRESULT hr;
+
+	if(_progId==NULL) {
+		// case 1: just file name
+		IBindCtxPtr pbc;
+		ULONG cEaten;
+		IMonikerPtr pmk;
+		IDispatch* pDisp;
+
+		hr = CreateBindCtx(NULL,&pbc);
+		if(FAILED(hr)) {
+			error(env,__FILE__,__LINE__,hr,"Failed to CreateBindCtx");
+			return 0;
+		}
+		hr = MkParseDisplayName(pbc,JString(env,_fileName),&cEaten,&pmk);
+		if(FAILED(hr)) {
+			error(env,__FILE__,__LINE__,hr,"Failed to MkParseDisplayName");
+			return 0;
+		}
+		hr = BindMoniker(pmk,0,__uuidof(IDispatch),(LPVOID*)&pDisp);
+		if(FAILED(hr)) {
+			error(env,__FILE__,__LINE__,hr,"Failed to bind moniker");
+			return 0;
+		}
+
+		return reinterpret_cast<jint>(pDisp);
+	}
+
+	JString progId(env,_progId);
+	CLSID clsid;
+	IUnknown* pUnk=NULL;
+
+	hr = CLSIDFromProgID(progId,&clsid);
+	if(FAILED(hr)) {
+		error(env,__FILE__,__LINE__,hr,"Unrecognized progID");
+		return 0;
+	}
+
+	if(_fileName==NULL) {
+		// case 2: just progId
+		hr = GetActiveObject(clsid,NULL,&pUnk);
+		if(FAILED(hr)) {
+			error(env,__FILE__,__LINE__,hr,"Failed to GetActiveObject");
+			return 0;
+		}
+		return reinterpret_cast<jint>(pUnk);
+	}
+
+	// case 3: both file name and progID
+	hr = CoCreateInstance(clsid,NULL,CLSCTX_SERVER,__uuidof(IUnknown),(LPVOID*)&pUnk);
+	if(FAILED(hr)) {
+		error(env,__FILE__,__LINE__,hr,"Failed to create CoCreateInstance");
+		return 0;
+	}
+
+	IPersistFilePtr ppf(pUnk);
+	hr = ppf->Load(JString(env,_fileName),0);
+	if(FAILED(hr)) {
+		error(env,__FILE__,__LINE__,hr,"Failed to load from file");
+		pUnk->Release();
+		return 0;
+	}
+
+	return reinterpret_cast<jint>(pUnk);
+}
+
+
 JNIEXPORT jstring JNICALL Java_com4j_Native_getErrorMessage(
 	JNIEnv* env, jclass __unused__, jint hresult) {
 

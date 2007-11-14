@@ -33,6 +33,14 @@ JNIEXPORT jint JNICALL Java_com4j_Native_getActiveObject
 
 /*
  * Class:     com4j_Native
+ * Method:    getObject
+ * Signature: (Ljava/lang/String;Ljava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_com4j_Native_getObject
+  (JNIEnv *, jclass, jstring, jstring);
+
+/*
+ * Class:     com4j_Native
  * Method:    addRef
  * Signature: (I)V
  */
