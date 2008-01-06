@@ -89,6 +89,10 @@
       <id>java.net-maven2-repository</id>
       <url>java-net:/maven2-repository/trunk/www/repository/</url>
     </repository>
+    <site>
+      <id>xyz-www</id>
+      <url>file:../../www/maven-com4j-plugin</url>
+    </site>
   </distributionManagement>
   
   <reporting>
