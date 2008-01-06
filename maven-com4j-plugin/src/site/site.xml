@@ -21,6 +21,7 @@
 			<item name="Goals" href="plugin-info.html" />
 			<item name="Usage" href="usage.html" />
 			<item name="Building" href="building.html" />
+      <item name="Specifying tlbimp version" href="override.html" />
 		</menu>
 
 		<menu name="Examples">
