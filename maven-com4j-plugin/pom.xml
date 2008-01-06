@@ -83,7 +83,15 @@
 		<url>https://com4j.dev.java.net/source/browse/com4j/com4j/maven-com4j-plugin</url>
 	</scm>
 
-	<reporting>
+  <distributionManagement>
+    <repository>
+      <uniqueVersion>false</uniqueVersion>
+      <id>java.net-maven2-repository</id>
+      <url>java-net:/maven2-repository/trunk/www/repository/</url>
+    </repository>
+  </distributionManagement>
+  
+  <reporting>
 		<plugins>
 			<plugin>
 				<artifactId>maven-javadoc-plugin</artifactId>
@@ -143,6 +151,13 @@
         </configuration>
       </plugin>
 		</plugins>
+    <extensions>
+      <extension>
+        <groupId>org.jvnet.wagon-svn</groupId>
+        <artifactId>wagon-svn</artifactId>
+        <version>1.6</version>
+      </extension>
+    </extensions>
 	</build>
 
   <repositories>
