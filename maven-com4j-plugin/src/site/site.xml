@@ -3,12 +3,12 @@
 	
 	<publishDate format="dd MMM yyyy" />
 	
-	<skin>
-		<groupId>org.apache.tapestry</groupId>
-		<artifactId>maven-skin</artifactId>
-		<version>1.1</version>
-	</skin>
-
+  <skin>
+    <groupId>org.jvnet.maven-javanet-skin</groupId>
+    <artifactId>maven-javanet-skin</artifactId>
+    <version>1.0</version>
+  </skin>
+  
 	<body>
 		<links>
 			<item name="com4j" href="https://com4j.dev.java.net/" />
