@@ -10,12 +10,7 @@
   </parent>
   <artifactId>ado20</artifactId>
   <version>1.0-SNAPSHOT</version>
-
-  <name>ADO typelib for com4j</name>
-
-  <description>
-    Pre-generated ADO type library for com4j
-  </description>
+  <name>ADO 2.0 typelib for com4j</name>
 
   <build>
     <plugins>
