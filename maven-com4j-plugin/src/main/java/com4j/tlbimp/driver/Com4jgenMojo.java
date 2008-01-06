@@ -1,21 +1,14 @@
 package com4j.tlbimp.driver;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.project.MavenProject;
-
 import com4j.tlbimp.BindingException;
 import com4j.tlbimp.ErrorListener;
 import com4j.tlbimp.FileCodeWriter;
 import com4j.tlbimp.def.IWTypeLib;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.project.MavenProject;
+
+import java.io.File;
 
 /**
  * Maven2 mojo for running the com4j process to produce .java files for the
@@ -41,9 +34,6 @@ import com4j.tlbimp.def.IWTypeLib;
  * @requiresDependencyResolution
  */
 public class Com4jgenMojo extends AbstractMojo implements ErrorListener {
-	private static final String COM4J_JARPATH = "com4j.dll";
-	private static final String COM4J_DLL = "com4j.dll";
-
 	/**
 	 * The Maven Project. We'll add a new source directory to this project if
 	 * everthing is successful.
@@ -223,16 +213,6 @@ public class Com4jgenMojo extends AbstractMojo implements ErrorListener {
 					+ outputDirectory
 					+ " doesn't exist and couldn't be created.");
 		}
-
-		// extract the dll
-		try {
-			extractResource(COM4J_JARPATH, COM4J_DLL, false);
-		} catch (IOException ioe) {
-			getLog().warn("Couldn't extract " + COM4J_DLL);
-			throw new MojoExecutionException("Couldn't extract " + COM4J_DLL
-					+ " from " + COM4J_JARPATH + " due to " + ioe.getMessage());
-		}
-
 	}
 
 	/**
@@ -253,35 +233,6 @@ public class Com4jgenMojo extends AbstractMojo implements ErrorListener {
 			throw new MojoExecutionException(
 					"The native COM target file couldn't be found: " + file);
 		}
-	}
-
-	private void extractResource(String resourceClasspath, String toFile,
-			boolean overwrite) throws IOException {
-
-		// use this class's classloader to load files from the plugin's JAR
-		ClassLoader loader = this.getClass().getClassLoader();
-		InputStream in = new BufferedInputStream(loader
-				.getResourceAsStream(resourceClasspath));
-
-		if (in == null) {
-			throw new IOException("Couldn't locate resource: "
-					+ resourceClasspath);
-		}
-
-		File to = new File(toFile);
-		if (to.exists() && !overwrite) {
-			getLog().debug("File already extracted: " + toFile);
-			return;
-		}
-
-		OutputStream out = new BufferedOutputStream(new FileOutputStream(to));
-		byte[] buff = new byte[1024 * 8];
-		int len = 0;
-		while ((len = in.read(buff)) != -1) {
-			out.write(buff, 0, len);
-		}
-		out.close();
-		in.close();
 	}
 
 	public void started(IWTypeLib lib) {
