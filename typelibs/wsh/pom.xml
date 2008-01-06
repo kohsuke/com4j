@@ -1,0 +1,34 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.jvnet.com4j.typelibs</groupId>
+    <artifactId>typelibs</artifactId>
+    <version>1</version>
+  </parent>
+  <artifactId>wmi</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <name>Windows Script Host Object Model typelib for com4j</name>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.jvnet.com4j</groupId>
+        <artifactId>maven-com4j-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>gen</goal>
+            </goals>
+            <configuration>
+              <libId>F935DC20-1CF0-11D0-ADB9-00C04FD58A0B</libId>
+              <package>com4j.typelibs.wsh</package>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
