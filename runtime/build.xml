@@ -26,4 +26,20 @@
   <target name="clean">
     <delete dir="build"/>
   </target>
+  
+  <import file="../build-taskdefs.xml" />
+  
+  <target name="deploy" description="release to the maven repository">
+    <prepare-pom />
+    <deploy file="com4j.jar">
+      <args>
+        <arg value="-DupdateReleaseInfo=true"/>
+      </args>
+    </deploy>
+    <deploy file="com4j-src.zip">
+      <args>
+        <arg value="-Dclassifier=sources"/>
+      </args>
+    </deploy>
+  </target>
 </project>

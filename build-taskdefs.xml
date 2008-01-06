@@ -1,0 +1,29 @@
+<project>
+  <!-- create deployment POM for preparation -->
+  <macrodef name="prepare-pom">
+    <sequential>
+      <tstamp/>
+      <delete file="build/pom.xml"/> <!-- force replacement -->
+      <copy file="pom-for-deploy.xml" tofile="build/pom.xml">
+        <filterset>
+          <filter token="VERSION" value="${DSTAMP}"/>
+        </filterset>
+      </copy>
+    </sequential>
+  </macrodef>
+  
+  <!-- deploy to maven repository -->
+  <macrodef name="deploy">
+    <attribute name="file"/>
+    <element name="args" optional="true"/>
+    <sequential>
+      <exec executable="mvn.bat" dir="build">
+        <arg value="deploy:deploy-file"/>
+        <arg value="-Dfile=@{file}"/>
+        <arg value="-DpomFile=pom.xml"/>
+        <arg value="-Durl=java-net:/maven2-repository/trunk/www/repository/" />
+        <args />
+      </exec>
+    </sequential>
+  </macrodef>
+</project>

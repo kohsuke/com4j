@@ -45,8 +45,6 @@
     <tstamp/>
     <mkdir dir="build/dist"/>
     
-    <ant dir="native" target="release"/>
-    
     <copy todir="build/dist">
       <fileset dir="." includes="samples/**/*" excludes="**/CVS, samples/*/test/**, **/*.log"/>
       <fileset dir="runtime/build" includes="com4j.jar, com4j-src.zip"/>
@@ -66,8 +64,8 @@
   
   
   <target name="-exec-target">
+    <ant dir="native" target="${target}"/>
     <ant dir="runtime" target="${target}"/>
     <ant dir="tlbimp" target="${target}"/>
-    <ant dir="native" target="${target}"/>
   </target>
 </project>

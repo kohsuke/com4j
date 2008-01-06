@@ -31,4 +31,20 @@
   <target name="clean">
     <delete dir="build"/>
   </target>
+
+  <import file="../build-taskdefs.xml" />
+
+  <target name="deploy" description="release to the maven repository">
+    <prepare-pom />
+    <deploy file="tlbimp.jar">
+      <args>
+        <arg value="-DupdateReleaseInfo=true"/>
+      </args>
+    </deploy>
+    <deploy file="tlbimp-src.zip">
+      <args>
+        <arg value="-Dclassifier=sources"/>
+      </args>
+    </deploy>
+  </target>
 </project>
