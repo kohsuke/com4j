@@ -1,20 +1,18 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.jvnet.com4j</groupId>
 	<artifactId>maven-com4j-plugin</artifactId>
 	<packaging>maven-plugin</packaging>
-	<version>1.0-SNAPSHOT</version>
+	<version>1.0</version>
 
 	<name>COM4J Code Generation Plugin</name>
 	<inceptionYear>2007</inceptionYear>
 	<url>https://com4j.dev.java.net/</url>
 
 	<description>
-		Maven2 Plugin for Java->COM Bridge using com4j. This plugin will
+		Maven2 Plugin for Java-&gt;COM Bridge using com4j. This plugin will
 		create .java files for a Microsoft COM interface on Windows systems.
 	</description>
 	
@@ -81,7 +79,8 @@
 		<connection>scm:cvs:pserver:guest@cvs.dev.java.net:/cvs:com4j/com4j/maven-com4j-plugin</connection>
 		<developerConnection>scm:cvs:pserver:${user.name}@cvs.dev.java.net:/cvs:com4j/com4j/maven-com4j-plugin</developerConnection>
 		<url>https://com4j.dev.java.net/source/browse/com4j/com4j/maven-com4j-plugin</url>
-	</scm>
+	  <tag>maven-com4j-plugin-1_0</tag>
+  </scm>
 
   <distributionManagement>
     <repository>
