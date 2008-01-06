@@ -1,6 +1,11 @@
 <?xml version="1.0"?>
 <project name="native" default="release">
-  <target name="release">
+  <target name="clean">
+    <delete dir="Debug"/>
+    <delete dir="Release"/>
+  </target>
+  
+  <target name="jar">
     <exec dir="." executable="devenv" 
       failonerror="yes">
       <arg line="com4j.vcproj /rebuild Release"/>
@@ -10,11 +15,4 @@
       <arg line="com4j.vcproj /rebuild Debug"/>
     </exec>
   </target>
-  
-  <target name="clean">
-    <delete dir="Debug"/>
-    <delete dir="Release"/>
-  </target>
-  
-  <target name="jar" /><!-- nothing to do with the jar target -->
 </project>
