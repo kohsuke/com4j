@@ -1,10 +1,16 @@
 package com4j;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.ByteBuffer;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * The root of the COM4J library.
@@ -411,6 +417,16 @@ public abstract class COM4J {
                 filePortion = URLDecoder.decode(filePortion);
                 File jarFile = new File(filePortion);
                 File dllFile = new File(jarFile.getParentFile(),"com4j.dll");
+                if(!dllFile.exists()) {
+                    // try to extract from within the jar
+                    try {
+                        copyStream(
+                            COM4J.class.getResourceAsStream("com4j.dll"),
+                            new FileOutputStream(dllFile));
+                    } catch (IOException e) {
+                        LOGGER.log(Level.WARNING, "Failed to write com4j.dll", e);
+                    }
+                }
                 System.load(dllFile.getPath());
                 return;
             }
@@ -420,4 +436,18 @@ public abstract class COM4J {
         error.initCause(cause);
         throw error;
     }
+
+    private static void copyStream(InputStream in, OutputStream out) throws IOException {
+        try {
+            byte[] buf = new byte[8192];
+            int len;
+            while((len=in.read(buf))>=0)
+                out.write(buf,0,len);
+        } finally {
+            in.close();
+            out.close();
+        }
+    }
+
+    private static final Logger LOGGER = Logger.getLogger(COM4J.class.getName());
 }

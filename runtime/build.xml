@@ -16,6 +16,7 @@
       <metainf dir="../../www" includes="LICENSE.txt" />
       <fileset dir="build/classes" includes="**/*.class"/>
       <fileset dir="src" includes="**/*.properties"/>
+      <zipfileset dir="../native/Release" includes="com4j.dll" prefix="com4j" />
     </jar>
     <zip file="build/com4j-src.zip">
       <fileset dir="src" excludes="**/CVS"/>
