@@ -17,7 +17,13 @@
       <param name="target" value="jar"/>
     </antcall>
   </target>
-  
+
+  <target name="deploy">
+    <antcall target="-exec-target">
+      <param name="target" value="deploy"/>
+    </antcall>
+  </target>
+
   <target name="javadoc"
           description="creates javadoc from the publicly visible runtime classes">
     <javadoc

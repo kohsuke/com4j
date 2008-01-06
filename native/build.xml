@@ -15,4 +15,6 @@
       <arg line="com4j.vcproj /rebuild Debug"/>
     </exec>
   </target>
+
+  <target name="deploy" /><!-- no-op: nothing to deploy -->
 </project>
