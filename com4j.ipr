@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project version="4" relativePaths="true">
+<project relativePaths="true" version="4">
   <component name="AntConfiguration">
     <defaultAnt bundledAnt="true" />
   </component>
@@ -71,11 +71,12 @@
       <entry name="?*.tld" />
     </wildcardResourcePatterns>
   </component>
-  <component name="DataSourceManagerImpl" />
   <component name="DependenciesAnalyzeManager">
     <option name="myForwardDirection" value="false" />
   </component>
-  <component name="DependencyValidationManager" />
+  <component name="DependencyValidationManager">
+    <option name="SKIP_IMPORT_STATEMENTS" value="false" />
+  </component>
   <component name="EclipseCompilerSettings">
     <option name="DEBUGGING_INFO" value="true" />
     <option name="GENERATE_NO_WARNINGS" value="true" />
@@ -91,14 +92,13 @@
     <option name="MAXIMUM_HEAP_SIZE" value="128" />
   </component>
   <component name="EntryPointsManager">
-    <entry_points />
+    <entry_points version="2.0" />
   </component>
   <component name="ExportToHTMLSettings">
     <option name="PRINT_LINE_NUMBERS" value="false" />
     <option name="OPEN_IN_BROWSER" value="false" />
     <option name="OUTPUT_DIRECTORY" />
   </component>
-  <component name="GUI Designer component loader factory" />
   <component name="IdProvider" IDEtalkID="CF917D974C4D55E56FF304734C6930D2" />
   <component name="InspectionProjectProfileManager">
     <option name="PROJECT_PROFILE" value="Project Default" />
@@ -108,29 +108,12 @@
       <profile version="1.0" is_locked="false">
         <option name="myName" value="Project Default" />
         <option name="myLocal" value="false" />
-        <used_levels>
-          <error>
-            <option name="myName" value="ERROR" />
-            <option name="myVal" value="400" />
-          </error>
-          <warning>
-            <option name="myName" value="WARNING" />
-            <option name="myVal" value="300" />
-          </warning>
-          <information>
-            <option name="myName" value="INFO" />
-            <option name="myVal" value="200" />
-          </information>
-          <server>
-            <option name="myName" value="SERVER PROBLEM" />
-            <option name="myVal" value="100" />
-          </server>
-        </used_levels>
         <inspection_tool class="InstanceofChain" level="WARNING" enabled="true" />
         <inspection_tool class="InfiniteLoopStatement" level="WARNING" enabled="false" />
         <inspection_tool class="EmptyCatchBlock" level="WARNING" enabled="false">
           <option name="m_includeComments" value="true" />
           <option name="m_ignoreTestCases" value="true" />
+          <option name="m_ignoreIgnoreParameter" value="true" />
         </inspection_tool>
         <inspection_tool class="JavaDoc" level="WARNING" enabled="false">
           <option name="TOP_LEVEL_CLASS_OPTIONS">
@@ -163,6 +146,7 @@
         </inspection_tool>
       </profile>
     </profiles>
+    <list size="0" />
   </component>
   <component name="JavacSettings">
     <option name="DEBUGGING_INFO" value="true" />
@@ -202,88 +186,31 @@
     <option name="FILTER_INFO" value="true" />
     <option name="CUSTOM_FILTER" />
   </component>
-  <component name="Palette">
-    <group name="Swing">
-      <item class="com.intellij.uiDesigner.HSpacer" tooltip-text="Horizontal Spacer" icon="/com/intellij/uiDesigner/icons/hspacer.png" removable="true">
-        <default-constraints vsize-policy="1" hsize-policy="6" anchor="0" fill="1" />
-      </item>
-      <item class="com.intellij.uiDesigner.VSpacer" tooltip-text="Vertical Spacer" icon="/com/intellij/uiDesigner/icons/vspacer.png" removable="true">
-        <default-constraints vsize-policy="6" hsize-policy="1" anchor="0" fill="2" />
-      </item>
-      <item class="javax.swing.JPanel" tooltip-text="JPanel (javax.swing)" icon="/com/intellij/uiDesigner/icons/panel.png" removable="true">
-        <default-constraints vsize-policy="3" hsize-policy="3" anchor="0" fill="3" />
-      </item>
-      <item class="javax.swing.JScrollPane" tooltip-text="JScrollPane (javax.swing)" icon="/com/intellij/uiDesigner/icons/scrollPane.png" removable="true">
-        <default-constraints vsize-policy="7" hsize-policy="7" anchor="0" fill="3" />
-      </item>
-      <item class="javax.swing.JButton" tooltip-text="JButton (javax.swing)" icon="/com/intellij/uiDesigner/icons/button.png" removable="true">
-        <default-constraints vsize-policy="0" hsize-policy="3" anchor="0" fill="1" />
-        <initial-values>
-          <property name="text" value="Button" />
-        </initial-values>
-      </item>
-      <item class="javax.swing.JRadioButton" tooltip-text="JRadioButton (javax.swing)" icon="/com/intellij/uiDesigner/icons/radioButton.png" removable="true">
-        <default-constraints vsize-policy="0" hsize-policy="3" anchor="8" fill="0" />
-        <initial-values>
-          <property name="text" value="RadioButton" />
-        </initial-values>
-      </item>
-      <item class="javax.swing.JCheckBox" tooltip-text="JCheckBox (javax.swing)" icon="/com/intellij/uiDesigner/icons/checkBox.png" removable="true">
-        <default-constraints vsize-policy="0" hsize-policy="3" anchor="8" fill="0" />
-        <initial-values>
-          <property name="text" value="CheckBox" />
-        </initial-values>
-      </item>
-      <item class="javax.swing.JLabel" tooltip-text="JLabel (javax.swing)" icon="/com/intellij/uiDesigner/icons/label.png" removable="true">
-        <default-constraints vsize-policy="0" hsize-policy="0" anchor="8" fill="0" />
-        <initial-values>
-          <property name="text" value="Label" />
-        </initial-values>
-      </item>
-      <item class="javax.swing.JTextField" tooltip-text="JTextField (javax.swing)" icon="/com/intellij/uiDesigner/icons/textField.png" removable="true">
-        <default-constraints vsize-policy="0" hsize-policy="6" anchor="8" fill="1">
-          <preferred-size width="150" height="150" />
-        </default-constraints>
-      </item>
-      <item class="javax.swing.JPasswordField" tooltip-text="JPasswordField (javax.swing)" icon="/com/intellij/uiDesigner/icons/passwordField.png" removable="true">
-        <default-constraints vsize-policy="0" hsize-policy="6" anchor="8" fill="1">
-          <preferred-size width="150" height="150" />
-        </default-constraints>
-      </item>
-      <item class="javax.swing.JTextArea" tooltip-text="JTextArea (javax.swing)" icon="/com/intellij/uiDesigner/icons/textArea.png" removable="true">
-        <default-constraints vsize-policy="6" hsize-policy="6" anchor="0" fill="3">
-          <preferred-size width="150" height="150" />
-        </default-constraints>
-      </item>
-      <item class="javax.swing.JComboBox" tooltip-text="JComboBox (javax.swing)" icon="/com/intellij/uiDesigner/icons/comboBox.png" removable="true">
-        <default-constraints vsize-policy="0" hsize-policy="2" anchor="8" fill="1" />
-      </item>
-      <item class="javax.swing.JTable" tooltip-text="JTable (javax.swing)" icon="/com/intellij/uiDesigner/icons/table.png" removable="true">
-        <default-constraints vsize-policy="6" hsize-policy="6" anchor="0" fill="3">
-          <preferred-size width="150" height="150" />
-        </default-constraints>
-      </item>
-      <item class="javax.swing.JList" tooltip-text="JList (javax.swing)" icon="/com/intellij/uiDesigner/icons/list.png" removable="true">
-        <default-constraints vsize-policy="6" hsize-policy="2" anchor="0" fill="3">
-          <preferred-size width="150" height="150" />
-        </default-constraints>
-      </item>
-      <item class="javax.swing.JTree" tooltip-text="JTree (javax.swing)" icon="/com/intellij/uiDesigner/icons/tree.png" removable="true">
-        <default-constraints vsize-policy="6" hsize-policy="6" anchor="0" fill="3">
-          <preferred-size width="150" height="150" />
-        </default-constraints>
-      </item>
-      <item class="javax.swing.JTabbedPane" tooltip-text="JTabbedPane (javax.swing)" icon="/com/intellij/uiDesigner/icons/tabbedPane.png" removable="true">
-        <default-constraints vsize-policy="3" hsize-policy="3" anchor="0" fill="3">
-          <preferred-size width="200" height="200" />
-        </default-constraints>
-      </item>
-      <item class="javax.swing.JSplitPane" tooltip-text="JSplitPane (javax.swing)" icon="/com/intellij/uiDesigner/icons/splitPane.png" removable="true">
-        <default-constraints vsize-policy="3" hsize-policy="3" anchor="0" fill="3">
-          <preferred-size width="200" height="200" />
-        </default-constraints>
-      </item>
-    </group>
+  <component name="MavenBuildProjectComponent">
+    <option name="mavenExecutable" value="" />
+    <option name="Settings File" value="C:\Documents and Settings\kohsuke\.m2\settings.xml" />
+    <option name="mavenCommandLineParams" value="" />
+    <option name="vmOptions" value="" />
+    <option name="useMavenEmbedder" value="false" />
+    <option name="useFilter" value="false" />
+    <option name="Batch Mode" value="false" />
+    <option name="Check Plugin Updates" value="false" />
+    <option name="Debug" value="false" />
+    <option name="Errors" value="false" />
+    <option name="Fail At End" value="false" />
+    <option name="Fail Fast" value="false" />
+    <option name="Fail Never" value="false" />
+    <option name="Lax Checksums" value="false" />
+    <option name="No Plugin Registry" value="false" />
+    <option name="No Plugin Updates" value="false" />
+    <option name="Non Recursive" value="false" />
+    <option name="Offline" value="false" />
+    <option name="Reactor" value="false" />
+    <option name="Strict Checksums" value="false" />
+    <option name="Update Plugins" value="false" />
+    <option name="Update Snapshots" value="false" />
+    <option name="Skip Tests" value="false" />
+    <pom-list />
   </component>
   <component name="Palette2">
     <group name="Swing">
@@ -406,6 +333,7 @@
       </item>
     </group>
   </component>
+  <component name="ProjectFileVersion" converted="true" />
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/com4j.iml" filepath="$PROJECT_DIR$/com4j.iml" />
@@ -423,7 +351,13 @@
     </modules>
   </component>
   <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="true" project-jdk-name="JDK1.5" />
-  <component name="ProjectRunConfigurationManager" />
+  <component name="ResourceManagerContainer">
+    <option name="myResourceBundles">
+      <value>
+        <list size="0" />
+      </value>
+    </option>
+  </component>
   <component name="RmicSettings">
     <option name="IS_EANABLED" value="false" />
     <option name="DEBUGGING_INFO" value="true" />
@@ -431,6 +365,10 @@
     <option name="GENERATE_IIOP_STUBS" value="false" />
     <option name="ADDITIONAL_OPTIONS_STRING" value="" />
   </component>
+  <component name="VcsDirectoryMappings">
+    <mapping directory="" vcs="CVS" />
+  </component>
+  <component name="WebServicesPlugin" addRequiredLibraries="true" />
   <component name="com.intellij.jsf.UserDefinedFacesConfigs">
     <option name="USER_DEFINED_CONFIGS">
       <value>
@@ -454,6 +392,5 @@
     <option name="COPY_FORMS_RUNTIME_TO_OUTPUT" value="true" />
     <option name="DEFAULT_LAYOUT_MANAGER" value="GridLayoutManager" />
   </component>
-  <UsedPathMacros />
 </project>
 
