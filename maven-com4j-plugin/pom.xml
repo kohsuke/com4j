@@ -5,7 +5,7 @@
 	<groupId>org.jvnet.com4j</groupId>
 	<artifactId>maven-com4j-plugin</artifactId>
 	<packaging>maven-plugin</packaging>
-	<version>1.0</version>
+	<version>1.1-SNAPSHOT</version>
 
 	<name>COM4J Code Generation Plugin</name>
 	<inceptionYear>2007</inceptionYear>
@@ -77,9 +77,8 @@
 
 	<scm>
 		<connection>scm:cvs:pserver:guest@cvs.dev.java.net:/cvs:com4j/com4j/maven-com4j-plugin</connection>
-		<developerConnection>scm:cvs:pserver:${user.name}@cvs.dev.java.net:/cvs:com4j/com4j/maven-com4j-plugin</developerConnection>
+		<developerConnection>scm:cvs:pserver:kohsuke@cvs.dev.java.net:/cvs:com4j/com4j/maven-com4j-plugin</developerConnection>
 		<url>https://com4j.dev.java.net/source/browse/com4j/com4j/maven-com4j-plugin</url>
-	  <tag>maven-com4j-plugin-1_0</tag>
   </scm>
 
   <distributionManagement>
