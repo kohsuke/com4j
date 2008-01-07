@@ -1,12 +1,14 @@
 package com4j.tlbimp;
 
+import com4j.ComException;
+import com4j.MarshalAs;
+import com4j.Variant;
 import com4j.tlbimp.def.IMethod;
 import com4j.tlbimp.def.IParam;
+import com4j.tlbimp.def.IPrimitiveType;
 import com4j.tlbimp.def.IPtrType;
 import com4j.tlbimp.def.IType;
-import com4j.tlbimp.def.IPrimitiveType;
 import com4j.tlbimp.def.VarType;
-import com4j.MarshalAs;
 
 import java.util.HashSet;
 import java.util.List;
@@ -169,6 +171,14 @@ abstract class MethodBinder {
             if( javaType.endsWith("[]") )
                 javaType = javaType.substring(0,javaType.length()-2)+"...";
         }
+        Variant defValue = p.getDefaultValue();
+        if(defValue!=null)
+            try {
+                o.print("@DefaultValue(\""+ defValue.stringValue()+"\")");
+            } catch (ComException e) {
+                // in rare occasions we get default values that are not printable.
+                // ignore such an error.
+            }
         o.print(javaType);
         o.print(' ');
         String name = p.getName();

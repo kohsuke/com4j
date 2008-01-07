@@ -2,7 +2,10 @@ package com4j.tlbimp.def;
 
 import com4j.Com4jObject;
 import com4j.IID;
+import com4j.NativeType;
+import com4j.ReturnValue;
 import com4j.VTID;
+import com4j.Variant;
 
 /**
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
@@ -23,4 +26,8 @@ public interface IParam extends Com4jObject {
 
     @VTID(7)
     boolean isRetval();
+
+    @VTID(8)
+    @ReturnValue(type=NativeType.VARIANT)
+    Variant getDefaultValue();
 }
