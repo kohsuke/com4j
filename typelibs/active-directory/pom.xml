@@ -7,7 +7,7 @@
     <version>1</version>
   </parent>
   <artifactId>active-directory</artifactId>
-  <version>1.0</version>
+  <version>1.1-SNAPSHOT</version>
   <name>Active Directory typelib for com4j</name>
 
   <build>
@@ -29,8 +29,4 @@
       </plugin>
     </plugins>
   </build>
-
-  <scm>
-    <tag>active-directory-1_0</tag>
-  </scm>
 </project>
