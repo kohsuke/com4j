@@ -16,6 +16,7 @@ public class LongTest extends TestCase {
             fail();
         } catch(ComException e) {
             // expected
+            e.printStackTrace();
         }
     }
 }
