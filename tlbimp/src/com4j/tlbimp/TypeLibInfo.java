@@ -122,11 +122,13 @@ public final class TypeLibInfo {
     public static final class Version implements Comparable<Version> {
         public final int major;
         public final int minor;
+        public final String version;
 
         public Version(String name) {
             int idx = name.indexOf('.');
-            major = Integer.valueOf(name.substring(0,idx));
-            minor = Integer.valueOf(name.substring(idx+1));
+            major = Integer.valueOf(name.substring(0,idx),16);
+            minor = Integer.valueOf(name.substring(idx+1),16);
+            version = name;
         }
 
         public int compareTo(Version rhs) {
@@ -153,7 +155,7 @@ public final class TypeLibInfo {
         }
 
         public String toString() {
-            return major + "." + minor;
+            return version;
         }
     }
 }
