@@ -86,6 +86,11 @@ public:
 			*out = *in1;
 		return S_OK;
 	}
+	STDMETHOD(raw_testInt64)(__int64 x, __int64* y) {
+		if(x!=1)
+			return E_FAIL;
+		*y = x;
+	}
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(TestObject), CTestObject)

@@ -230,6 +230,7 @@ final class TypeBinding {
         // initialize the primitive binding
         pbind( VarType.VT_I2, Short.TYPE, NativeType.Int16, true );
         pbind( VarType.VT_I4, Integer.TYPE, NativeType.Int32, true );
+        pbind( VarType.VT_I8, Long.TYPE, NativeType.Int64, true );
         pbind( VarType.VT_BSTR, String.class, NativeType.BSTR, true );
         pbind( VarType.VT_LPSTR, String.class, NativeType.CSTR, false );
         pbind( VarType.VT_LPWSTR, String.class, NativeType.Unicode, false );
@@ -237,6 +238,7 @@ final class TypeBinding {
         pbind( VarType.VT_UI1, Byte.TYPE, NativeType.Int8, true );
         pbind( VarType.VT_UI2, Short.TYPE, NativeType.Int16, true );
         pbind( VarType.VT_UI4, Integer.TYPE, NativeType.Int32, true );
+        pbind( VarType.VT_UI8, Long.TYPE, NativeType.Int64, true );
         pbind( VarType.VT_INT, Integer.TYPE, NativeType.Int32, true );
         pbind( VarType.VT_HRESULT, Integer.TYPE, NativeType.Int32, true );
         pbind( VarType.VT_UINT, Integer.TYPE, NativeType.Int32, true );
@@ -249,9 +251,6 @@ final class TypeBinding {
         pbind( VarType.VT_DATE, Date.class, NativeType.Date, true );
         pbind( VarType.VT_CY, BigDecimal.class, NativeType.Currency, false );
         pbind( VarType.VT_VOID, void.class, NativeType.Bool/*dummy*/, true );
-        // TODO
-//        pbind( VarType.VT_R4, Float.TYPE, NativeType.Float );
-//        pbind( VarType.VT_R8, Double.TYPE, NativeType.Double );
     }
 
     private static void pbind( VarType vt, Class c, NativeType n, boolean isDefault ) {

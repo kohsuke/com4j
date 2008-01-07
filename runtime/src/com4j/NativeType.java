@@ -145,6 +145,20 @@ public enum NativeType {
     VariantBool_ByRef(104|BYREF,4),
 
     /**
+     * Marshalled as 64-bit integer.
+     *
+     * <p>
+     * Java "long" is 32 bit.
+     *
+     * <p>
+     * Expected Java type:
+     *      long
+     *      {@link Number}
+     */
+    Int64(105,8),
+    Int64_ByRef(105|BYREF,8),
+
+    /**
      * <tt>float</tt>.
      *
      * <p>

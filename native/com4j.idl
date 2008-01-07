@@ -337,6 +337,8 @@ library com4j
 		HRESULT testUI1Conv([in] VARIANT* pIn, [out,retval] VARIANT* ret);
 		[id(6), helpstring("currency")]
 		HRESULT testCurrency([in]CURRENCY* in1, [in] CURRENCY in2, [out,retval] CURRENCY* out);
+		[id(7), helpstring("test 64bit int conversion")]
+		HRESULT testInt64([in]__int64 x, [out,retval]__int64* y);
 	};
 
 	[

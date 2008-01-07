@@ -37,6 +37,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 		INT8	int8;
 		INT16	int16;
 		INT32	int32;
+		INT64	int64;
 		double d;
 		float f;
 		void*	pv;
@@ -129,6 +130,11 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				_ASSERT( sizeof(INT32)==sizeof(jint) );
 				int32 = javaLangNumber_intValue(env,arg);
 				_asm push int32;
+				break;
+
+			case cvINT64:
+				int64 = javaLangNumber_longValue(env,arg);
+				_asm push int64;
 				break;
 
 			case cvPVOID:
@@ -359,6 +365,10 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 
 				case cvINT32:
 					retUnm = new IntUnmarshaller(env,NULL);
+					break;
+
+				case cvINT64:
+					retUnm = new LongUnmarshaller(env,NULL);
 					break;
 
 				case cvBool:
