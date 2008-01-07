@@ -128,6 +128,7 @@ final class StandardComMethod extends ComMethod {
         defaultConversions.put( GUID.class, NativeType.GUID );
         defaultConversions.put( double.class, NativeType.Double );
         defaultConversions.put( float.class, NativeType.Float );
+        defaultConversions.put( long.class, NativeType.Int64 );
         defaultConversions.put( int.class, NativeType.Int32 );
         defaultConversions.put( short.class, NativeType.Int16 );
         defaultConversions.put( byte.class, NativeType.Int8 );

@@ -115,7 +115,13 @@ final class Wrapper implements InvocationHandler, Com4jObject {
 
         if(invCache==null)
             invCache = new InvocationThunk();
-        return invCache.invoke(getMethod(method),args);
+        try {
+            return invCache.invoke(getMethod(method),args);
+        } catch (ExecutionException e) {
+            if(e.getCause() instanceof ComException)
+                throw new ComException((ComException)e.getCause());
+            throw e;
+        }
     }
 
     private ComMethod getMethod(Method method) {

@@ -35,6 +35,14 @@ public class ComException extends RuntimeException {
         this(msg,hresult,null,-1);
     }
 
+    public ComException(ComException cause) {
+        super(cause.getDetailMessage(),cause);
+        this.hresult = cause.hresult;
+        this.fileName = cause.fileName;
+        this.line = cause.line;
+        this.errorInfo = cause.errorInfo;
+    }
+
     /*package*/ void setErrorInfo(ErrorInfo errorInfo) {
         this.errorInfo = errorInfo;
     }
@@ -80,6 +88,10 @@ public class ComException extends RuntimeException {
         if(s!=null) {
             return super.getMessage()+" : "+s;
         }
+        return super.getMessage();
+    }
+
+    public String getDetailMessage() {
         return super.getMessage();
     }
 
