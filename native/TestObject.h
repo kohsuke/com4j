@@ -87,9 +87,10 @@ public:
 		return S_OK;
 	}
 	STDMETHOD(raw_testInt64)(__int64 x, __int64* y) {
-		if(x!=1)
+		if(x!=0x100000002L)
 			return E_FAIL;
 		*y = x;
+		return S_OK;
 	}
 };
 

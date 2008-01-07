@@ -134,7 +134,10 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 
 			case cvINT64:
 				int64 = javaLangNumber_longValue(env,arg);
-				_asm push int64;
+				int32 = int64>>32;
+				_asm push int32;
+				int32 = int64;
+				_asm push int32;
 				break;
 
 			case cvPVOID:
@@ -455,6 +458,8 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 			}
 		}
 		env->Throw( (jthrowable)comexception_new_hr(env, str, (jint)hr, env->NewStringUTF(__FILE__), (jint)__LINE__ ) );
+		if(retUnm!=NULL)	delete retUnm;
+		return NULL;
 	}
 
 	if(retUnm==NULL)	return NULL;
