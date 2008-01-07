@@ -227,6 +227,7 @@ library com4j
 		HRESULT isIn([out,retval]VARIANT_BOOL* pValue);
 		HRESULT isOut([out,retval]VARIANT_BOOL* pValue);
 		HRESULT isRetval([out,retval]VARIANT_BOOL* pValue);
+		HRESULT getDefaultValue([out,retval] VARIANT* pValue);
 	};
 
 	[

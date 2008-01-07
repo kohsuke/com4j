@@ -265,6 +265,13 @@ public:
 		*ppType = createType(m_pParent->m_pParent, desc().tdesc);
 		return S_OK;
 	}
+	STDMETHOD(raw_getDefaultValue)(VARIANT* pValue) {
+		ELEMDESC& d = desc();
+		if(d.paramdesc.wParamFlags&PARAMFLAG_FHASDEFAULT && d.paramdesc.pparamdescex!=NULL)
+			return VariantCopy(pValue, &(d.paramdesc.pparamdescex->varDefaultValue));
+		else // no default value
+			return VariantClear(pValue);
+	}
 	HRESULT getFlag( int mask, VARIANT_BOOL* pValue ) {
 		*pValue = ( desc().paramdesc.wParamFlags & mask )?VARIANT_TRUE:VARIANT_FALSE;
 		return S_OK;
