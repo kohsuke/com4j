@@ -382,6 +382,8 @@ public abstract class COM4J {
         return unwrap(obj).getPtr();
     }
 
+    private static final Logger LOGGER = Logger.getLogger(COM4J.class.getName());
+
     static {
         loadNativeLibrary();
         Native.init();
@@ -391,7 +393,7 @@ public abstract class COM4J {
     }
 
     private static void loadNativeLibrary() {
-        Throwable cause = null;
+        Throwable cause;
         try {
             // load the native part of the code.
             // first try java.library.path
@@ -448,6 +450,4 @@ public abstract class COM4J {
             out.close();
         }
     }
-
-    private static final Logger LOGGER = Logger.getLogger(COM4J.class.getName());
 }
