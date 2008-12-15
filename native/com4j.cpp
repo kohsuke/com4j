@@ -6,6 +6,11 @@
 #include "safearray.h"
 #include "eventReceiver.h"
 
+/**  
+ * Original auther  (C) Kohsuke Kawaguchi (kk@kohsuke.org)
+ * Modified by      (C) Michael Schnell (scm, 2008, Michael-Schnell@gmx.de)
+ */
+
 // MsgWaitForMultipleObjects
 
 JavaVM* jvm;
@@ -44,17 +49,22 @@ JNIEXPORT jobject JNICALL Java_com4j_Native_invokeDispatch( JNIEnv* env, jclass 
 	VARIANT* p = new VARIANT[params.cArgs];
 	params.rgvarg = p;
 
-	for( int i=0; i<params.cArgs; i++ ) {
+	for(unsigned int i=0; i<params.cArgs; i++ ) {
+    // we have to store the params in reverse order! (scm)
+    int destIndex = params.cArgs - 1 - i; 
 		VARIANT* v = convertToVariant(env,env->GetObjectArrayElement(args,i));
 		if(v==NULL) {
 			// VariantInit(&p[i]);
-			p[i] = vtMissing;
+			p[destIndex] = vtMissing;
 		} else {
-			p[i] = *v;	// just transfer the ownership
+			p[destIndex] = *v;	// just transfer the ownership
 			delete v;
 		}
 	}
 
+  // see MSDN IDispatch::Invoke
+  // "When you use IDispatch::Invoke() with DISPATCH_PROPERTYPUT or DISPATCH_PROPERTYPUTREF, you have to specially
+  //  initialize the cNamedArgs and rgdispidNamedArgs elements of your DISPPARAMS structure with the following:"
 	if(flag==DISPATCH_PROPERTYPUT || flag==DISPATCH_PROPERTYPUTREF) {
 		params.cNamedArgs = 1;
 		params.rgdispidNamedArgs = &dispIdPropertyPut;
@@ -66,7 +76,7 @@ JNIEXPORT jobject JNICALL Java_com4j_Native_invokeDispatch( JNIEnv* env, jclass 
 	jobject retVal = com4j_Variant_new(env);
 
 	HRESULT hr = reinterpret_cast<IDispatch*>(pComObject)->Invoke(
-		dispId, IID_NULL, 0, flag, &params, com4jVariantToVARIANT(env,retVal), &excepInfo, NULL );
+		dispId, IID_NULL, 0, (WORD) flag, &params, com4jVariantToVARIANT(env,retVal), &excepInfo, NULL );
 
 	if(FAILED(hr)) {
 		error(env,__FILE__,__LINE__,hr,"Invocation failed: %s",(LPCSTR)_bstr_t(excepInfo.bstrDescription));
@@ -103,6 +113,7 @@ JNIEXPORT jint JNICALL Java_com4j_Native_queryInterface( JNIEnv* env, jclass __u
 	
 	MyGUID iid(iid1,iid2);
 	void* p;
+
 	HRESULT hr = toComObject(pComObject)->QueryInterface(iid,&p);
 	if(FAILED(hr)) {
 		return 0;
@@ -243,6 +254,52 @@ JNIEXPORT jint JNICALL Java_com4j_Native_getObject(
 	return reinterpret_cast<jint>(pUnk);
 }
 
+//JNIEXPORT jobject JNICALL Java_com4j_Native_getROTSnapshot(JNIEnv *, jclass){
+//  IRunningObjectTablePtr rot;
+//  rot->Register
+//    IRunningObjectTable
+//#include "objidl.h"
+//}
+
+JNIEXPORT jint JNICALL Java_com4j_Native_getRunningObjectTable(JNIEnv* env, jclass __unused__){
+  IRunningObjectTable *rot;
+  HRESULT hr = ::GetRunningObjectTable(0, &rot);
+  if(hr != S_OK){
+    error(env,__FILE__,__LINE__,hr,"GetRunningObjectTable failed");
+		return 0;
+  }
+  return reinterpret_cast<jint>(rot);
+}
+
+JNIEXPORT jint JNICALL Java_com4j_Native_getEnumMoniker(JNIEnv* env, jclass __unused__, jint rotPointer){
+  IRunningObjectTable *rot = reinterpret_cast<IRunningObjectTable*>(rotPointer);
+  IEnumMoniker *moniker;
+  HRESULT hr = rot->EnumRunning(&moniker);
+  if(hr != S_OK){
+    error(env, __FILE__, __LINE__, hr, "IRunningObjectTable::EnumRunning failed");
+    return 0;
+  }
+  moniker->Reset();
+  return reinterpret_cast<jint>(moniker);
+}
+
+JNIEXPORT jint JNICALL Java_com4j_Native_getNextRunningObject(JNIEnv *env, jclass __unused__, jint rotPointer, jint enumMonikerPointer){
+  IRunningObjectTable *rot = reinterpret_cast<IRunningObjectTable*>(rotPointer);
+  IEnumMoniker *enumMoniker = reinterpret_cast<IEnumMoniker*>(enumMonikerPointer);
+  IMoniker *moniker;
+  HRESULT hr = enumMoniker->Next(1, &moniker, NULL);
+  if(hr == S_FALSE) {
+    // This value indicates that there are no more elements, so do not report an error but return 0;
+    // The Java part is responsible to call the Release on the rot and enumMoniker pointers!
+    return 0;
+  } else if(hr != S_OK){    
+    error(env, __FILE__, __LINE__, hr, "IEnumMoniker:Next failed");
+    return 0;
+  }
+  IUnknown *unknown;
+  rot->GetObject(moniker, &unknown);
+  return reinterpret_cast<jint>(unknown);
+}
 
 JNIEXPORT jstring JNICALL Java_com4j_Native_getErrorMessage(
 	JNIEnv* env, jclass __unused__, jint hresult) {
@@ -358,3 +415,4 @@ JNIEXPORT void JNICALL Java_com4j_Native_unadvise( JNIEnv* env, jclass _, jint p
 JNIEXPORT jobject JNICALL Java_com4j_Native_createBuffer(JNIEnv* env, jclass _, jint ptr, jint size) {
 	return env->NewDirectByteBuffer(reinterpret_cast<void*>(ptr),size);
 }
+

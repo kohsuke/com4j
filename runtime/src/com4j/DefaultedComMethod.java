@@ -6,9 +6,9 @@ import java.lang.reflect.Method;
  * {@link ComMethod} that calls default methods.
  *
  * <p>
- * This is used so that the user cna do {@code foo()}
+ * This is used so that the user can do {@code foo()}
  * whereas the real COM method invocation goes like
- * {@code foo().bar().zot()}. 
+ * {@code foo().bar().zot()}.
  *
  * @author Kohsuke Kawaguchi
  */

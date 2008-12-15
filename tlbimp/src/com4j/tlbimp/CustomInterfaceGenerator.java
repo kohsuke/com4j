@@ -4,6 +4,7 @@ import com4j.GUID;
 import com4j.tlbimp.Generator.LibBinder;
 import com4j.tlbimp.def.IInterfaceDecl;
 import com4j.tlbimp.def.IMethod;
+import com4j.tlbimp.def.IProperty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
  * Generates custom interface definition.
  *
  * @author Kohsuke Kawaguchi
+ * @author Michael Schnell (scm, (C) 2008, Michael-Schnell@gmx.de)
  */
 final class CustomInterfaceGenerator extends InvocableInterfaceGenerator<IInterfaceDecl> {
     CustomInterfaceGenerator(LibBinder lib, IInterfaceDecl t) {
@@ -58,5 +60,10 @@ final class CustomInterfaceGenerator extends InvocableInterfaceGenerator<IInterf
         protected boolean needsMarshalAs() {
             return true;
         }
+    }
+
+    @Override
+    protected void generateProperty(IProperty p, IndentingWriter o) throws BindingException {
+      throw new BindingException("Don't know how to generate a COM Property for a custom interface");
     }
 }

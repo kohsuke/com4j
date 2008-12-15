@@ -41,6 +41,39 @@ JNIEXPORT jint JNICALL Java_com4j_Native_getObject
 
 /*
  * Class:     com4j_Native
+ * Method:    getROTSnapshot
+ * Signature: ()Ljava/util/ArrayList;
+ */
+JNIEXPORT jobject JNICALL Java_com4j_Native_getROTSnapshot(JNIEnv *, jclass);
+
+
+/*
+ * Class:     com4j_Native
+ * Method:    getRunningObjectTable
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_com4j_Native_getRunningObjectTable
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     com4j_Native
+ * Method:    getEnumMoniker
+ * Signature: (I)I
+ */
+JNIEXPORT jint JNICALL Java_com4j_Native_getEnumMoniker
+  (JNIEnv *, jclass, jint);
+
+/*
+ * Class:     com4j_Native
+ * Method:    getNextRunningObject
+ * Signature: (II)I
+ */
+JNIEXPORT jint JNICALL Java_com4j_Native_getNextRunningObject
+  (JNIEnv *, jclass, jint, jint);
+
+
+/*
+ * Class:     com4j_Native
  * Method:    addRef
  * Signature: (I)V
  */

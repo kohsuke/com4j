@@ -13,6 +13,7 @@ import java.io.File;
  * Reference to another type library and which package it is in.
  *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
+ * @author Michael Schnell (scm, (C) 2008, Michael-Schnell@gmx.de)
  */
 public final class Lib {
     /**
@@ -29,7 +30,7 @@ public final class Lib {
     /**
      * Java package name to put the generated files into.
      */
-    private String packageName;
+    private String packageName = null;
 
     /**
      * The file that contains a type library.
@@ -78,6 +79,11 @@ public final class Lib {
     }
 
     public String getPackage() {
+        if(packageName == null){
+          IWTypeLib tlb = COM4J.loadTypeLibrary(file).queryInterface(IWTypeLib.class);
+          packageName = tlb.getName().toLowerCase();
+          tlb.dispose();
+        }
         return packageName;
     }
 

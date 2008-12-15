@@ -16,6 +16,7 @@ enum Messages {
     NO_SUCH_FILE,
     CANT_SPECIFY_LIBID_AND_FILENAME,
     REFERENCED_TYPELIB_GENERATED,
+    COULDNT_LOCATE_REFERENCED_TYPELIB,
     ;
 
     private static final ResourceBundle rb = ResourceBundle.getBundle(Messages.class.getName());

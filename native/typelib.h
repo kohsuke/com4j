@@ -2,6 +2,11 @@
 //#include "com4j_h.h"
 #import "com4j.tlb" no_namespace
 
+/**  
+ * Original auther  (C) Kohsuke Kawaguchi (kk@kohsuke.org)
+ * Modified by      (C) Michael Schnell (scm, 2008, Michael-Schnell@gmx.de)
+ */
+
 namespace typelib {
 
 class CTypeLib;
@@ -352,7 +357,61 @@ public:
 
 
 
+class ATL_NO_VTABLE CProperty : 
+	public CComObjectRootEx<CComSingleThreadModel>,
+	public CComCoClass<CConstant, &__uuidof(IConstant)>,
+	public IProperty
+{
+	CTypeDeclPtr	m_pParent;
+	VARDESC*		m_pDesc;
+public:
+	CProperty() {}
+	~CProperty() {
+		getTypeInfo()->ReleaseVarDesc(m_pDesc);
+		m_pDesc = NULL;
+	}
 
+	void init( CTypeDecl* pParent, int idx ) {
+		m_pParent = pParent;
+		getTypeInfo()->GetVarDesc(idx,&m_pDesc);
+	}
+
+	static CComObject<CProperty>* create( CTypeDecl* pParent, int idx ) {
+		CComObject<CProperty>* pObj = NULL;
+		CComObject<CProperty>::CreateInstance(&pObj);
+		pObj->AddRef();
+		pObj->init(pParent,idx);
+		return pObj;
+	}
+
+// DECLARE_REGISTRY_RESOURCEID(...)
+
+DECLARE_PROTECT_FINAL_CONSTRUCT()
+
+BEGIN_COM_MAP(CProperty)
+	COM_INTERFACE_ENTRY(IProperty)
+	COM_INTERFACE_ENTRY(IUnknown)
+END_COM_MAP()
+
+public:
+  ITypeInfo* getTypeInfo();
+
+	STDMETHOD(raw_getName)(BSTR* pName) {
+		UINT unused;
+		return getTypeInfo()->GetNames( m_pDesc->memid, pName, 1, &unused );
+	}
+	STDMETHOD(raw_getType)(IType** ppType) {
+		*ppType = createType(m_pParent, m_pDesc->elemdescVar.tdesc);
+		return S_OK;
+	}
+	STDMETHOD(raw_getHelpString)(BSTR* pStr) {
+		return getTypeInfo()->GetDocumentation( m_pDesc->memid, NULL, pStr, NULL, NULL );
+	}
+	STDMETHOD(raw_getDispId)(int* pDispid) {
+		*pDispid = m_pDesc->memid;
+		return S_OK;
+	}
+};
 
 
 
@@ -520,6 +579,19 @@ public:
 			return E_INVALIDARG;
 		} else {
 			*ppMethod = CMethod::create(this,index);
+			return S_OK;
+		}
+	}
+	STDMETHOD(raw_countProperties)(int* pValue) {
+		*pValue = m_pAttr->cVars;
+		return S_OK;
+	}
+  STDMETHOD(raw_getProperty)( int index, IProperty** ppConstant ) {
+		if(index<0 || m_pAttr->cVars<=index) {
+			*ppConstant = NULL;
+			return E_INVALIDARG;
+		} else {
+			*ppConstant = CProperty::create(this,index);
 			return S_OK;
 		}
 	}

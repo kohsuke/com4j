@@ -1,15 +1,15 @@
 package com4j.tlbimp;
 
-import com4j.tlbimp.def.IMethod;
-import com4j.tlbimp.def.InvokeKind;
-import com4j.tlbimp.def.IInterface;
-import com4j.GUID;
-import com4j.Com4jObject;
-
 import java.io.IOException;
-import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import com4j.GUID;
+import com4j.tlbimp.def.IInterface;
+import com4j.tlbimp.def.IMethod;
+import com4j.tlbimp.def.IProperty;
+import com4j.tlbimp.def.InvokeKind;
 
 /**
  * Generates an interface definition.
@@ -19,6 +19,7 @@ import java.util.List;
  * and {@link EventInterfaceGenerator}.
  *
  * @author Kohsuke Kawaguchi
+ * @author Michael Schnell (scm, (C) 2008, Michael-Schnell@gmx.de)
  */
 abstract class InterfaceGenerator<T extends IInterface> {
 
@@ -73,6 +74,7 @@ abstract class InterfaceGenerator<T extends IInterface> {
 
         o.println(" {");
         o.in();
+        o.println("// Methods:");
 
         // see issue 15.
         // to avoid binding both propput and propputref,
@@ -97,6 +99,19 @@ abstract class InterfaceGenerator<T extends IInterface> {
                 g.el.error(e);
             }
             m.dispose();
+        }
+				// Generating getter and setter for the COM IDispatch Properties
+        o.println("// Properties:");
+        for(int i = 0; i < t.countProperties(); i++){
+          try {
+            o.startBuffering();
+            generateProperty(t.getProperty(i), o);
+            o.commit();
+          } catch( BindingException e ) {
+            o.cancel();
+            e.addContext("interface "+t.getName());
+            g.el.error(e);
+          }
         }
 
         o.out();
@@ -130,4 +145,6 @@ abstract class InterfaceGenerator<T extends IInterface> {
     protected abstract GUID getIID();
 
     protected abstract void generateMethod(IMethod m, IndentingWriter o) throws BindingException;
+
+    protected abstract void generateProperty(IProperty p, IndentingWriter o) throws BindingException;
 }

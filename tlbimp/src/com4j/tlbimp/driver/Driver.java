@@ -7,6 +7,7 @@ import com4j.tlbimp.CodeWriter;
 import com4j.tlbimp.ErrorListener;
 import com4j.tlbimp.Generator;
 import com4j.tlbimp.ReferenceResolver;
+import com4j.tlbimp.TypeLibInfo;
 import com4j.tlbimp.def.IWTypeLib;
 
 import java.io.IOException;
@@ -18,6 +19,7 @@ import java.util.Locale;
 
 /**
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
+ * @author Michael Schnell (scm, (C) 2008, Michael-Schnell@gmx.de)
  */
 final class Driver {
 
@@ -54,19 +56,35 @@ final class Driver {
 
         ReferenceResolver resolver = new ReferenceResolver() {
             public String resolve(IWTypeLib lib) {
-                GUID libid = lib.getLibid();
-                if( libs.containsKey(libid) ) {
-                    String pkg = libs.get(libid).getPackage();
-                    if(pkg!=null)
-                        return pkg;
-                }
 
+                GUID libid = lib.getLibid();
                 // TODO: move this to a filter
                 if( libid.equals(GUID_STDOLE))
                     return "";  // don't generate STDOLE. That's replaced by com4j runtime.
 
-                if( libsToGen.add(lib) )
+                if(!libsToGen.contains(lib)){
+                  try {
+                    Lib l = new Lib();
+                    TypeLibInfo tli = TypeLibInfo.locate(lib.getLibid(), null);
+                    l.setFile(tli.typeLibrary);
+                    addLib(l);
+                    libsToGen.add(lib);
+                  } catch (BindingException e) {
+                    el.warning(Messages.COULDNT_LOCATE_REFERENCED_TYPELIB.format(lib.getName()));
+                    e.printStackTrace();
                     el.warning(Messages.REFERENCED_TYPELIB_GENERATED.format(lib.getName(),packageName));
+                    libsToGen.add(lib);
+                  }
+                }
+
+                if( libs.containsKey(libid) ) {
+                    String pkg = libs.get(libid).getPackage();
+                    if(pkg!=null)
+                        return packageName + "." + pkg;
+                }
+
+//                if( libsToGen.add(lib) )
+//                    el.warning(Messages.REFERENCED_TYPELIB_GENERATED.format(lib.getName(),packageName));
 
                 return packageName;
             }

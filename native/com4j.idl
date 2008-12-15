@@ -5,7 +5,13 @@
 	We don't actually register those interfaces and classes, but
 	defining the interfaces via IDL would allow us to use tlbimp to
 	use itself to build itself.
+
+  
+ * Original auther  (C) Kohsuke Kawaguchi (kk@kohsuke.org)
+ * Modified by      (C) Michael Schnell (scm, 2008, Michael-Schnell@gmx.de)
 */
+
+
 
 import "oaidl.idl";
 import "ocidl.idl";
@@ -28,6 +34,7 @@ library com4j
 	interface IMethod;
 	interface IParam;
 	interface IConstant;
+	interface IProperty;
 	interface IImplementedInterfaceDecl;
 
 	typedef enum {
@@ -125,13 +132,15 @@ library com4j
 		HRESULT getParent([out,retval] ITypeLibrary** ppParent );
 	};
 
+
+  
 	[
 		object,
-		uuid(3BDCCFBF-B493-4d54-B1D0-4DE2FB1AFC78),
-		helpstring("Dispinterface. ITypeDecl can be casted to this when its kind is TypeKind_DISPATCH"),
+		uuid(FEADAF50-8751-4a12-87D6-B0EAA190C299),
+		helpstring("Generic interface, base interface of a custom interface and a dispatch interface."),
 		pointer_default(unique)
 	]
-	interface IDispInterfaceDecl : ITypeDecl
+	interface IInterface : ITypeDecl
 	{
 		[helpstring("gets the GUID of this type")]
 		HRESULT getGUID([out,retval] GUID* pValue);
@@ -141,7 +150,23 @@ library com4j
 
 		[helpstring("method")]
 		HRESULT getMethod([in] int index, [out,retval] IMethod** ppMethod );
-	
+
+    [helpstring("number of properties on this interface")]
+		HRESULT countProperties([out,retval] int* pValue);
+
+		[helpstring("property")]
+		HRESULT getProperty([in] int index, [out,retval] IProperty** ppProperty);
+	};
+
+
+	[
+		object,
+		uuid(3BDCCFBF-B493-4d54-B1D0-4DE2FB1AFC78),
+		helpstring("Dispinterface. ITypeDecl can be casted to this when its kind is TypeKind_DISPATCH"),
+		pointer_default(unique)
+	]
+	interface IDispInterfaceDecl : IInterface
+	{	
 		[helpstring("return true if this interface is a dual interface")]
 		HRESULT isDual([out,retval]VARIANT_BOOL* pOut);
 
@@ -167,17 +192,8 @@ library com4j
 		helpstring("VTBL Interface. ITypeDecl can be casted to this when its kind is TypeKind_DISPATCH"),
 		pointer_default(unique)
 	]
-	interface IInterfaceDecl : ITypeDecl
+	interface IInterfaceDecl : IInterface
 	{
-		[helpstring("gets the GUID of this type")]
-		HRESULT getGUID([out,retval] GUID* pValue);
-
-		[helpstring("number of methods on this interface")]
-		HRESULT countMethods([out,retval] int* pValue);
-
-		[helpstring("method")]
-		HRESULT getMethod([in] int index, [out,retval] IMethod** ppMethod );
-
 		[helpstring("count the number of the base interfaces")]
 		HRESULT countBaseInterfaces([out,retval] int* pValue);
 
@@ -211,6 +227,22 @@ library com4j
 		HRESULT getFlags([out,retval]int* pflags);
 	};
 
+  [
+    object,
+    uuid(5B18BA32-4A44-4a45-A80B-59631299A7EA),
+    helpstring(""),
+    pointer_default(unique)
+  ]
+  interface IProperty : IUnknown
+  {
+    [helpstring("Name of the property")]
+ 		HRESULT getName([out,retval] BSTR* pName);
+		HRESULT getHelpString([out,retval] BSTR* pHelpString);
+    HRESULT getType([out,retval] IType** ppType);
+		//[helpstring("the method's offset in the virtual table.")]
+		//HRESULT getVtableIndex([out,retval]int* pOut);
+		HRESULT getDispId([out,retval]int* pDispId);
+  }
 
 	[
 		object,

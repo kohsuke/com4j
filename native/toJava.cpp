@@ -70,8 +70,11 @@ struct Thunk {
 	A Java object wrapped as a COM object.
 */
 class JComObject {
-private:
+
+public: // forward declaration
 	struct TearOff;
+
+private:
 	map<GUID,TearOff> tearOffs;
 	long refCount;
 
@@ -126,7 +129,7 @@ struct FunctionTable {
 private:
 	jclass javaInterface;
 	const int funcSize;
-	Thunk* functions[];
+	Thunk* functions[]; //TODO: This causes the comiler warning C4200
 
 	FunctionTable(int funcSize, int stackSize[]) : funcSize(funcSize) {
 		for( int i=0; i<funcSize; i++ ) {

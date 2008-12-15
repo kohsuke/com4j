@@ -106,7 +106,8 @@ abstract class InvocableInterfaceGenerator<T extends IInterface> extends Interfa
             while(true) {
                 MethodBinderImpl mb = createMethodBinder(m);
                 // only handle methods of the form "HRESULT foo([out,retval]IFoo** ppOut);
-                if (m.getParamCount() != 1 || mb.retParam != 0 || mb.params[mb.retParam].isIn())
+                // TODO: Check: do not handle enums?? Causes NullPointerExceptions..
+                if (m.getParamCount() != 1 || mb.retParam != 0 || mb.params[mb.retParam].isIn() || MethodBinder.isEnum(m))
                     break;
 
                 // we expect it to be an interface pointer.
@@ -147,6 +148,11 @@ abstract class InvocableInterfaceGenerator<T extends IInterface> extends Interfa
 
             if(m.getParamCount()<2)
                 return; // the default method has to have at least one in param and one ret val
+
+            // TODO: check if this is correct. 
+            if(createMethodBinder(m).retParam < 0){
+              return; // there is no return value.. This would cause a NullPointerException
+            }
 
             o.printf("@VTID(%1d)",
                 method.getVtableIndex());

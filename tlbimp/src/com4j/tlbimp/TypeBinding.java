@@ -23,7 +23,7 @@ import java.math.BigDecimal;
 
 /**
  * Represents how a type is bound between native type
- * and Jva type.
+ * and Java type.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -228,6 +228,7 @@ final class TypeBinding {
 
     static {
         // initialize the primitive binding
+        pbind( VarType.VT_I1, Byte.TYPE, NativeType.Int8, true );
         pbind( VarType.VT_I2, Short.TYPE, NativeType.Int16, true );
         pbind( VarType.VT_I4, Integer.TYPE, NativeType.Int32, true );
         pbind( VarType.VT_I8, Long.TYPE, NativeType.Int64, true );

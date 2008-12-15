@@ -32,6 +32,10 @@ class Native {
      */
     static native int getObject( String fileName, String progId );
 
+    static native int getRunningObjectTable();
+    static native int getEnumMoniker(int rotPointer);
+    static native int getNextRunningObject(int rotPointer, int enumMonikerPointer);
+
     /**
      * Calls <tt>IUnknown.AddRef</tt>.
      */

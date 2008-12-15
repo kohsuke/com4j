@@ -6,22 +6,14 @@ import com4j.VTID;
 
 /**
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
+ * @author Michael Schnell (scm, (C) 2008, Michael-Schnell@gmx.de)
  */
 @IID("{3BDCCFBF-B493-4d54-B1D0-4DE2FB1AFC78}")
 public interface IDispInterfaceDecl extends ITypeDecl, IInterface {
-    @VTID(7)
-    GUID getGUID();
-
-    @VTID(8)
-    int countMethods();
-
-    @VTID(9)
-    IMethod getMethod(int idx);
-
     /**
      * return true if this interface is a dual interface
      */
-    @VTID(10)
+    @VTID(12)
     boolean isDual();
 
     /**
@@ -29,6 +21,8 @@ public interface IDispInterfaceDecl extends ITypeDecl, IInterface {
      *
      * @see #isDual()
      */
-    @VTID(11)
+    @VTID(13)
     IInterfaceDecl getVtblInterface();
+
+ 
 }

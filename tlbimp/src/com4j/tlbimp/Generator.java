@@ -35,6 +35,7 @@ import java.util.Set;
  * The actual details of the generation is delegated to other generator objects.
  *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
+ * @author Michael Schnell (scm, (C) 2008, Michael-Schnell@gmx.de)
  */
 public final class Generator {
     private final CodeWriter writer;
@@ -59,6 +60,19 @@ public final class Generator {
      * {@link IWTypeLib}s specified to the {@link #generate(IWTypeLib)} method.
      */
     private final Set<LibBinder> generatedTypeLibs = new HashSet<LibBinder>();
+
+    /**
+     * Specifies if the get and put COM methods should be renamed to a more Java
+     * like fashion. If true, a COM put method named "Item" will be named "setItem" on the
+     * Java side. If false, it will be named "item" (scm)
+     */
+    boolean renameGetterAndSetters = true; // TODO: make this configurable via arguments to tlbimp
+
+    /**
+     * If this value is true, the type generator will always generate enums that implement
+     * the ComEnum interface. (scm)
+     */
+    boolean alwaysUseComEnums = true;// TODO: make this configurable via arguments to tlbimp
 
     public Generator( CodeWriter writer, ReferenceResolver resolver, ErrorListener el, Locale locale ) {
         this.el = el;
@@ -142,9 +156,15 @@ public final class Generator {
             IImplementedInterfaceDecl impl = t.getImplementedInterface(i);
             if(impl.isSource())
                 continue;
-            IInterfaceDecl c = getCustom(impl);
-            if(impl.isDefault() && c!=null)
+            if(impl.isDefault()){
+              IInterfaceDecl c = getCustom(impl);
+              if(c!=null)
                 return c;
+              IDispInterfaceDecl d = impl.getType().queryInterface(IDispInterfaceDecl.class);
+              if(d != null){
+                return d;
+              }
+            }
         }
 
         // if none is found, look for any non-source interface
@@ -478,11 +498,15 @@ public final class Generator {
 
             // check if we need to use ComEnum
             boolean needComEnum = false;
-            for( int i=0; i<len; i++ ) {
+            if(alwaysUseComEnums){
+              needComEnum = true;
+            } else {
+              for( int i=0; i<len; i++ ) {
                 if( cons[i].getValue()!=i ) {
                     needComEnum = true;
                     break;
                 }
+              }
             }
 
             // generate the prolog

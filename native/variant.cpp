@@ -211,6 +211,7 @@ static SetterEntry setters[] = {
 	{ &javaLangString,	VT_BSTR,		new VariantHandlerImpl<VT_BSTR,		xducer::StringXducer>() },
 	{ &javaLangFloat,	VT_R4,			new VariantHandlerImpl<VT_R4,		xducer::BoxedFloatXducer>() },
 	{ &javaLangDouble,	VT_R8,			new VariantHandlerImpl<VT_R8,		xducer::BoxedDoubleXducer>() },
+	{ &javaLangByte,	VT_I1,			new VariantHandlerImpl<VT_I1,		xducer::BoxedByteXducer>() }, 
 	{ &javaLangShort,	VT_I2,			new VariantHandlerImpl<VT_I2,		xducer::BoxedShortXducer>() },
 	{ &javaLangInteger,	VT_I4,			new VariantHandlerImpl<VT_I4,		xducer::BoxedIntXducer>() },
 	{ &javaLangLong,	VT_I8,			new VariantHandlerImpl<VT_I8,		xducer::BoxedLongXducer>() },

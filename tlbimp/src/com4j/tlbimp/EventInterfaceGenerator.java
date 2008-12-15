@@ -4,6 +4,7 @@ import com4j.GUID;
 import com4j.tlbimp.Generator.LibBinder;
 import com4j.tlbimp.def.IDispInterfaceDecl;
 import com4j.tlbimp.def.IMethod;
+import com4j.tlbimp.def.IProperty;
 import com4j.tlbimp.def.IType;
 import com4j.tlbimp.def.InvokeKind;
 
@@ -14,6 +15,7 @@ import java.util.List;
  * Generates the out-going (AKA event sink) interface.
  *
  * @author Kohsuke Kawaguchi
+ * @author Michael Schnell (scm, (C) 2008, Michael-Schnell@gmx.de)
  */
 final class EventInterfaceGenerator extends InterfaceGenerator<IDispInterfaceDecl> {
     public EventInterfaceGenerator(LibBinder lib, IDispInterfaceDecl t) {
@@ -47,6 +49,11 @@ final class EventInterfaceGenerator extends InterfaceGenerator<IDispInterfaceDec
         MethodBinder mb = new MethodBinderImpl(g,m);
         mb.declare(o);
         o.println();
+    }
+
+    @Override
+    protected void generateProperty(IProperty p, IndentingWriter o) throws BindingException{
+      throw new BindingException("Don't know how to generate a COM Property for a event interface");
     }
 
     private final class MethodBinderImpl extends MethodBinder {

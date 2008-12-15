@@ -128,6 +128,9 @@ ITypeInfo* CConstant::getTypeInfo() {
 	return m_pParent->m_pType;
 }
 
+ITypeInfo* CProperty::getTypeInfo() {
+	return m_pParent->m_pType;
+}
 
 
 

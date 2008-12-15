@@ -4,6 +4,10 @@
 #include "safearray.h"
 #include "variant.h"
 
+/**  
+ * Original auther  (C) Kohsuke Kawaguchi (kk@kohsuke.org)
+ * Modified by      (C) Michael Schnell (scm, 2008, Michael-Schnell@gmx.de)
+ */
 
 Environment::~Environment() {
 	// run post actions
@@ -93,7 +97,10 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 			case cvINT8:
 				_ASSERT( sizeof(INT8)==sizeof(jbyte) );
 				int8 = javaLangNumber_byteValue(env,arg);
-				_asm push int8;
+				// scm: Unlike push int16, pushing int8 will correctly push a dword (32bit) onto stack, but will issue an compiler waring (C4409)
+				// _asm push int8; // See also compiler warning C4409! (scm)
+				int32 = int8;
+				_asm push int32;
 				break;
 
 			case cvINT8_byRef:
@@ -109,8 +116,12 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 
 			case cvINT16:
 				_ASSERT( sizeof(INT16)==sizeof(jshort) );
-				int16 = javaLangNumber_shortValue(env,arg);
-				_asm push int16;
+				int16 = javaLangNumber_shortValue(env,arg);        
+				// scm: 
+				// We need to push 32 bit (4 byte) on the stack. 
+				// the call   _asm push int16;   is NOT what we want.. (this would use an opcode and really pushing only a WORD (16 bit) onto stack.)
+				int32 = int16;   // wrapping the 2 byte short into a 4 byte int
+				_asm push int32; // pushing this onto the stack.
 				break;
 
 			case cvINT16_byRef:
@@ -133,11 +144,11 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				break;
 
 			case cvINT64:
+				//_asm int 3;
 				int64 = javaLangNumber_longValue(env,arg);
-				int32 = int64>>32;
-				_asm push int32;
-				int32 = int64;
-				_asm push int32;
+				// scm: pushing a 64 bit value (a QUAD WORD) is pushing two DWORDs
+				_asm push dword ptr [int64 + 4]; // pushing the "upper" part first. (address of int64 + 4 bytes)
+				_asm push dword ptr [int64];
 				break;
 
 			case cvPVOID:
@@ -166,12 +177,10 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 
 			case cvDATE:
 			case cvDouble:
-				// TODO: check if this is correct
 				d = javaLangNumber_doubleValue(env,arg);
-				f = reinterpret_cast<float*>(&d)[1];
-				_asm push f;
-				f = reinterpret_cast<float*>(&d)[0];
-				_asm push f;
+				// scm: pushing a double (64 bit) onto stack is pushing two 32 bit values (DWORDs)
+				_asm push dword ptr [d + 4]; // push the "upper" part first (adress of d + 4 bytes)
+				_asm push dword ptr [d];
 				break;
 
 			case cvDouble_byRef:

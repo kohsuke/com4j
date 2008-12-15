@@ -16,7 +16,7 @@ STDMETHODIMP CEventReceiver::GetIDsOfNames( REFIID riid, LPOLESTR* rgszNames, UI
 	bool unknown = false;
 
 	LockedArray<jint> r(pEnv, com4jEventProxy_getDISPIDs( pEnv, eventProxy ));
-	for( int i=0; i<cNames; i++ ) {
+	for(unsigned int i=0; i<cNames; i++ ) {
 		*rgDispId++ = r[i];
 		if(r[i]==DISPID_UNKNOWN)
 			unknown = true;

@@ -8,6 +8,7 @@ import com4j.tlbimp.def.IParam;
 import com4j.tlbimp.def.IPrimitiveType;
 import com4j.tlbimp.def.IPtrType;
 import com4j.tlbimp.def.IType;
+import com4j.tlbimp.def.InvokeKind;
 import com4j.tlbimp.def.VarType;
 
 import java.util.HashSet;
@@ -16,6 +17,9 @@ import java.util.Set;
 
 /**
  * Binds a native method to a Java method.
+ *
+ * @author Kohsuke Kawaguchi (kk@kohsuke.org)
+ * @author Michael Schnell (scm, (C) 2008, Michael-Schnell@gmx.de)
  */
 abstract class MethodBinder {
     protected final IMethod method;
@@ -59,11 +63,13 @@ abstract class MethodBinder {
     }
 
     protected IType getReturnTypeBinding() throws BindingException {
-        if(retParam==-1)
+        if(retParam==-1){
             return null;
+        }
         IPtrType pt = params[retParam].getType().queryInterface(IPtrType.class);
-        if(pt==null)
+        if(pt==null){
             throw new BindingException(Messages.RETVAL_MUST_BY_REFERENCE.format());
+        }
         return pt.getPointedAtType();
     }
 
@@ -74,8 +80,9 @@ abstract class MethodBinder {
     private int getReturnParam() {
         // look for [retval] attribute
         for( int i=0; i<params.length; i++ ) {
-            if(params[i].isRetval())
+            if(params[i].isRetval()){
                 return i;
+            }
         }
 
         // sometimes a COM method has only one [out] param.
@@ -84,13 +91,13 @@ abstract class MethodBinder {
         int outIdx=-1;
         for( int i=0; i<params.length; i++ ) {
             if(params[i].isOut() && !params[i].isIn()) {
-                if(outIdx==-1)
+                if(outIdx==-1) {
                     outIdx=i;
-                else
+                } else {
                     return -1;  // more than one out. no return value
+                }
             }
         }
-
         return outIdx;
     }
 
@@ -122,7 +129,26 @@ abstract class MethodBinder {
     protected abstract void annotate(IndentingWriter o);
 
     protected final void declareMethodName(IndentingWriter o) {
-        String name = escape(camelize(method.getName()));
+        String methodName = method.getName();
+        if(g.renameGetterAndSetters){
+          String methodStart = methodName.length() > 3 ? methodName.substring(0, 3) : "";
+          switch(method.getKind()){
+            case PROPERTYGET:
+              if (!methodStart.equalsIgnoreCase("get")) {
+                methodName = "get" + methodName.substring(0, 1).toUpperCase(g.locale) + methodName.substring(1);
+              }
+              break;
+            case PROPERTYPUT:
+            case PROPERTYPUTREF:
+              if (methodStart.equalsIgnoreCase("put")) {
+                methodName = "set" + methodName.substring(3);
+              } else if (!methodStart.equalsIgnoreCase("set")) {
+                methodName = "set" + methodName.substring(0, 1).toUpperCase(g.locale) + methodName.substring(1);
+              }
+              break;
+          }
+        }
+        String name = escape(camelize(methodName));
         if(reservedMethods.contains(name))
             name += '_';
         o.print(name);
