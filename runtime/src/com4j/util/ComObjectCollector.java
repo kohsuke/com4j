@@ -12,7 +12,7 @@ import java.util.WeakHashMap;
  *
  * <p>
  * The intended use of this class is to record objects created
- * in a certain block and then dipose them all (except a few marked explicitly)
+ * in a certain block and then dispose them all (except a few marked explicitly)
  * at once at some later point.
  *
  * <p>
@@ -30,12 +30,12 @@ import java.util.WeakHashMap;
             // use COM objects as much as you want
             IFoo foo = doALotOfComStuff();
 
-            // do this to avoid COM objects from disposed by the diposeAll method.
+            // do this to avoid COM objects from disposed by the disposeAll method.
             col.remove(foo);
         } finally {
-            // dipose all the COM objects created in this thread
+            // dispose all the COM objects created in this thread
             // since the listener is registered.
-            // But "foo" won't be diposed because of the remove method.
+            // But "foo" won't be disposed because of the remove method.
             col.disposeAll();
 
             // make sure to remove the listener
@@ -59,7 +59,7 @@ public class ComObjectCollector implements ComObjectListener {
      *
      * <p>
      * If the application knows certain {@link Com4jObject} needs to live after
-     * the {@link #diposeAll()} method, this method can be called to avoid the object
+     * the {@link #disposeAll()} method, this method can be called to avoid the object
      * from being disposed.
      *
      * <p>
@@ -75,9 +75,9 @@ public class ComObjectCollector implements ComObjectListener {
      * known to this {@link ComObjectCollector}.
      *
      * <p>
-     * Each time this method is called, it forgets all the diposed objects.
+     * Each time this method is called, it forgets all the disposed objects.
      */
-    public void diposeAll() {
+    public void disposeAll() {
         for( Com4jObject o : objects.keySet() )
             o.dispose();
         objects.clear();
