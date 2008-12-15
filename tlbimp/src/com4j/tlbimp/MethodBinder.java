@@ -1,19 +1,17 @@
 package com4j.tlbimp;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import com4j.ComException;
-import com4j.MarshalAs;
 import com4j.Variant;
 import com4j.tlbimp.def.IMethod;
 import com4j.tlbimp.def.IParam;
 import com4j.tlbimp.def.IPrimitiveType;
 import com4j.tlbimp.def.IPtrType;
 import com4j.tlbimp.def.IType;
-import com4j.tlbimp.def.InvokeKind;
 import com4j.tlbimp.def.VarType;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Binds a native method to a Java method.

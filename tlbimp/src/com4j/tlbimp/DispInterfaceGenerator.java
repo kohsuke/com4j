@@ -88,8 +88,4 @@ final class DispInterfaceGenerator extends InvocableInterfaceGenerator<IDispInte
     }
 
     private static final GUID GUID_IDISPATCH = new GUID(IID.IDispatch);
-
-    private static final int DISPATCH_PROPERTYGET    = 0x2;
-    private static final int DISPATCH_PROPERTYPUT    = 0x4;
-    private static final int DISPATCH_PROPERTYPUTREF = 0x8;
 }

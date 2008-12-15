@@ -1,10 +1,9 @@
 package com4j.tlbimp;
 
+import java.io.FilterWriter;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.io.FilterWriter;
 import java.util.Stack;
 
 /**

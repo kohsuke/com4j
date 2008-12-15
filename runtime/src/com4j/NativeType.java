@@ -1,18 +1,15 @@
 package com4j;
 
+import static com4j.Const.BYREF;
+
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.nio.Buffer;
-import java.nio.ByteBuffer;
 import java.util.Calendar;
-import java.util.Iterator;
 import java.util.GregorianCalendar;
-import java.util.TimeZone;
-import java.util.Map;
 import java.util.HashMap;
-import java.math.BigDecimal;
-
-import static com4j.Const.BYREF;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TimeZone;
 
 /**
  * Native method type.
@@ -188,7 +185,7 @@ public enum NativeType {
 
     /**
      * The native type is determined from the Java method return type.
-     * See the documentation for mor details.
+     * See the documentation for more details.
      * TODO: link to the doc.
      */
     Default(201,9999),

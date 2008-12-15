@@ -9,7 +9,10 @@ package com4j;
  *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
+
+@SuppressWarnings("serial")
 public class ComException extends RuntimeException {
+
     private final int hresult;
 
     private final String fileName;

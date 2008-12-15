@@ -38,7 +38,7 @@ public class DefaultedComMethod extends ComMethod {
         last = new StandardComMethod(m);
     }
 
-    private Method findDefaultMethod(Class intf) {
+    private Method findDefaultMethod(Class<?> intf) {
         for( Method m : intf.getMethods() ) {
             if(m.getAnnotation(DefaultMethod.class)!=null)
                 return m;

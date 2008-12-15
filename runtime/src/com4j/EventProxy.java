@@ -141,7 +141,7 @@ final class EventProxy<T> implements EventCookie {
     private static class EventMethod {
         private final int dispid;
         private final Method method;
-        private final Class[] params;
+        private final Class<?>[] params;
 
         public EventMethod(Method m) {
             DISPID a = m.getAnnotation(DISPID.class);

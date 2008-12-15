@@ -5,6 +5,8 @@ package com4j;
  *
  * @author Kohsuke Kawaguchi
  */
+
+@SuppressWarnings("serial")
 public class ExecutionException extends RuntimeException {
     public ExecutionException(String message, Throwable cause) {
         super(message, cause);

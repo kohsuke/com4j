@@ -9,7 +9,9 @@ package com4j;
  *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
+@SuppressWarnings("serial")
 public class IllegalAnnotationException extends RuntimeException {
+
     public IllegalAnnotationException() {
     }
 

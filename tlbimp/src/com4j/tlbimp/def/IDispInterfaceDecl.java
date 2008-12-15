@@ -1,6 +1,5 @@
 package com4j.tlbimp.def;
 
-import com4j.GUID;
 import com4j.IID;
 import com4j.VTID;
 
@@ -24,5 +23,5 @@ public interface IDispInterfaceDecl extends ITypeDecl, IInterface {
     @VTID(13)
     IInterfaceDecl getVtblInterface();
 
- 
+
 }

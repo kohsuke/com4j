@@ -1,6 +1,8 @@
 package com4j.tlbimp;
 
-import com4j.ReturnValue;
+import java.util.ArrayList;
+import java.util.List;
+
 import com4j.tlbimp.Generator.LibBinder;
 import com4j.tlbimp.def.IDispInterfaceDecl;
 import com4j.tlbimp.def.IInterface;
@@ -8,9 +10,6 @@ import com4j.tlbimp.def.IInterfaceDecl;
 import com4j.tlbimp.def.IMethod;
 import com4j.tlbimp.def.IPtrType;
 import com4j.tlbimp.def.IType;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Common code for generating interfaces that user application calls.
@@ -149,7 +148,7 @@ abstract class InvocableInterfaceGenerator<T extends IInterface> extends Interfa
             if(m.getParamCount()<2)
                 return; // the default method has to have at least one in param and one ret val
 
-            // TODO: check if this is correct. 
+            // TODO: check if this is correct.
             if(createMethodBinder(m).retParam < 0){
               return; // there is no return value.. This would cause a NullPointerException
             }

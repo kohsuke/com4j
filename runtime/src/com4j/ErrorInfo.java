@@ -11,7 +11,10 @@ import java.io.File;
  *
  * @author Kohsuke Kawaguchi
  */
+
+@SuppressWarnings("serial")
 public class ErrorInfo implements Serializable {
+
     private GUID guid;
 
     private String source;

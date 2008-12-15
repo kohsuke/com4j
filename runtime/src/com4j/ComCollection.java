@@ -39,7 +39,7 @@ final class ComCollection<T> implements Iterator<T> {
 
         Object r;
         try {
-// ideally we'd like to use ChangeVariantType to do the conversion
+            // ideally we'd like to use ChangeVariantType to do the conversion
             // but for now let's just support interface types
             if(Com4jObject.class.isAssignableFrom(type)) {
                 r = v.object((Class<? extends Com4jObject>)type);

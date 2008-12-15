@@ -1,13 +1,12 @@
 package com4j.tlbimp.driver;
 
+import java.io.File;
+
 import com4j.COM4J;
 import com4j.GUID;
 import com4j.tlbimp.BindingException;
-import com4j.tlbimp.ReferenceResolver;
 import com4j.tlbimp.TypeLibInfo;
 import com4j.tlbimp.def.IWTypeLib;
-
-import java.io.File;
 
 /**
  * Reference to another type library and which package it is in.
@@ -39,7 +38,7 @@ public final class Lib {
 
     /**
      * True to avoid generating source code for this type library.
-     * (It's assumed to be present somewhere else already.) 
+     * (It's assumed to be present somewhere else already.)
      */
     private boolean suppress = false;
 

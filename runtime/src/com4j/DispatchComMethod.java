@@ -58,5 +58,6 @@ final class DispatchComMethod extends ComMethod {
     private static final int DISPATCH_METHOD         = 0x1;
     private static final int DISPATCH_PROPERTYGET    = 0x2;
     private static final int DISPATCH_PROPERTYPUT    = 0x4;
+    @SuppressWarnings("unused")
     private static final int DISPATCH_PROPERTYPUTREF = 0x8;
 }

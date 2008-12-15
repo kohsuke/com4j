@@ -62,7 +62,7 @@ final class CallbackBuilder {
         private final NativeType[] params;
         public final int[] paramConvs;
 
-        private final Class[] paramTypes;
+        private final Class<?>[] paramTypes;
         private final Type[] paramGenTypes;
 
         private final NativeType retConv;

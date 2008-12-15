@@ -32,6 +32,7 @@ import java.util.GregorianCalendar;
  *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
+@SuppressWarnings("serial")
 public final class Variant extends Number {
     /**
      * The memory image of the VARIANT.
@@ -210,7 +211,7 @@ public final class Variant extends Number {
      * Reads this VARIANT as a COM interface pointer.
      */
     public <T extends Com4jObject> T object( final Class<T> type ) {
-        // native method invocation like addRef and changeType needs to happen in the COM thread 
+        // native method invocation like addRef and changeType needs to happen in the COM thread
         return ComThread.get().execute(new Task<T>() {
             public T call() {
                 changeType(Type.VT_UNKNOWN);

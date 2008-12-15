@@ -36,7 +36,7 @@ final class TypeBinding {
      */
     public final boolean isDefault;
 
-    public TypeBinding(Class javaType, NativeType nativeType, boolean isDefault) {
+    public TypeBinding(Class<?> javaType, NativeType nativeType, boolean isDefault) {
         this(javaType.getName(),nativeType,isDefault);
     }
 
@@ -254,7 +254,7 @@ final class TypeBinding {
         pbind( VarType.VT_VOID, void.class, NativeType.Bool/*dummy*/, true );
     }
 
-    private static void pbind( VarType vt, Class c, NativeType n, boolean isDefault ) {
+    private static void pbind( VarType vt, Class<?> c, NativeType n, boolean isDefault ) {
         primitiveTypeBindings.put(vt,new TypeBinding(c,n,isDefault));
     }
 

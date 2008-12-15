@@ -46,8 +46,6 @@ public class Main implements ErrorListener {
     @Argument
     private List<String> files = new ArrayList<String>();
 
-    private final List<Lib> refs = new ArrayList<Lib>();
-
     public static void main(String[] args) {
         System.exit(new Main().doMain(args));
     }
