@@ -20,81 +20,28 @@ import java.util.HashMap;
  * through JNI.
  *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
+ * @author Michael Schnell (scm, (C) 2008, Michael-Schnell@gmx.de)
  */
 final class StandardComMethod extends ComMethod {
 
-    final Method method;
-
     final int vtIndex;
-    // list of params.code
-    final int[] paramConvs;
-    final NativeType[] params;
-    final int returnIndex;
-    final boolean returnIsInOut;
-    final NativeType returnConv;
-    final Class<?>[] paramTypes;
-    final Type[] genericParamTypes;
 
     StandardComMethod( Method m ) {
-        method = m;
-
-        MethodIntrospector mi = new MethodIntrospector(m);
+        super(m);
 
         VTID vtid = m.getAnnotation(VTID.class);
         if(vtid==null)
             throw new IllegalAnnotationException("@VTID is missing: "+m.toGenericString());
         vtIndex = vtid.value();
-
-        Annotation[][] pa = m.getParameterAnnotations();
-        int paramLen = pa.length;
-
-
-        ReturnValue rt = m.getAnnotation(ReturnValue.class);
-        if(rt!=null) {
-            if(rt.index()==-1)  returnIndex=pa.length;
-            else                returnIndex=rt.index();
-            returnIsInOut = rt.inout();
-            returnConv = rt.type();
-        } else {
-            // guess the default
-            if( method.getReturnType()==Void.TYPE ) {
-                // no return type
-                returnIndex = -1;
-                returnIsInOut = false;
-                returnConv = NativeType.Default;    // unused
-            } else {
-                returnIndex = paramLen;
-                returnIsInOut = false;
-                returnConv = getDefaultConversion(method.getReturnType());
-            }
-        }
-
-        paramTypes = m.getParameterTypes();
-        genericParamTypes = m.getGenericParameterTypes();
-        paramConvs = new int[paramLen];
-        params = new NativeType[paramLen];
-        for( int i=0; i<paramLen; i++ ) {
-            NativeType n = mi.getParamConversation(i);
-            params[i] = n;
-            paramConvs[i] = n.code;
-        }
     }
 
     Object invoke( int ptr, Object[] args ) {
-        for( int i=0; i<args.length; i++ ) {
-            if(args[i] instanceof Holder && params[i].getNoByRef()!=null) {
-                // massage the value of Holder, not the Holder itself
-                Holder h = (Holder)args[i];
-                h.value = params[i].getNoByRef().massage(h.value);
-            } else {
-                args[i] = params[i].massage(args[i]);
-            }
-        }
+        messageParameters(args);
 
         try {
             Object r = Native.invoke( ptr, vtIndex, args, paramConvs,
                 returnIndex, returnIsInOut, returnConv.code );
-            return returnConv.unmassage(method.getReturnType(), method.getGenericReturnType(), r);
+            return returnConv.toJava(method.getReturnType(), method.getGenericReturnType(), r);
         } catch( ComException e ) {
             try {
                 IErrorInfo pErrorInfo = Native.getErrorInfo(ptr, (Class)method.getDeclaringClass());
@@ -112,80 +59,14 @@ final class StandardComMethod extends ComMethod {
                 if(args[i] instanceof Holder && params[i].getNoByRef()!=null) {
                     Holder h = (Holder)args[i];
                     Type holderParamType = getTypeParameter(genericParamTypes[i], 0);
-                    h.value = params[i].getNoByRef().unmassage( erasure(holderParamType), holderParamType, h.value );
+                    h.value = params[i].getNoByRef().toJava( erasure(holderParamType), holderParamType, h.value );
                 } else {
-                    args[i] = params[i].unmassage(paramTypes[i], genericParamTypes[i], args[i]);
+                    args[i] = params[i].toJava(paramTypes[i], genericParamTypes[i], args[i]);
                 }
             }
         }
     }
 
-
-    private static final Map<Class,NativeType> defaultConversions = new HashMap<Class, NativeType>();
-
-    static {
-        defaultConversions.put( Iterator.class, NativeType.ComObject );
-        defaultConversions.put( GUID.class, NativeType.GUID );
-        defaultConversions.put( double.class, NativeType.Double );
-        defaultConversions.put( float.class, NativeType.Float );
-        defaultConversions.put( long.class, NativeType.Int64 );
-        defaultConversions.put( int.class, NativeType.Int32 );
-        defaultConversions.put( short.class, NativeType.Int16 );
-        defaultConversions.put( byte.class, NativeType.Int8 );
-        defaultConversions.put( boolean.class, NativeType.VariantBool );
-        defaultConversions.put( String.class, NativeType.BSTR );
-        defaultConversions.put( Object.class, NativeType.VARIANT_ByRef );
-        defaultConversions.put( Variant.class, NativeType.VARIANT_ByRef );
-        defaultConversions.put( Date.class, NativeType.Date );
-    }
-
-    /**
-     * Computes the default conversion for the given type.
-     */
-    static NativeType getDefaultConversion(Type t) {
-        if( t instanceof Class ) {
-            Class<?> c = (Class<?>)t;
-            NativeType r = defaultConversions.get(c);
-            if(r!=null) return r;
-
-            if(Com4jObject.class.isAssignableFrom(c))
-                return NativeType.ComObject;
-            if(Enum.class.isAssignableFrom(c))
-                return NativeType.Int32;
-            if(Buffer.class.isAssignableFrom(c))
-                return NativeType.PVOID;
-            if(Calendar.class.isAssignableFrom(c))
-                return NativeType.Date;
-            if(c.isArray())
-                return NativeType.SafeArray;
-        }
-
-        if( t instanceof ParameterizedType ) {
-            ParameterizedType p = (ParameterizedType) t;
-            if( p.getRawType()==Holder.class ) {
-                // let p=Holder<V>
-                Type v = p.getActualTypeArguments()[0];
-                Class<?> c = (v instanceof Class) ? (Class<?>)v : null;
-                if(c!=null) {
-                    if(Com4jObject.class.isAssignableFrom(c))
-                        return NativeType.ComObject_ByRef;
-                    if(String.class==c)
-                        return NativeType.BSTR_ByRef;
-                    if(Integer.class==c || Enum.class.isAssignableFrom(c))
-                        return NativeType.Int32_ByRef;
-                    if(Boolean.class==c)
-                        return NativeType.VariantBool_ByRef;
-                    if(Buffer.class.isAssignableFrom(c))
-                        return NativeType.PVOID_ByRef;
-                }
-            }
-            if( p.getRawType()==Iterator.class ) {
-                return NativeType.ComObject;
-            }
-        }
-
-        throw new IllegalAnnotationException("no default conversion available for "+t);
-    }
 
     private static Type getTypeParameter( Type t, int index ) {
         if (t instanceof ParameterizedType) {
@@ -196,9 +77,9 @@ final class StandardComMethod extends ComMethod {
         }
     }
 
-    private static Class erasure( Type t ) {
+    private static Class<?> erasure( Type t ) {
         if (t instanceof Class) {
-            return (Class) t;
+            return (Class<?>) t;
         }
         if (t instanceof ParameterizedType) {
             ParameterizedType pt = (ParameterizedType) t;
@@ -215,7 +96,7 @@ final class StandardComMethod extends ComMethod {
             return Array.newInstance(erasure(ga.getGenericComponentType()),0).getClass();   // ARGH!
         }
         if (t instanceof TypeVariable) {
-            TypeVariable tv = (TypeVariable) t;
+            TypeVariable<?> tv = (TypeVariable<?>) t;
             Type[] ub = tv.getBounds();
             if(ub.length==0)    return Object.class;
             else                return erasure(ub[0]);

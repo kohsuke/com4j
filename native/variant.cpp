@@ -6,6 +6,12 @@
 #include "safearray.h"
 #include "variant.h"
 
+/**  
+ * Original auther  (C) Kohsuke Kawaguchi (kk@kohsuke.org)
+ * Modified by      (C) Michael Schnell (scm, 2008, Michael-Schnell@gmx.de)
+ */
+
+
 JNIEXPORT void JNICALL Java_com4j_Variant_clear0(JNIEnv* env, jclass, jobject image) {
 	HRESULT hr = VariantClear((VARIANT*)env->GetDirectBufferAddress(image));
 	if(FAILED(hr))
@@ -49,8 +55,16 @@ JNIEXPORT jobject JNICALL Java_com4j_Variant_convertTo(JNIEnv* env, jobject inst
 	}
 }
 
+JNIEXPORT void JNICALL Java_com4j_Variant_set0(JNIEnv * env, jobject, jobject value, jobject image) {
+	VARIANT *destVar = (VARIANT*)env->GetDirectBufferAddress(image);
+	VARIANT *newVar = convertToVariant(env, value);
+	VariantCopy(destVar, newVar);
+}
 
-
+JNIEXPORT jobject JNICALL Java_com4j_Variant_get0(JNIEnv *env, jobject, jobject image) {
+	VARIANT *var = (VARIANT*)env->GetDirectBufferAddress(image);
+	return variantToObject(env, NULL, *var);
+}
 
 
 
@@ -259,10 +273,12 @@ jobject variantToObject( JNIEnv* env, jclass retType, VARIANT& v ) {
 	if(v.vt==VT_ERROR || v.vt==VT_EMPTY || v.vt==VT_NULL)
 		return NULL;
 
-	// return type driven
-	for( SetterEntry* p = setters; p->cls!=NULL; p++ ) {
-		if( env->IsAssignableFrom( retType, *(p->cls) ) ) {
-			return p->handler->get(env,&v,retType);
+	if(retType != NULL){
+		// return type driven
+		for( SetterEntry* p = setters; p->cls!=NULL; p++ ) {
+			if( env->IsAssignableFrom( retType, *(p->cls) ) ) {
+				return p->handler->get(env,&v,retType);
+			}
 		}
 	}
 

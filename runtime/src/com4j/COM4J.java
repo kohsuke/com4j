@@ -391,7 +391,6 @@ public abstract class COM4J {
         Native.init();
         // doing this from Variant static initializer causes
         // native code to fail due to initialization order issue.
-        Variant.MISSING.makeError(0x80020004); // DISP_E_PARAMNOTFOUND
     }
 
     private static void loadNativeLibrary() {

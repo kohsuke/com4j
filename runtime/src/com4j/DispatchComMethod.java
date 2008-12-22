@@ -8,18 +8,14 @@ import java.lang.reflect.Method;
  * @author Kohsuke Kawaguchi
  */
 final class DispatchComMethod extends ComMethod {
-    final Method method;
 
     final int dispId;
     final int flag;
     final Class<?> retType;
 
-    DispatchComMethod( Method m ) {
-        method = m;
 
-        VTID vtid = m.getAnnotation(VTID.class);
-        if(vtid!=null)
-            throw new IllegalAnnotationException("@VTID and @DISPID are mutually exclusive: "+m.toGenericString());
+    DispatchComMethod( Method m ) {
+        super(m);
 
         DISPID id = m.getAnnotation(DISPID.class);
         if(id ==null)
@@ -45,6 +41,8 @@ final class DispatchComMethod extends ComMethod {
     }
 
     Object invoke(int ptr, Object[] args) {
+        messageParameters(args);
+
         Variant v = Native.invokeDispatch(ptr,dispId,flag,args);
         if(v==null)
             return null;

@@ -158,9 +158,9 @@ abstract class InvocableInterfaceGenerator<T extends IInterface> extends Interfa
             o.println();
 
             MethodBinderImpl mb = createMethodBinder(m);
-            mb.declareReturnType(o,intermediates);
+            mb.declareReturnType(o,intermediates,false);
             this.declareMethodName(o);
-            mb.declareParameters(o);
+            mb.declareParameters(o, new Parameter[params.length], null);
             o.println();
         }
     }

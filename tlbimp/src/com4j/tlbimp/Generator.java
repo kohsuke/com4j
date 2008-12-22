@@ -72,7 +72,7 @@ public final class Generator {
      * If this value is true, the type generator will always generate enums that implement
      * the ComEnum interface. (scm)
      */
-    boolean alwaysUseComEnums = true;// TODO: make this configurable via arguments to tlbimp
+    boolean alwaysUseComEnums = false;// TODO: make this configurable via arguments to tlbimp
 
     public Generator( CodeWriter writer, ReferenceResolver resolver, ErrorListener el, Locale locale ) {
         this.el = el;
@@ -514,7 +514,13 @@ public final class Generator {
             IndentingWriter o = createWriter(typeName+".java");
             generateHeader(o);
 
-            o.printJavadoc(t.getHelpString());
+            o.beginJavaDocMode();
+            if(t.getHelpString() != null){
+              o.println("<p>");
+              o.println(t.getHelpString());
+              o.println("</p>");
+            }
+            o.endJavaDocMode();
 
             o.printf("public enum %1s ",typeName);
             if(needComEnum)
@@ -524,7 +530,16 @@ public final class Generator {
 
             // generate constants
             for( IConstant con : cons ) {
-                o.printJavadoc(con.getHelpString());
+                o.beginJavaDocMode();
+                if(con.getHelpString() != null){
+                  o.println("<p>");
+                  o.println(con.getHelpString());
+                  o.println("</p>");
+                }
+                o.println("<p>");
+                o.println("The value of this constant is " + con.getValue());
+                o.println("</p>");
+                o.endJavaDocMode();
                 o.print(con.getName());
                 if(needComEnum) {
                     o.printf("(%1d),",con.getValue());

@@ -20,6 +20,7 @@ public class DefaultedComMethod extends ComMethod {
     private final StandardComMethod last;
 
     public DefaultedComMethod(Method m, ReturnValue retVal) {
+        super(m);
         Class<? extends Com4jObject>[] intermediates = retVal.defaultPropertyThrough();
         vtids = new int[intermediates.length];
 

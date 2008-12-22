@@ -37,7 +37,7 @@ abstract class EnumDictionary<T extends Enum<T>> {
     }
 
     /**
-     * Convenience method to be invokd by JNI.
+     * Convenience method to be invoked by JNI.
      */
     static <T extends Enum<T>>
     T get( Class<T> clazz, int v ) {
@@ -47,7 +47,7 @@ abstract class EnumDictionary<T extends Enum<T>> {
     /**
      * Gets the integer value for the given enum constant.
      */
-    abstract int value( Enum t );
+    abstract int value( Enum<T> t );
     /**
      * Gets the enum constant object from its integer value.
      */
@@ -65,7 +65,7 @@ abstract class EnumDictionary<T extends Enum<T>> {
             consts = clazz.getEnumConstants();
         }
 
-        public int value( Enum t ) {
+        public int value(Enum<T> t ) {
             return t.ordinal();
         }
 
@@ -89,7 +89,7 @@ abstract class EnumDictionary<T extends Enum<T>> {
             }
         }
 
-        public int value( Enum t ) {
+        public int value(Enum<T> t ) {
             return ((ComEnum)t).comEnumValue();
         }
 
@@ -102,6 +102,6 @@ abstract class EnumDictionary<T extends Enum<T>> {
     }
 
 
-    private static final Map<Class<? extends Enum>,EnumDictionary> registry =
+    private static final  Map<Class<? extends Enum>,EnumDictionary> registry =
         Collections.synchronizedMap(new WeakHashMap<Class<? extends Enum>,EnumDictionary>());
 }

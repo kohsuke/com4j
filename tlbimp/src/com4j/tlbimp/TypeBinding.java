@@ -26,6 +26,7 @@ import java.math.BigDecimal;
  * and Java type.
  *
  * @author Kohsuke Kawaguchi
+ * @author Michael Schnell (scm, (C) 2008, Michael-Schnell@gmx.de)
  */
 final class TypeBinding {
     public final String javaType;
@@ -149,6 +150,10 @@ final class TypeBinding {
                     return new TypeBinding(r.javaType+"[]", NativeType.SafeArray, true );
                 }
             }
+            TypeBinding tb = TypeBinding.bind(g, comp, null);
+            if(tb.nativeType == NativeType.VARIANT){
+              return new TypeBinding("Object[]", NativeType.SafeArray, true);
+            }
         }
 
         // T = typedef
@@ -202,6 +207,11 @@ final class TypeBinding {
         ITypeDecl decl = t.queryInterface(ITypeDecl.class);
         if(decl!=null)
             return decl.getName();
+
+        ISafeArrayType sa = t.queryInterface(ISafeArrayType.class);
+        if (sa != null) {
+          return "SAVEARRAY(" + getTypeString(sa.getComponentType()) + ")";
+        }
 
         return "N/A";
     }

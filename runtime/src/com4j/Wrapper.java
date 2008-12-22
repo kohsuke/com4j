@@ -1,5 +1,6 @@
 package com4j;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -8,10 +9,12 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+
 /**
  * {@link InvocationHandler} that backs up a COM object.
  *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
+ * @author Michael Schnell (scm, (C) 2008, Michael-Schnell@gmx.de)
  */
 final class Wrapper implements InvocationHandler, Com4jObject {
 
@@ -112,6 +115,23 @@ final class Wrapper implements InvocationHandler, Com4jObject {
                 throw e.getTargetException();
             }
         }
+        UseDefaultValues useDefaultValues = method.getAnnotation(UseDefaultValues.class);
+
+        if(useDefaultValues != null){
+          int defValCount = useDefaultValues.optParamIndex().length;
+          Object[] newArgs = new Object[args.length + defValCount];
+          // fill in the given arguments to the right place:
+          for(int i = 0; i < args.length; i++){
+            newArgs[useDefaultValues.paramIndexMapping()[i]] = args[i];
+          }
+          // Fill in the (optional) default values:
+          ComMethod comMethod = getMethod(method);
+          for(int i = 0; i < defValCount; i++){
+            Object defParam =  comMethod.defaultParameters[i];
+            newArgs[useDefaultValues.optParamIndex()[i]] = defParam;
+          }
+          args = newArgs;
+        }
 
         if(invCache==null)
             invCache = new InvocationThunk();
@@ -138,11 +158,17 @@ final class Wrapper implements InvocationHandler, Com4jObject {
         if(rv!=null && rv.defaultPropertyThrough().length>0)
             return new DefaultedComMethod(method,rv);
 
-        DISPID id = method.getAnnotation(DISPID.class);
-        if(id!=null)
+        // prefer the custom interface.
+        VTID vtid = method.getAnnotation(VTID.class);
+        if(vtid != null){
+            return new StandardComMethod(method);
+        }
+
+        DISPID dispid = method.getAnnotation(DISPID.class);
+        if(dispid!=null)
             return new DispatchComMethod(method);
-        
-        return new StandardComMethod(method);
+
+        throw new IllegalAnnotationException("Missing annotation: You need to specify at least one of @DISPID or @VTID");
     }
 
     public void dispose() {

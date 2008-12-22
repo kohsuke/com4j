@@ -103,4 +103,6 @@ public final class GUID {
             buf.append( digits[((int)(n>>(i*4)))&0xF] );
         }
     }
+
+    public static final GUID GUID_NULL = new GUID("{00000000-0000-0000-0000-000000000000}");
 }

@@ -132,6 +132,19 @@ library com4j
 		HRESULT getParent([out,retval] ITypeLibrary** ppParent );
 	};
 
+	[
+		object,
+		uuid(1FA456D6-6E48-4ff0-9BF8-300937470A02),
+		helpstring("Typedef declaration"),
+		pointer_default(unique)
+	]
+	interface ITypedefDecl : ITypeDecl
+	{
+		[helpstring("get the definition of this typedef")]
+		HRESULT getDefinition( [out,retval] IType** ppType );
+	};
+
+
 
   
 	[
@@ -156,6 +169,10 @@ library com4j
 
 		[helpstring("property")]
 		HRESULT getProperty([in] int index, [out,retval] IProperty** ppProperty);
+
+ 		[helpstring("return true if this interface is a dual interface")]
+		HRESULT isDual([out,retval]VARIANT_BOOL* pOut);
+
 	};
 
 
@@ -167,23 +184,8 @@ library com4j
 	]
 	interface IDispInterfaceDecl : IInterface
 	{	
-		[helpstring("return true if this interface is a dual interface")]
-		HRESULT isDual([out,retval]VARIANT_BOOL* pOut);
-
 		[helpstring("get the vtable interface of this dispatch interface. Works only when this is a dual interface.")]
 		HRESULT getVtblInterface([out,retval] IInterfaceDecl** ppInterface );
-	};
-
-	[
-		object,
-		uuid(1FA456D6-6E48-4ff0-9BF8-300937470A02),
-		helpstring("Typedef declaration"),
-		pointer_default(unique)
-	]
-	interface ITypedefDecl : ITypeDecl
-	{
-		[helpstring("get the definition of this typedef")]
-		HRESULT getDefinition( [out,retval] IType** ppType );
 	};
 
 	[
@@ -194,6 +196,9 @@ library com4j
 	]
 	interface IInterfaceDecl : IInterface
 	{
+    [helpstring("Returns the IDispatch interface. Only for dual interfaces.")]
+    HRESULT getDispInterface([out, retval] IDispInterfaceDecl** ppInterface );
+
 		[helpstring("count the number of the base interfaces")]
 		HRESULT countBaseInterfaces([out,retval] int* pValue);
 
@@ -259,7 +264,9 @@ library com4j
 		HRESULT isIn([out,retval]VARIANT_BOOL* pValue);
 		HRESULT isOut([out,retval]VARIANT_BOOL* pValue);
 		HRESULT isRetval([out,retval]VARIANT_BOOL* pValue);
+		HRESULT isOptional([out, retval] VARIANT_BOOL *pVAlue);
 		HRESULT getDefaultValue([out,retval] VARIANT* pValue);
+		HRESULT isLCID([out, retval] VARIANT_BOOL *pVAlue);
 	};
 
 	[

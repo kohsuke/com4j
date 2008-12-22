@@ -2,6 +2,7 @@ package com4j.tlbimp;
 
 import com4j.GUID;
 import com4j.tlbimp.Generator.LibBinder;
+import com4j.tlbimp.def.IDispInterfaceDecl;
 import com4j.tlbimp.def.IInterfaceDecl;
 import com4j.tlbimp.def.IMethod;
 import com4j.tlbimp.def.IProperty;
@@ -52,6 +53,12 @@ final class CustomInterfaceGenerator extends InvocableInterfaceGenerator<IInterf
 
         @Override
         protected void annotate(IndentingWriter o) {
+            super.annotate(o);
+            IDispInterfaceDecl disp = t.queryInterface(IDispInterfaceDecl.class);
+            if(t.isDual()){
+                o.printf("@DISPID(%1d) //= 0x%1x. The runtime will prefer the VTID if present", method.getDispId(), method.getDispId());
+                o.println();
+            }
             o.printf("@VTID(%1d)",method.getVtableIndex());
             o.println();
         }

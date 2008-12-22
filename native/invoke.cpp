@@ -25,7 +25,6 @@ static int invocationCount = 0;
 
 jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray args, jint* convs, int retIndex, bool retIsInOut, jint retConv ) {
 	// list of clean up actions
-
 	int i;
 	DWORD spBefore,spAfter;
 	// the unmarshaller if this method should return an object.
@@ -336,7 +335,18 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				add( new SAFEARRAYCleanUp(psa) );
 				_asm push psa;
 				break;
-				
+
+			// Not supported, yet.
+			//case cvSAFEARRAY_byRef:
+ 			//	if(arg==NULL) {
+			//		pv = NULL;
+			//	} else {
+			//		unm = new SaveArrayUnmarshaller(env,jholder(arg)->get(env));
+			//		add(new OutParamHandler( jholder(arg), unm ));
+			//		pv = unm->addr();
+			//	}
+			//	_asm push pv;
+			//break;
 
 			default:
 				error(env,__FILE__,__LINE__,"unexpected conversion type: %d",convs[i]);

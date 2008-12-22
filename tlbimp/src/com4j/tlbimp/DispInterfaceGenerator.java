@@ -50,6 +50,11 @@ final class DispInterfaceGenerator extends InvocableInterfaceGenerator<IDispInte
 
         @Override
         protected void annotate(IndentingWriter o) {
+            super.annotate(o);
+            if(t.isDual()){
+                o.printf("@VTID(%1d)",method.getVtableIndex());
+                o.println();
+            }
             o.printf("@DISPID(%1d)",method.getDispId());
             o.println();
             switch(method.getKind()) {
@@ -68,9 +73,21 @@ final class DispInterfaceGenerator extends InvocableInterfaceGenerator<IDispInte
     protected void generateProperty(IProperty p, IndentingWriter o) throws BindingException {
       TypeBinding tb = TypeBinding.bind(this.g, p.getType(), null);
       String typeString = tb.javaType;
+
       String propName = p.getName().substring(0, 1).toUpperCase() + p.getName().substring(1);
 
-      o.printJavadoc(p.getHelpString());
+      o.beginJavaDocMode();
+      String help = p.getHelpString();
+      if(help != null){
+        o.println("<p>");
+        o.println(help);
+        o.println("</p>");
+      }
+      o.println("<p>");
+      o.println("Getter method for the COM property \""+p.getName()+"\"");
+      o.println("</p>");
+      o.println("@return The COM property " + p.getName() + " as a " + typeString);
+      o.endJavaDocMode();
       o.printf("@DISPID(%1d)", p.getDispId());
       o.println();
       o.println("@PropGet");
@@ -78,7 +95,17 @@ final class DispInterfaceGenerator extends InvocableInterfaceGenerator<IDispInte
       o.println();
       o.println();
 
-      o.printJavadoc(p.getHelpString());
+      o.beginJavaDocMode();
+      if(help != null){
+        o.println("<p>");
+        o.print(help);
+        o.println("</p>");
+      }
+      o.println("<p>");
+      o.println("Setter method for the COM property \""+p.getName()+"\"");
+      o.println("</p>");
+      o.println("@param newValue The new value for the COM property " + p.getName() + " as a " + typeString);
+      o.endJavaDocMode();
       o.printf("@DISPID(%1d)", p.getDispId());
       o.println();
       o.println("@PropPut");

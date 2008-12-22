@@ -70,7 +70,7 @@ public enum NativeType {
      *      {@link Number}
      */
     Int8(100,1),
-    Int8_ByRef(100|BYREF,1),
+    Int8_ByRef(100|BYREF,1), // should we add enum message/unmessage?
     /**
      * <tt>INT16</tt> (short).
      *
@@ -79,8 +79,40 @@ public enum NativeType {
      *      short
      *      {@link Number}
      */
-    Int16(101,2),
-    Int16_ByRef(101|BYREF,2),
+    Int16(101,2){
+        @Override
+        Object toNative(Object param) {
+            if(param instanceof Enum){
+                Enum e = (Enum) param;
+                return (short) EnumDictionary.get(e.getClass()).value(e);
+            }
+            return param;
+        }
+        @Override
+        Object toJava(Class<?> signature, Type genericSignature, Object param) {
+            if(param instanceof Enum){
+                return EnumDictionary.get((Class<? extends Enum>)signature).constant((Short)param);
+            }
+            return param;
+        }
+    },
+    Int16_ByRef(101|BYREF,2){
+        @Override
+        Object toNative(Object param) {
+            if(param instanceof Enum){
+                Enum e = (Enum) param;
+                return (short) EnumDictionary.get(e.getClass()).value(e);
+            }
+            return param;
+        }
+        @Override
+        Object toJava(Class<?> signature, Type genericSignature, Object param) {
+            if(param instanceof Enum){
+                return EnumDictionary.get((Class<? extends Enum>)signature).constant((Short)param);
+            }
+            return param;
+        }
+    },
 
     /**
      * Marshalled as 32-bit integer.
@@ -96,27 +128,37 @@ public enum NativeType {
      */
     Int32(102,4) {
         // the native code will see the raw pointer value as Integer
-        Object massage(Object param) {
-            if(param==null)     return null;
-
-            Class<?> clazz = param.getClass();
-
-            if( Enum.class.isAssignableFrom(clazz) ) {
-                // if it's an enum constant, change it to the number
-                return EnumDictionary.get((Class<? extends Enum>)clazz).value((Enum)param);
+        Object toNative(Object param) {
+            if(param instanceof Enum){
+                Enum e = (Enum) param;
+                return EnumDictionary.get(e.getClass()).value(e);
             }
             return param;
         }
 
-        Object unmassage(Class<?> type, Type genericSignature, Object param) {
+        Object toJava(Class<?> type, Type genericSignature, Object param) {
             if( Enum.class.isAssignableFrom(type) ) {
                 return EnumDictionary.get((Class<? extends Enum>)type).constant((Integer)param);
             }
-
             return param;
         }
     },
-    Int32_ByRef(102|BYREF,4),
+    Int32_ByRef(102|BYREF,4) {
+        Object toNative(Object param) {
+            if(param instanceof Enum){
+                Enum e = (Enum) param;
+                return EnumDictionary.get(e.getClass()).value(e);
+            }
+            return param;
+        }
+
+        Object toJava(Class<?> type, Type genericSignature, Object param) {
+            if( Enum.class.isAssignableFrom(type) ) {
+                return EnumDictionary.get((Class<? extends Enum>)type).constant((Integer)param);
+            }
+            return param;
+        }
+    },
 
     /**
      * The native type is 'BOOL' (defined as 'int')
@@ -145,14 +187,14 @@ public enum NativeType {
      * Marshalled as 64-bit integer.
      *
      * <p>
-     * Java "long" is 32 bit.
+     * Java "long" is 64 bit.
      *
      * <p>
      * Expected Java type:
      *      long
      *      {@link Number}
      */
-    Int64(105,8),
+    Int64(105,8), // should we add enum message/unmessage?
     Int64_ByRef(105|BYREF,8),
 
     /**
@@ -199,21 +241,21 @@ public enum NativeType {
      */
     ComObject(300,4) {
         // the native code will see the raw pointer value as Integer
-        Object massage(Object param) {
+        Object toNative(Object param) {
             if(param==null)
                 return 0;
             return COM4J.unwrap((Com4jObject)param).getPtr();
         }
 
-        Object unmassage(Class<?> type, Type genericSignature, Object param) {
+        Object toJava(Class<?> type, Type genericSignature, Object param) {
             if(param==null)     return null;
             if(type==Iterator.class) {
-                Class itemType = Object.class;
+                Class<?> itemType = Object.class;
                 if(genericSignature instanceof ParameterizedType) {
                     ParameterizedType pt = (ParameterizedType) genericSignature;
                     Type it = pt.getActualTypeArguments()[0];
                     if(it instanceof Class)
-                        itemType = (Class)it;
+                        itemType = (Class<?>)it;
                 }
                 Com4jObject base = Wrapper.create((Integer) param);
                 IEnumVARIANT enumVar = base.queryInterface(IEnumVARIANT.class);
@@ -233,14 +275,14 @@ public enum NativeType {
      */
     ComObject_ByRef(300|BYREF,4) {
         // the native code will see the raw pointer value as Integer
-        Object massage(Object param) {
+        Object toNative(Object param) {
             Holder h = (Holder)param;
-            h.value = ComObject.massage(h.value);
+            h.value = ComObject.toNative(h.value);
             return h;
         }
-        Object unmassage(Class<?> type, Type genericSignature, Object param) {
+        Object toJava(Class<?> type, Type genericSignature, Object param) {
             Holder h = (Holder)param;
-            h.value = ComObject.massage(h.value);
+            h.value = ComObject.toNative(h.value);
             return h;
         }
     },
@@ -258,11 +300,11 @@ public enum NativeType {
      */
     GUID(301,4) {
         // pass in the value as two longs
-        Object massage(Object param) {
+        Object toNative(Object param) {
             GUID g = (GUID)param;
             return g.v;
         }
-        Object unmassage(Class<?> signature, Type genericSignature, Object param) {
+        Object toJava(Class<?> signature, Type genericSignature, Object param) {
             if(param==null)     return null;
             return new GUID( (long[])param );
         }
@@ -314,17 +356,26 @@ public enum NativeType {
      * TODO: expand the list
      */
     VARIANT(302,16) {
-        Object unmassage(Class<?> signature, Type genericSignature, Object param) {
-            if(param==null)
-                return null;
+        @Override
+        Object toNative(Object param) {
+            if(param instanceof Enum){
+                Enum e = (Enum) param;
+                return EnumDictionary.get(e.getClass()).value(e);
+            }
+            return param;
+        }
+
+        @Override
+        Object toJava(Class<?> signature, Type genericSignature, Object param) {
             if(param instanceof Variant) {
                 Variant v = (Variant)param;
                 Object r = v.convertTo(signature);
                 v.clear();
                 return r;
-            } else {
-                return param;
+            } else if(param instanceof Enum){
+                return EnumDictionary.get((Class<? extends Enum>)signature).constant((Integer)param);
             }
+            return param;
         }
     },
 
@@ -335,7 +386,24 @@ public enum NativeType {
      * This works like {@link #VARIANT}, except that a reference
      * is passed, instead of a VARIANT itself.
      */
-    VARIANT_ByRef(302|BYREF,4),
+    VARIANT_ByRef(302|BYREF,4) {
+        @Override
+        Object toNative(Object param) {
+            if(param instanceof Enum){
+                Enum e = (Enum) param;
+                return EnumDictionary.get(e.getClass()).value(e);
+            }
+            return param;
+        }
+
+        @Override
+        Object toJava(Class<?> signature, Type genericSignature, Object param) {
+            if(param instanceof Enum){
+                return EnumDictionary.get((Class<? extends Enum>)signature).constant((Integer)param);
+            }
+            return param;
+        }
+    },
 
     /**
      * <tt>IDispatch*</tt>
@@ -346,14 +414,14 @@ public enum NativeType {
      */
     Dispatch(303,4) {
         // the native code will see the raw pointer value as Integer
-        Object massage(Object param) {
+        Object toNative(Object param) {
             if(param==null) return 0;
             int ptr = COM4J.unwrap((Com4jObject)param).getPtr();
             int disp = COM4J.queryInterface( ptr, COM4J.IID_IDispatch );
             return disp;
         }
 
-        Object unmassage(Class<?> type, Type genericSignature, Object param) {
+        Object toJava(Class<?> type, Type genericSignature, Object param) {
             if(param==null)     return null;
             int disp = (Integer)param;
             if(disp==0)      return null;
@@ -405,7 +473,7 @@ public enum NativeType {
      */
     Date(400,8) {
         // the native code will see the raw pointer value as Integer
-        Object massage(Object param) {
+        Object toNative(Object param) {
             java.util.Date dt;
             if( param instanceof Calendar ) {
                 dt = ((Calendar)param).getTime();
@@ -431,7 +499,7 @@ public enum NativeType {
             return d;
         }
 
-        Object unmassage(Class<?> signature, Type genericSignature, Object param) {
+        Object toJava(Class<?> signature, Type genericSignature, Object param) {
             double d = (Double)param;
             long t = (long)(d*MSPD);
             t -= 2209161600000L;
@@ -464,7 +532,7 @@ public enum NativeType {
      *      {@link BigDecimal}
      */
     Currency(401,8),
-    Currency_ByRef(401|BYREF,8),
+    Currency_ByRef(401|BYREF,8), // FIXME? ByRef should have a size of four bytes, I think..
 
 
     /**
@@ -492,6 +560,8 @@ public enum NativeType {
      * </ul>
      */
     SafeArray(500,24),
+
+    // TODO: Not supported yet: SafeArray_ByRef(500|BYREF, 4)
 
     ;
 
@@ -532,7 +602,7 @@ public enum NativeType {
      * @param param
      *      can be null.
      */
-    Object massage(Object param) {
+    Object toNative(Object param) {
         return param;
     }
     /**
@@ -547,7 +617,7 @@ public enum NativeType {
      *      the parameter type in its generified form.
      * @param param
      */
-    Object unmassage(Class<?> signature, Type genericSignature, Object param) {
+    Object toJava(Class<?> signature, Type genericSignature, Object param) {
         return param;
     }
 

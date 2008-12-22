@@ -18,21 +18,33 @@ import java.util.Stack;
  * </ol>
  *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
+ * @author Michael Schnell (scm, (C) 2008, Michael-Schnell@gmx.de)
  */
 public class IndentingWriter extends PrintWriter {
+    private int indentSize = 2;
+    private String indentString = null;
+
     private int indent=0;
     private boolean newLine=true;
 
     public IndentingWriter(Writer out) {
         super(new CancellableWriter(out));
+        initializeIndentString();
     }
 
     public IndentingWriter(Writer out, boolean autoFlush) {
         super(new CancellableWriter(out), autoFlush);
+        initializeIndentString();
     }
 
     private CancellableWriter getOut() {
         return (CancellableWriter)out;
+    }
+
+    private void initializeIndentString(){
+      StringBuffer sb = new StringBuffer(indentSize);
+      for(int i = 0; i < indentSize; sb.append(' '), i++);
+      indentString = sb.toString();
     }
 
 
@@ -81,14 +93,23 @@ public class IndentingWriter extends PrintWriter {
     private void printIndent() {
         try {
             for( int i=0; i<indent; i++ )
-                out.write("    ");
+                out.write(indentString);
         } catch( IOException e ) {
+          e.printStackTrace();
         }
     }
 
     private void checkIndent() {
-        if(newLine)
+        if(newLine){
             printIndent();
+            if(javaDocMode){
+              try{
+                out.write(" * ");
+              }catch (IOException e) {
+                e.printStackTrace();
+              }
+            }
+        }
         newLine = false;
     }
 
@@ -133,6 +154,27 @@ public class IndentingWriter extends PrintWriter {
 
 
 
+    private boolean javaDocMode = false;
+
+    public void beginJavaDocMode(){
+      assert javaDocMode == false;
+      if(javaDocMode) {
+        System.err.println("Waring: Already in JavaDocMode!");
+      }
+      println("/**");
+      javaDocMode = true;
+    }
+
+    public void endJavaDocMode(){
+      assert javaDocMode == true;
+      if(!javaDocMode) {
+        System.err.println("Waring: Wasn't in JavaDocMode!");
+      }
+      javaDocMode = false;
+      println(" */");
+    }
+
+
 //
 //
 // overriding the base class methods
@@ -163,9 +205,9 @@ public class IndentingWriter extends PrintWriter {
 
     public void printJavadoc(String doc) {
         if(doc!=null) {
-            println("/**");
-            println(" * "+doc);
-            println(" */");
+            beginJavaDocMode();
+            println(doc);
+            endJavaDocMode();
         }
     }
 }

@@ -77,6 +77,7 @@ final class EventInterfaceGenerator extends InterfaceGenerator<IDispInterfaceDec
 
         @Override
         protected void annotate(IndentingWriter o) {
+            super.annotate(o);
             o.printf("@DISPID(%1d)",method.getDispId());
             o.println();
         }

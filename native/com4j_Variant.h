@@ -35,6 +35,22 @@ JNIEXPORT void JNICALL Java_com4j_Variant_changeType0
 JNIEXPORT jobject JNICALL Java_com4j_Variant_convertTo
   (JNIEnv *, jobject, jclass);
 
+/*
+ * Class:     com4j_Variant
+ * Method:    set0
+ * Signature: (Ljava/lang/String;Ljava/nio/ByteBuffer;)V
+ */
+JNIEXPORT void JNICALL Java_com4j_Variant_set0
+  (JNIEnv *, jobject, jobject, jobject);
+
+/*
+ * Class:     com4j_Variant
+ * Method:    get0
+ * Signature: (Ljava/nio/ByteBuffer;)Ljava/lang/Object;
+ */
+JNIEXPORT jobject JNICALL Java_com4j_Variant_get0
+  (JNIEnv *, jobject, jobject);
+
 #ifdef __cplusplus
 }
 #endif

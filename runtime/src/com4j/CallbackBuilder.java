@@ -107,12 +107,12 @@ final class CallbackBuilder {
 
         Object invoke(Object target, Object[] args) throws IllegalAccessException, InvocationTargetException {
             for( int i=0; i<args.length; i++ ) {
-                args[i] = params[i].unmassage(
+                args[i] = params[i].toJava(
                     paramTypes[i], paramGenTypes[i], args[i] );
             }
             Object ret = method.invoke(target,args);
             if(retConv!=null) {
-                ret = retConv.massage(ret);
+                ret = retConv.toNative(ret);
             }
             return ret;
         }

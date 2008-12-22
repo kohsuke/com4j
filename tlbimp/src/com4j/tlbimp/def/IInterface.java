@@ -27,4 +27,9 @@ public interface IInterface extends ITypeDecl {
   @VTID(11)
   IProperty getProperty(int idx);
 
+  /**
+   * return true if this interface is a dual interface
+   */
+  @VTID(12)
+  boolean isDual();
 }

@@ -270,6 +270,12 @@ public:
 		*ppType = createType(m_pParent->m_pParent, desc().tdesc);
 		return S_OK;
 	}
+	STDMETHOD(raw_isOptional)(VARIANT_BOOL *pValue){
+		return getFlag( PARAMFLAG_FOPT, pValue);
+	}
+	STDMETHOD(raw_isLCID)(VARIANT_BOOL *pValue){
+		return getFlag( PARAMFLAG_FLCID, pValue);
+	}
 	STDMETHOD(raw_getDefaultValue)(VARIANT* pValue) {
 		ELEMDESC& d = desc();
 		if(d.paramdesc.wParamFlags&PARAMFLAG_FHASDEFAULT && d.paramdesc.pparamdescex!=NULL)
@@ -625,6 +631,18 @@ public:
 		return S_OK;
 	}
 	STDMETHOD(raw_getVtblInterface)(IInterfaceDecl** ppInterface ) {
+		HREFTYPE href;
+		HRESULT hr = m_pType->GetRefTypeOfImplType(-1,&href);
+		if(FAILED(hr))	return hr;
+
+		ITypeDecl* r = getRef(this,href);
+		TypeKind k = r->getKind();
+		hr = r->QueryInterface(ppInterface);
+		r->Release();
+		return hr;
+	}
+
+  STDMETHOD(raw_getDispInterface)(IDispInterfaceDecl** ppInterface ) {
 		HREFTYPE href;
 		HRESULT hr = m_pType->GetRefTypeOfImplType(-1,&href);
 		if(FAILED(hr))	return hr;

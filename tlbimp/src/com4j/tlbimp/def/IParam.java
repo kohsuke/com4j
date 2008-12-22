@@ -9,6 +9,7 @@ import com4j.Variant;
 
 /**
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
+ * @author Michael Schnell (scm, (C) 2008, Michael-Schnell@gmx.de)
  */
 @IID("{8082BEBE-CC6C-44ee-BDF3-0A9BD5B2107B}")
 public interface IParam extends Com4jObject {
@@ -28,6 +29,13 @@ public interface IParam extends Com4jObject {
     boolean isRetval();
 
     @VTID(8)
+    boolean isOptional();
+
+    @VTID(9)
     @ReturnValue(type=NativeType.VARIANT)
     Variant getDefaultValue();
+
+    @VTID(10)
+    boolean isLCID();
+
 }

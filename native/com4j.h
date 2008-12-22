@@ -6,45 +6,32 @@ const int BYREF = 0x8000;
 
 // see com4j.NativeType
 enum Conv {
-	cvBSTR = 1,
-	cvBSTR_byRef = 1|BYREF,
-	cvLPCWSTR = 2,
-	cvLPCSTR = 3,
+	cvBSTR        = 1,    cvBSTR_byRef  = cvBSTR  | BYREF,
+	cvLPCWSTR     = 2,
+	cvLPCSTR      = 3,
 
+	cvINT8        = 100, 	cvINT8_byRef  = cvINT8    | BYREF,
+	cvINT16       = 101,  cvINT16_byRef = cvINT16   | BYREF,
+	cvINT32       = 102,  cvINT32_byRef = cvINT32   | BYREF,
+	cvBool        = 103,
+	cvVariantBool = 104,  cvVariantBool_byRef = cvVariantBool | BYREF,
+	cvINT64       = 105,  cvINT64_byRef = 105       | BYREF,
 
-	cvINT8 = 100,
-	cvINT8_byRef = 100|BYREF,
-	cvINT16 = 101,
-	cvINT16_byRef = 101|BYREF,
-	cvINT32 = 102,
-	cvINT32_byRef = 102|BYREF,
-	cvBool = 103,
-	cvVariantBool = 104,
-	cvVariantBool_byRef = 104|BYREF,
-	cvINT64 = 105,
-	cvINT64_byRef = 105|BYREF,
+	cvFloat       = 120,  cvFloat_byRef = cvFloat   | BYREF,
+	cvDouble      = 121,	cvDouble_byRef = cvDouble | BYREF,
 
-	cvFloat = 120,
-	cvFloat_byRef = 120|BYREF,
-	cvDouble = 121,
-	cvDouble_byRef = 121|BYREF,
+	cvHRESULT     = 200,
 
-	cvHRESULT = 200,
+	cvComObject   = 300,  cvComObject_byRef = cvComObject | BYREF,
+	cvGUID        = 301,
+	cvVARIANT     = 302,  cvVARIANT_byRef = cvVARIANT | BYREF,
+	cvDISPATCH    = 303,
+	cvPVOID       = 304,  cvPVOID_byRef = cvPVOID | BYREF,
 
-	cvComObject = 300,
-	cvComObject_byRef = 300|BYREF,
-	cvGUID = 301,
-	cvVARIANT = 302,
-	cvVARIANT_byRef = 302|BYREF,
-	cvDISPATCH = 303,
-	cvPVOID = 304,
-	cvPVOID_byRef = 304|BYREF,
+	cvDATE        = 400,
+  cvCURRENCY    = 401,  cvCURRENCY_byRef = cvCURRENCY | BYREF,
 
-	cvDATE = 400,
-	cvCURRENCY = 401,
-	cvCURRENCY_byRef = 401|BYREF,
-
-	cvSAFEARRAY = 500,
+	cvSAFEARRAY   = 500,  cvSAFEARRAY_byRef = cvSAFEARRAY | BYREF,
 };
 
 

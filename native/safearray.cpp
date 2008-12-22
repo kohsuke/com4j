@@ -3,12 +3,18 @@
 
 using namespace safearray;
 
+/**  
+ * Original auther  (C) Kohsuke Kawaguchi (kk@kohsuke.org)
+ * Modified by      (C) Michael Schnell (scm, 2008, Michael-Schnell@gmx.de)
+ */
 
 struct Entry {
 	JClassID* clazz;
 	VARTYPE vt;
 	SAFEARRAY* (* handler)( JNIEnv* env, jarray javaArray );
 };
+
+JClassID variantArray("[Lcom4j/Variant;");
 
 // conversion table
 static Entry entries[] = {
@@ -22,6 +28,7 @@ static Entry entries[] = {
 	{ &shortArray,	VT_I2,		PrimitiveArrayXducer<VT_I2,short,jshort>::toNative },
 	{ &stringArray,	VT_BSTR,	BasicArrayXducer<VT_BSTR,xducer::StringXducer>::toNative },
 	{ &objectArray,	VT_VARIANT,	BasicArrayXducer<VT_VARIANT,xducer::VariantXducer>::toNative },
+	{ &variantArray,	VT_VARIANT,	BasicArrayXducer<VT_VARIANT,xducer::VariantXducer>::toNative },
 	{ NULL, NULL }
 };
 
