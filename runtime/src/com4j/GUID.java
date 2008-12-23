@@ -26,7 +26,7 @@ public final class GUID {
     public GUID( String str ) {
         if(str.length()==32+4)
             str = '{'+str+'}';
-        
+
         if(str.length()!=32+6)
             throw new IllegalArgumentException("not a GUID: "+str);
 
@@ -105,4 +105,6 @@ public final class GUID {
     }
 
     public static final GUID GUID_NULL = new GUID("{00000000-0000-0000-0000-000000000000}");
+    public static final GUID GUID_STDOLE = new GUID("{00020430-0000-0000-C000-000000000046}");
+
 }

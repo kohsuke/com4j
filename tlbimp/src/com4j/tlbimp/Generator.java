@@ -453,7 +453,7 @@ public final class Generator {
 
             int len = tlib.count();
             // generate event interface first,
-            // so that we don't generate same interface as invocable ones.
+            // so that we don't generate same interface as invokable ones.
             for( int i=0; i<len; i++ ) {
                 ITypeDecl t = tlib.getType(i);
                 if(t.getKind()== TypeKind.COCLASS) {
@@ -623,9 +623,9 @@ public final class Generator {
     private static final Set<GUID> STDOLE_TYPES = new HashSet<GUID>(
         Arrays.asList(
             new GUID("00000000-0000-0000-C000-000000000046"),   // IUnknown
-            new GUID("00020400-0000-0000-C000-000000000046"),   // IDispatch
-            new GUID("BEF6E002-A874-101A-8BBA-00AA00300CAB"),   // IFont
-            new GUID("7BF80980-BF32-101A-8BBB-00AA00300CAB")    // IPicture
+            new GUID("00020400-0000-0000-C000-000000000046")//,   // IDispatch
+       //     new GUID("BEF6E002-A874-101A-8BBA-00AA00300CAB"),   // IFont
+       //     new GUID("7BF80980-BF32-101A-8BBB-00AA00300CAB")    // IPicture
         ));
 
 
@@ -641,10 +641,19 @@ public final class Generator {
      */
     /*package*/ String getTypeName(ITypeDecl decl) throws BindingException {
         Generator.LibBinder tli = getTypeLibInfo(decl.getParent());
-        String name = tli.pkg.name;
-        if(name.length()>0) name+='.';
-        name += tli.getSimpleTypeName(decl);
-        return name;
+        String pkgName = tli.pkg.name;
+        String name = tli.getSimpleTypeName(decl);
+        if (pkgName.equals("com4j.stdole")) {
+            if (name.equals("Com4jObject")) {
+                return name;
+            } else {
+                return pkgName + "." + name;
+            }
+        }
+        if (pkgName.length() > 0) {
+            pkgName += '.';
+        }
+        return pkgName + name;
     }
 
     /**

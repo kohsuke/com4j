@@ -58,11 +58,16 @@ final class Driver {
             public String resolve(IWTypeLib lib) {
 
                 GUID libid = lib.getLibid();
-                // TODO: move this to a filter
-                if( libid.equals(GUID_STDOLE))
-                    return "";  // don't generate STDOLE. That's replaced by com4j runtime.
+//                // TODO: move this to a filter
+                if( libid.equals(GUID.GUID_STDOLE)){
+                    return "com4j.stdole";
+                }
+//                if(suppress(lib)){
+//                    return ""; // don't generate STDOLE. That's replaced by com4j runtime.
+//                }
 
                 if(!libsToGen.contains(lib)){
+                  System.out.println("Found an referenced library: "+lib.getName());
                   try {
                     Lib l = new Lib();
                     TypeLibInfo tli = TypeLibInfo.locate(lib.getLibid(), null);
@@ -92,7 +97,7 @@ final class Driver {
             public boolean suppress(IWTypeLib lib) {
                 GUID libid = lib.getLibid();
 
-                if( libid.equals(GUID_STDOLE))
+                if( libid.equals(GUID.GUID_STDOLE))
                     return true;
 
                 Lib r = libs.get(libid);
@@ -121,5 +126,4 @@ final class Driver {
         generator.finish();
     }
 
-    private static final GUID GUID_STDOLE = new GUID("{00020430-0000-0000-C000-000000000046}");
 }

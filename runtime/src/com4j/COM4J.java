@@ -321,6 +321,13 @@ public abstract class COM4J {
     public static final GUID IID_IDispatch = new GUID("{00020400-0000-0000-C000-000000000046}");
 
 
+    public static final GUID IID_IPicture     = new GUID("{7BF80980-BF32-101A-8BBB-00AA00300CAB}");
+    public static final GUID IID_IPictureDisp = new GUID("{7BF80981-BF32-101A-8BBB-00AA00300CAB}");
+
+    public static final GUID IID_IFont     = new GUID("{BEF6E002-A874-101A-8BBA-00AA00300CAB}");
+    public static final GUID IID_IFontDisp = new GUID("{BEF6E003-A874-101A-8BBA-00AA00300CAB}");
+
+
 
     /**
      * Registers a {@link ComObjectListener} to the current thread.

@@ -1,7 +1,10 @@
 package com4j.tlbimp;
 
+import com4j.COM4J;
 import com4j.NativeType;
 import com4j.Com4jObject;
+import com4j.stdole.IFontDisp;
+import com4j.stdole.IPictureDisp;
 import com4j.tlbimp.def.IType;
 import com4j.tlbimp.def.IPrimitiveType;
 import com4j.tlbimp.def.IPtrType;
@@ -176,6 +179,18 @@ final class TypeBinding {
             return new TypeBinding( "GUID", NativeType.GUID, true );
         }
 
+        IDispInterfaceDecl disp = t.queryInterface(IDispInterfaceDecl.class);
+        if(disp != null) {
+            // TODO check this: this is a dispatch interface, so bind to Com4jObject?
+            if(disp.getGUID().equals(COM4J.IID_IPictureDisp)){
+                return new TypeBinding(IPictureDisp.class, NativeType.ComObject, true);
+            }
+            if(disp.getGUID().equals(COM4J.IID_IFontDisp)){
+                return new TypeBinding(IFontDisp.class, NativeType.ComObject, true);
+            }
+            // TODO: not clear how we should handle this
+            throw new BindingException(Messages.UNSUPPORTED_TYPE.format(getTypeString(t)));
+        }
 
         ITypeDecl declt = t.queryInterface(ITypeDecl.class);
         if(declt!=null) {
