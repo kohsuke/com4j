@@ -113,7 +113,7 @@ public abstract class COM4J {
     }
 
     /**
-     * Gets an already object from the running object table.
+     * Gets an already running object from the running object table.
      *
      * @param primaryInterface
      *      The returned COM object is returned as this interface.
@@ -296,7 +296,7 @@ public abstract class COM4J {
      * making sure that the memory region pointed by {@code ptr} remains
      * valid. It's the caller's responsibility.
      *
-     * @see http://java.sun.com/j2se/1.4.2/docs/guide/jni/jni-14.html#NewDirectByteBuffer
+     * @see "http://java.sun.com/j2se/1.4.2/docs/guide/jni/jni-14.html#NewDirectByteBuffer"
      *
      * @param ptr
      *      The pointer value that points to the top of the buffer.
@@ -396,8 +396,6 @@ public abstract class COM4J {
     static {
         loadNativeLibrary();
         Native.init();
-        // doing this from Variant static initializer causes
-        // native code to fail due to initialization order issue.
     }
 
     private static void loadNativeLibrary() {

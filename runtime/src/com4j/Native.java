@@ -39,12 +39,12 @@ class Native {
     /**
      * Calls <tt>IUnknown.AddRef</tt>.
      */
-    static native void addRef( int pComObject );
+    static native int addRef( int pComObject );
 
     /**
      * Calls <tt>IUnknown.Release</tt>.
      */
-    static native void release( int pComObject );
+    static native int release( int pComObject );
 
     /**
      * Invokes a method.

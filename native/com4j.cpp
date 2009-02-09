@@ -100,12 +100,18 @@ static IUnknown* toComObject( jint pComObject ) {
 	return reinterpret_cast<IUnknown*>(pComObject);
 }
 
-JNIEXPORT void JNICALL Java_com4j_Native_addRef( JNIEnv* env, jclass __unused__, jint pComObject ) {
-	toComObject(pComObject)->AddRef();
+JNIEXPORT jint JNICALL Java_com4j_Native_addRef( JNIEnv* env, jclass __unused__, jint pComObject ) {
+	return toComObject(pComObject)->AddRef();
 }
 
-JNIEXPORT void JNICALL Java_com4j_Native_release( JNIEnv* env, jclass __unused__, jint pComObject ) {
-	toComObject(pComObject)->Release();
+JNIEXPORT jint JNICALL Java_com4j_Native_release( JNIEnv* env, jclass __unused__, jint pComObject ) {
+	IUnknown *ptr = toComObject(pComObject);
+	if(ptr != NULL) {
+		return ptr->Release();
+	} else {
+	// Throw a NullPointerException!
+	env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "IUnknown pointer is NULL");
+  }
 }
 
 JNIEXPORT jint JNICALL Java_com4j_Native_queryInterface( JNIEnv* env, jclass __unused__,
@@ -331,27 +337,33 @@ JNIEXPORT jint JNICALL Java_com4j_Native_getErrorInfo(
 
 	MyGUID iid(iid1,iid2);
 
-	ISupportErrorInfoPtr p(reinterpret_cast<IUnknown*>(pComObject));
-	if(p==NULL)
-		return 0;	// not supported
+  try {
+	  ISupportErrorInfoPtr p(reinterpret_cast<IUnknown*>(pComObject));
+	  if(p==NULL)
+		  return 0;	// not supported
 
-	HRESULT hr = p->InterfaceSupportsErrorInfo(iid);
-	if(FAILED(hr)) {
-		error(env,__FILE__,__LINE__,hr,"ISupportErrorInfo::InterfaceSupportsErrorInfo failed");
-		return 0;
-	}
+	  HRESULT hr = p->InterfaceSupportsErrorInfo(iid);
+	  if(FAILED(hr)) {
+		  error(env,__FILE__,__LINE__,hr,"ISupportErrorInfo::InterfaceSupportsErrorInfo failed");
+		  return 0;
+	  }
 
-	if(hr!=S_OK)	return 0; // not supported
+	  if(hr!=S_OK)	return 0; // not supported
 
-	IErrorInfo* pError;
-	hr = GetErrorInfo(0,&pError);
-	if(FAILED(hr)) {
-		error(env,__FILE__,__LINE__,hr,"GetErrorInfo failed");
-		return 0;
-	}
+	  IErrorInfo* pError;
+	  hr = GetErrorInfo(0,&pError);
+	  if(FAILED(hr)) {
+		  error(env,__FILE__,__LINE__,hr,"GetErrorInfo failed");
+		  return 0;
+	  }
 
-	// return the pointer
-	return reinterpret_cast<jint>(pError);
+	  // return the pointer
+	  return reinterpret_cast<jint>(pError);
+  } catch (...) {
+    // an exception occured. This might happen, if the automation server is not available due to a crash.
+    return 0;
+  }
+  return 0;
 }
 
 /*

@@ -33,7 +33,7 @@ public enum NativeType {
      * TODO: support StringBuffer
      * <p>
      * Expected Java type:
-     *      {@link Holder<String>}
+     *      {@link Holder}&lt;String&gt;
      */
     BSTR_ByRef(1|BYREF,4),
 
@@ -262,6 +262,14 @@ public enum NativeType {
                 base.dispose();
                 return new ComCollection(itemType,enumVar);
             }
+            // TODO: Do we always need to call addRef here?
+            // If we call a COM method like Application.doStuff(IDocumentPointer p);
+            // then toNative will be called and we pass an int (pointer) to the native part of com4j
+            // And then, after the call, this method (toJava) gets called from com4j.StandardComMethod.invoke(int, Object[])
+            // So we create a new Wrapper object for an interface pointer. But we can not assume, that the native code of the third party
+            // software called addRef for a pointer we passed in! So we call addRef ourself. (see issues 25 and 36)
+            Native.addRef((Integer) param);
+
             return Wrapper.create( (Class<? extends Com4jObject>)type, (Integer)param );
         }
     },
@@ -443,8 +451,8 @@ public enum NativeType {
      *
      * <p>
      * Expected Java type:
-     *      direct {@link Buffer}s ({@link Buffer}s created from methods like
-     *      {@link ByteBuffer#allocateDirect(int)}
+     *      direct {@link java.nio.Buffer}s ({@link java.nio.Buffer}s created from methods like
+     *      {@link java.nio.ByteBuffer#allocateDirect(int)}
      */
     PVOID(304,4),
 
@@ -457,8 +465,8 @@ public enum NativeType {
      *
      * <p>
      * Expected Java type:
-     *      {@link Holder}&lt;{@link Buffer}> ({@link Buffer}s created from methods like
-     *      {@link ByteBuffer#allocateDirect(int)}
+     *      {@link Holder}&lt;{@link java.nio.Buffer}&gt; ({@link java.nio.Buffer}s created from methods like
+     *      {@link java.nio.ByteBuffer#allocateDirect(int)}
      */
     PVOID_ByRef(304|BYREF,4),
 
@@ -529,10 +537,10 @@ public enum NativeType {
      *
      * <p>
      * Expected Java type:
-     *      {@link BigDecimal}
+     *      {@link java.math.BigDecimal}
      */
     Currency(401,8),
-    Currency_ByRef(401|BYREF,8), // FIXME? ByRef should have a size of four bytes, I think..
+    Currency_ByRef(401|BYREF,8), // FIXME? ByRef should always have a size of four bytes, I think..
 
 
     /**

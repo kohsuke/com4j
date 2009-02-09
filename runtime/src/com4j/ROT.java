@@ -52,8 +52,7 @@ public class ROT implements Iterable<Com4jObject>
 
     /** Constructs and initializes the Iterator object */
     public ROTIterator() {
-      rotPointer = Native.getRunningObjectTable();
-      enumMonikerPointer = Native.getEnumMoniker(rotPointer);
+      new InitTask().execute(); // We have to do this in a ComThread
       fetchObject(); // We have to prefetch always one Object to provide the hasNext method
     }
 
@@ -74,7 +73,7 @@ public class ROT implements Iterable<Com4jObject>
     }
 
     private void fetchObject() {
-      // We need to execute this in an ComThread, hence the redirection.
+      // We need to execute this in a ComThread, hence the redirection.
       nextObject = new GetNextRunningObjectTask().execute();
     }
 
@@ -100,6 +99,14 @@ public class ROT implements Iterable<Com4jObject>
     @Override
     public void remove() {
       throw new UnsupportedOperationException("You cannot remove an arbitary object form the table");
+    }
+
+    private class InitTask extends Task<Boolean> {
+        public Boolean call() {
+            rotPointer = Native.getRunningObjectTable();
+            enumMonikerPointer = Native.getEnumMoniker(rotPointer);
+            return Boolean.TRUE;
+        }
     }
 
     private class GetNextRunningObjectTask extends Task<Com4jObject>

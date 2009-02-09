@@ -77,7 +77,7 @@ JNIEXPORT jint JNICALL Java_com4j_Native_getNextRunningObject
  * Method:    addRef
  * Signature: (I)V
  */
-JNIEXPORT void JNICALL Java_com4j_Native_addRef
+JNIEXPORT jint JNICALL Java_com4j_Native_addRef
   (JNIEnv *, jclass, jint);
 
 /*
@@ -85,7 +85,7 @@ JNIEXPORT void JNICALL Java_com4j_Native_addRef
  * Method:    release
  * Signature: (I)V
  */
-JNIEXPORT void JNICALL Java_com4j_Native_release
+JNIEXPORT jint JNICALL Java_com4j_Native_release
   (JNIEnv *, jclass, jint);
 
 /*

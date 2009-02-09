@@ -1,6 +1,5 @@
 package com4j;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -17,11 +16,16 @@ import java.util.WeakHashMap;
  * @author Michael Schnell (scm, (C) 2008, Michael-Schnell@gmx.de)
  */
 final class Wrapper implements InvocationHandler, Com4jObject {
+		/**
+			* name of this wrapper. This is for debug purposes.
+      */
+    private String name;
+
 
     /**
      * interface pointer.
      */
-    private int ptr;
+    private int ptr = 0;
 
     /**
      * Cached hash code. The value of {@code IUnknown*}.
@@ -178,7 +182,8 @@ final class Wrapper implements InvocationHandler, Com4jObject {
                     dispose0();
                     return null;
                 }
-            }.execute();
+            }.execute(thread); // Issue 39 fixed.
+            thread.removeLiveObject(); // Issue 37 fixed.
         }
     }
 
@@ -233,8 +238,17 @@ final class Wrapper implements InvocationHandler, Com4jObject {
         }.execute();
     }
 
+    @Override
+    public void setName(String name){
+        this.name = name;
+    }
+
     public String toString() {
-        return "ComObject:"+Integer.toHexString(ptr);
+        if(name == null) {
+            return "ComObject:"+Integer.toHexString(ptr);
+        } else {
+            return name+":"+Integer.toHexString(ptr);
+        }
     }
 
     public final int hashCode() {
@@ -309,8 +323,13 @@ final class Wrapper implements InvocationHandler, Com4jObject {
 
         public Integer call() {
             int nptr = Native.queryInterface(ptr,iid);
-            if(nptr!=0)
-                Native.release(nptr);
+            if(nptr!=0) {
+              System.out.println("release "+nptr+ " in Wrapper.QITestTask.call ");
+              for(StackTraceElement e : Thread.currentThread().getStackTrace()){
+                  System.out.println(e.toString());
+              }
+              Native.release(nptr);
+            }
             return nptr;
         }
     }

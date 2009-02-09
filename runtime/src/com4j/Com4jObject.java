@@ -102,4 +102,10 @@ public interface Com4jObject {
      *      the event subscription.
      */
     <T> EventCookie advise( Class<T> eventInterface, T receiver );
+
+    /**
+     * You can use this function to set a name to an object. This is only for debug purposes.
+     * @param name the new name of the object.
+     */
+    void setName(String name);
 }

@@ -138,7 +138,7 @@ final class ComThread extends Thread {
                 // dispose unused objects if any
                 while(freeList!=null) {
                     if(freeList.dispose0())
-                        liveObjects--;
+                        removeLiveObject();
                     freeList = freeList.next;
                 }
 
@@ -203,6 +203,10 @@ final class ComThread extends Thread {
         }
     }
 
+    synchronized void removeLiveObject(){
+        liveObjects--;
+    }
+
     /**
      * Checks if the current thread is a COM thread.
      */
@@ -239,5 +243,29 @@ final class ComThread extends Thread {
                 }
             }
         });
+    }
+
+    /**
+     * This method calls System.gc() and executes a dummy task to initiate the corresponding
+     * ComThread to call dispose0() on all waiting objects.
+     *
+     * This method is mainly for debug purposes.
+     */
+
+    public static void flushFreeList() {
+        System.gc();
+        new DummyTask().execute();
+    }
+
+    /**
+     * A task doing nothing.
+     * @author scm
+     */
+    private static class DummyTask extends Task<Void>
+    {
+        @Override
+        public Void call() {
+            return null;
+        }
     }
 }
