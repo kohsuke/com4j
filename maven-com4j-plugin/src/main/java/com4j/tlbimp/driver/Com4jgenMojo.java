@@ -181,7 +181,7 @@ public class Com4jgenMojo extends AbstractMojo implements ErrorListener {
 			// Excel), we should continue with the mojo though
 			getLog().warn(
 					"Com4j had an error while running: \n" + e.getMessage());
-			throw new MojoExecutionException(e.getMessage());
+			throw new MojoExecutionException(e.getMessage(),e);
 		}
 
 		getLog().debug("adding generated files to Maven compile source");
