@@ -13,19 +13,21 @@ import java.util.WeakHashMap;
  * {@link InvocationHandler} that backs up a COM object.
  *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
- * @author Michael Schnell (scm, (C) 2008, Michael-Schnell@gmx.de)
+ * @author Michael Schnell (ScM, (C) 2008, 2009, Michael-Schnell@gmx.de)
  */
 final class Wrapper implements InvocationHandler, Com4jObject {
-		/**
-			* name of this wrapper. This is for debug purposes.
-      */
+    /**
+     * name of this wrapper. This is for debug purposes.
+     */
     private String name;
 
 
     /**
      * interface pointer.
      */
-    private int ptr = 0;
+    private final int ptr;
+    
+    private boolean isDisposed = false;
 
     /**
      * Cached hash code. The value of {@code IUnknown*}.
@@ -33,17 +35,12 @@ final class Wrapper implements InvocationHandler, Com4jObject {
     private int hashCode=0;
 
     /**
-     * Used to form a linked list for {@link ComThread#freeList}.
-     */
-    Wrapper next;
-
-    /**
      * All the invocation to the wrapper COM object must go through this thread.
      */
-    private final ComThread thread;
+    final ComThread thread;
 
     /**
-     * Cached of {@link ComMethod} keyed by the method decl.
+     * Cached of {@link ComMethod} keyed by the method declaration.
      *
      * TODO: revisit the cache design
      */
@@ -51,7 +48,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
         new WeakHashMap<Method,ComMethod>());
 
     /**
-     * Wraps a new COM object. The pointer needs to be addref-ed by the caller if needed.
+     * Wraps a new COM object. The pointer needs to be addRefed by the caller if needed.
      */
     private Wrapper(int ptr) {
         if(ptr==0)   throw new IllegalArgumentException();
@@ -59,6 +56,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
 
         this.ptr = ptr;
         thread = ComThread.get();
+        thread.addLiveObject(this);
     }
 
     /**
@@ -73,7 +71,6 @@ final class Wrapper implements InvocationHandler, Com4jObject {
             primaryInterface.getClassLoader(),
             new Class<?>[]{primaryInterface},
                 w));
-        w.thread.addLiveObject(r);
         return r;
     }
 
@@ -84,25 +81,36 @@ final class Wrapper implements InvocationHandler, Com4jObject {
      */
     static Com4jObject create( int ptr ) {
         Wrapper w = new Wrapper(ptr);
-        w.thread.addLiveObject(w);
         return w;
     }
 
 
-    int getPtr() {
+    /**
+     * Returns the wrapped interface pointer as an integer
+     * @return The wrapped interface pointer.
+     */
+    @Override
+    public int getPtr() {
         return ptr;
     }
 
+    @Override
+    public ComThread getComThread(){
+      return thread;
+    }
+
+    /**
+     * Adds this wrapper to the freeList of the thread
+     */
     protected void finalize() throws Throwable {
+        this.dispose();
         super.finalize();
-        if(ptr!=0)
-            thread.addToFreeList(this);
     }
 
     private static final Object[] EMPTY_ARRAY = new Object[0];
 
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if(ptr==0)
+        if(isDisposed)
             throw new IllegalStateException("COM object is already disposed");
         if(args==null)  // this makes the processing easier
             args = EMPTY_ARRAY;
@@ -175,26 +183,31 @@ final class Wrapper implements InvocationHandler, Com4jObject {
         throw new IllegalAnnotationException("Missing annotation: You need to specify at least one of @DISPID or @VTID");
     }
 
+    /**
+     * Disposes the native part of this Wrapper. That is, calling Release on the interface pointer. After a wrapper is disposed,
+     * every call to a COM method will raise an {@link IllegalStateException}
+     */
     public void dispose() {
-        if(ptr!=0) {
+        if(!isDisposed) {
             new Task<Void>() {
                 public Void call() {
                     dispose0();
                     return null;
                 }
             }.execute(thread); // Issue 39 fixed.
-            thread.removeLiveObject(); // Issue 37 fixed.
         }
     }
 
     /**
      * Called from {@link ComThread} to actually call IUnknown::Release.
+     * If this Wrapper was already disposed no action is made.
      */
-    boolean dispose0() {
-        boolean r = ptr!=0;
-        Native.release(ptr);
-        ptr=0;
-        return r;
+    void dispose0() {
+        if(!isDisposed){
+          Native.release(ptr);
+          isDisposed = true;
+          thread.removeLiveObject(this);
+        }
     }
 
     public <T extends Com4jObject> boolean is( Class<T> comInterface ) {
@@ -206,6 +219,14 @@ final class Wrapper implements InvocationHandler, Com4jObject {
         }
     }
 
+    /**
+     * Returns whether this object was already disposed.
+     * @return true if this object was disposed, false otherwise.
+     */
+    public boolean isDisposed() {
+      return isDisposed;
+    }
+    
     public <T extends Com4jObject> T queryInterface( final Class<T> comInterface ) {
         return new Task<T>() {
             public T call() {
@@ -227,7 +248,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
                 GUID iid = COM4J.getIID(eventInterface);
                 Com4jObject cp = cpc.FindConnectionPoint(iid);
                 EventProxy<T> proxy = new EventProxy<T>(eventInterface, object);
-                proxy.nativeProxy = Native.advise(COM4J.getPtr(cp),proxy,iid.v[0],iid.v[1]);
+                proxy.nativeProxy = Native.advise(cp.getPtr(), proxy,iid.v[0], iid.v[1]);
 
                 // clean up resources to be nice
                 cpc.dispose();
@@ -253,10 +274,10 @@ final class Wrapper implements InvocationHandler, Com4jObject {
 
     public final int hashCode() {
         if(hashCode==0) {
-            if(ptr!=0) {
-                hashCode = new QITestTask(COM4J.IID_IUnknown).execute(thread);
+            if(isDisposed) {
+              hashCode = 0;
             } else {
-                hashCode = 0;
+              hashCode = new QITestTask(COM4J.IID_IUnknown).execute(thread);
             }
         }
         return hashCode;
@@ -278,6 +299,9 @@ final class Wrapper implements InvocationHandler, Com4jObject {
         /**
          * Invokes the method on the peer {@link ComThread} and returns
          * its return value.
+         * @param method The {@link ComMethod} to invoke
+         * @param args The arguments of the method
+         * @return Returns the return value of the invoked method
          */
         public synchronized Object invoke( ComMethod method, Object[] args ) {
             invCache = null;
@@ -293,6 +317,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
 
         /**
          * Called from {@link ComThread} to actually carry out the execution.
+         * @return Returns the return value of the invoked method
          */
         public synchronized Object call() {
             Object r = method.invoke(ptr,args);
@@ -304,7 +329,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
     }
 
     /**
-     * We cache up to one {@link InvocationThunk}.
+     * We cache up to one InvocationThunk.
      */
     InvocationThunk invCache;
 

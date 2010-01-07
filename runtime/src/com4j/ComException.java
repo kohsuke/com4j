@@ -20,6 +20,13 @@ public class ComException extends RuntimeException {
 
     private ErrorInfo errorInfo;
 
+    /**
+     * Constructs a new ComException with the given values
+     * @param msg the message text of the Exception
+     * @param hresult the HRESULT value of the COM error
+     * @param fileName the file name of the source where the error occurred
+     * @param line the line in the file where the error occurred
+     */
     public ComException( String msg, int hresult, String fileName, int line ) {
         super(Integer.toHexString(hresult)+' '+cutEOL(msg));
         this.hresult = hresult;
@@ -27,6 +34,12 @@ public class ComException extends RuntimeException {
         this.line = line;
     }
 
+    /**
+     * Constructs a new ComException with the given values.
+     * @param msg the message text of the Exception
+     * @param fileName the file name of the source where the error occurred
+     * @param line the line in the file where the error occurred
+     */
     public ComException( String msg, String fileName, int line ) {
         super(msg);
         this.hresult = -1;
@@ -34,10 +47,19 @@ public class ComException extends RuntimeException {
         this.line = line;
     }
 
+    /**
+     * Constructs a new ComException with the given values
+     * @param msg the message text of the Exception
+     * @param hresult the HRESULT value of the COM error
+     */
     public ComException(String msg, int hresult) {
         this(msg,hresult,null,-1);
     }
 
+    /**
+     * Constructs a new ComException with the given ComExcepton as cause.
+     * @param cause the line in the file where the error occurred
+     */
     public ComException(ComException cause) {
         super(cause.getDetailMessage(),cause);
         this.hresult = cause.hresult;
@@ -46,6 +68,10 @@ public class ComException extends RuntimeException {
         this.errorInfo = cause.errorInfo;
     }
 
+    /**
+     * Sets the ErrorInfo of this ComException
+     * @param errorInfo the new ErrorInfo
+     */
     /*package*/ void setErrorInfo(ErrorInfo errorInfo) {
         this.errorInfo = errorInfo;
     }
@@ -67,12 +93,18 @@ public class ComException extends RuntimeException {
     }
 
     /**
-     * Gets the HRESULT code of this error.`
+     * Returns the HRESULT value of this error.
+     * @return the HRESULT value of this error
      */
     public int getHRESULT() {
         return hresult;
     }
 
+    /**
+     * Cuts off the end of line characters.
+     * @param s the original String
+     * @return
+     */
     private static String cutEOL( String s ) {
         if(s==null)
             return "(Unknown error)";
@@ -94,6 +126,10 @@ public class ComException extends RuntimeException {
         return super.getMessage();
     }
 
+    /**
+     * Returns the message of the superclass
+     * @return the message of the superclass
+     */
     public String getDetailMessage() {
         return super.getMessage();
     }

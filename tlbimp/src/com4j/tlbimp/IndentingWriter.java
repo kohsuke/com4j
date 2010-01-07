@@ -138,7 +138,7 @@ public class IndentingWriter extends PrintWriter {
      * Ends the comma-separated token mode.
      */
     public void endCommaMode() {
-        needsComma |= (boolean)commaStack.pop();
+        needsComma |= commaStack.pop();
     }
 
     /**

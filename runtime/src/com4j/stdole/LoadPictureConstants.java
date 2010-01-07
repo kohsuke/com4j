@@ -4,7 +4,7 @@ import com4j.*;
 
 /**
  * <p>
- * This interface was generated using tlbimp on stdole2.tlb
+ * This enum was initially generated using tlbimp on stdole2.tlb
  * </p>
  */
 public enum LoadPictureConstants implements ComEnum {
@@ -31,10 +31,14 @@ public enum LoadPictureConstants implements ComEnum {
    * The value of this constant is 4
    * </p>
    */
-  Color(4),
-  ;
+  Color(4);
 
   private final int value;
-  LoadPictureConstants(int value) { this.value=value; }
+
+  LoadPictureConstants(final int value) { this.value=value; }
+  /**
+   * Returns the value of the constant
+   * @return The value of the constant
+   */
   public int comEnumValue() { return value; }
 }

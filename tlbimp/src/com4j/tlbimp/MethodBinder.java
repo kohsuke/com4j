@@ -601,8 +601,10 @@ abstract class MethodBinder
     // dispinterfaces defined by C++ often uses HRESULT
     // as the return value
     IPrimitiveType pt = r.queryInterface(IPrimitiveType.class);
-    if (pt != null && pt.getVarType() == VarType.VT_HRESULT)
+    if (pt != null && pt.getVarType() == VarType.VT_HRESULT) {
+      // TODO: This causes a null pointer exception in some situations!
       return null;
+    }
 
     return r;
   }

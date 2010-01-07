@@ -1,10 +1,11 @@
 package com4j;
 
-import java.util.List;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -15,8 +16,9 @@ import java.util.Collections;
  * one {@link ComThread} is created to manage those objects.
  *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
+ * @author Michael Schnell (ScM, (C) 2008, 2009, Michael-Schnell@gmx.de)
  */
-final class ComThread extends Thread {
+public final class ComThread extends Thread {
 
     /**
      * Used to associate a {@link ComThread} for every thread.
@@ -37,13 +39,23 @@ final class ComThread extends Thread {
         return map.get();
     }
 
+    /**
+     * Detaches the {@link ComThread} for the current thread (peer) by calling {@link #kill()}
+     */
     static void detach() {
         map.get().kill();
+        try {
+          map.get().join();
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        }
         map.remove();
     }
 
-
-
+    /**
+     * Constructs a new ComThread for the given peer and starts it.
+     * @param peer The peer thread.
+     */
     private ComThread(Thread peer) {
         super("ComThread for "+peer.getName());
         this.peer = peer;
@@ -57,21 +69,19 @@ final class ComThread extends Thread {
     private final Thread peer;
 
     /**
-     * {@link Wrapper}s that are no longer referenced from anybody else
-     * are kept in this linked list, so that this thread can dispose them.
-     */
-    private Wrapper freeList;
-
-    /**
      * Tasks that need to be processed.
      */
-    private Task<?> taskList;
+    private Task<?> taskListHead; // com4j issue 40
+    private Task<?> taskListTail;
 
     /**
-     * Number of {@link Wrapper} objects that this thread manages.
+     * Collection of {@link Com4jObject}s that are managed by this thread.
+     * <p>
+     * This collection keeps track of all "living" COM objects. This is necessary to release all COM resources when the java process terminates.
+     * </p>
      */
-    private int liveObjects = 0;
-
+    private LiveObjectCollection liveObjects = new LiveObjectCollection();
+    
     /**
      * Listeners attached to this thread.
      */
@@ -90,41 +100,35 @@ final class ComThread extends Thread {
 
     /**
      * Returns true if this thread can exit.
+     * <p>
+     * If die is true, this method returns true. Otherwise it returns true, if the peer thread is not
+     * alive any more and all liveObjects have been removed.
+     * </p>
      */
     private boolean canExit() {
         // lhs:forcible death <->  rhs:natural death
-        return die || (!peer.isAlive() && liveObjects==0);
+        return die || (!peer.isAlive() && liveObjects.isEmpty());
     }
 
     /**
-     * Kills this {@link ComThread} gracefully
-     * and blocks until a thread dies.
+     * Kills this {@link ComThread}. Use this with caution! This method does not dispose living objects! Use {@link #disposeLiveObjects()} to terminate the thread normally.
+     * @see #disposeLiveObjects()
      */
     public void kill() {
-        new Task<Void>() {
-            public Void call() {
-                // this thread is going to shut down.
-                // if the master thread needs a ComThread again,
-                // we'll create a new thread.
-                die = true;
-                return null;
-            }
-        }.execute(this);
-
-        // wait for it to die. if someone interrupts us, process that later.
-        try {
-            join();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        die = true;
+        lock.activate(); // wake up the sleeping thread.
     }
 
     public void run() {
-        threads.add(this);
+        synchronized (threads) {
+          threads.add(this);
+        }
         try {
             run0();
         } finally {
+          synchronized (threads) {
             threads.remove(this);
+          }
         }
     }
 
@@ -132,22 +136,18 @@ final class ComThread extends Thread {
         Native.coInitialize();
 
         while(!canExit()) {
-            lock.suspend();
+            // wake up once per second to check if we can clean up some objects or even terminate this thread. 
+            //(01.10.2009: Is this still necessary? Cleanup of objects is scheduled as a task now)
+            lock.suspend(1000);
 
             synchronized(this) {
-                // dispose unused objects if any
-                while(freeList!=null) {
-                    if(freeList.dispose0())
-                        removeLiveObject();
-                    freeList = freeList.next;
-                }
-
                 // do any scheduled tasks that need to be done
-                while(taskList!=null) {
-                    Task<?> task = taskList;
-                    taskList = task.next;
+                while(taskListHead != null) {
+                    Task<?> task = taskListHead;
+                    taskListHead = task.next;
                     task.invoke();
                 }
+                taskListTail = null; // taskListHead is null after the loop, so the tail should be null as well.
             }
         }
 
@@ -155,24 +155,23 @@ final class ComThread extends Thread {
     }
 
     /**
-     * Adds the given object to the free list
-     */
-    synchronized void addToFreeList(Wrapper wrapper) {
-        assert wrapper.next==null;
-        wrapper.next = freeList;
-        freeList = wrapper;
-    }
-
-    /**
-     * Executes a {link Task} in a {@link ComThread}
+     * Executes a {@link Task} in a {@link ComThread}
      * and returns its result.
+     * @param task The task to be executed
+     * @param <T> The type of the return value.
+     * @return The result of the Task
      */
     public <T> T execute(Task<T> task) {
         synchronized(task) {
             synchronized(this) {
-                // add it to the link
-                task.next = taskList;
-                taskList = task;
+                // add it to the tail (fix issue 40)
+                if(taskListTail != null){
+                    taskListTail.next = task;
+                }
+                taskListTail = task;
+                if(taskListHead == null){
+                    taskListHead = task;
+                }
             }
 
             // invoke the execution
@@ -181,7 +180,9 @@ final class ComThread extends Thread {
             // wait for the completion
             try {
                 task.wait();
-            } catch (InterruptedException e) {}
+            } catch (InterruptedException e) {
+                task.exception = e; // we got interrupted, so task.result will be invalid! 
+            }
 
             if(task.exception!=null) {
                 Throwable e = task.exception;
@@ -195,25 +196,59 @@ final class ComThread extends Thread {
         }
     }
 
+    /**
+     * Adds a {@link Com4jObject} to the live objects of this {@link ComThread}
+     * <p>
+     * This method increases the live object count of this thread and fires an
+     * {@link ComObjectListener#onNewObject(Com4jObject)} event to all listeners.
+     * </p>
+     * @param r The new {@link Com4jObject}
+     */
     public synchronized void addLiveObject( Com4jObject r ) {
-        liveObjects++;
+        liveObjects.add(r);
         if(!listeners.isEmpty()) {
             for( int i=listeners.size()-1; i>=0; i-- )
                 listeners.get(i).onNewObject(r);
         }
     }
 
-    synchronized void removeLiveObject(){
-        liveObjects--;
+    /**
+     * Decrements the live object count of this {@link ComThread}
+     */
+    synchronized void removeLiveObject(Com4jObject object){
+        liveObjects.remove(object);
+    }
+    
+    /**
+     * Disposes all living objects of this thread. The thread will exit normally after all living objects are disposed if the peer thread has terminated.
+     */
+    public void disposeLiveObjects() {
+      new Task<Void>() {
+        @Override
+        public Void call() {
+          for (WeakReference<Com4jObject> object : liveObjects.getSnapshot()) {
+            Com4jObject liveObject = object.get();
+            if(liveObject != null) {
+              liveObject.dispose();
+            }
+          }
+          return null;
+        }
+      }.execute(this);      
     }
 
     /**
-     * Checks if the current thread is a COM thread.
+     * Checks if the current thread is a {@link ComThread}.
      */
     static boolean isComThread() {
         return Thread.currentThread() instanceof ComThread;
     }
 
+    /**
+     * Adds a {@link ComObjectListener} to this {@link ComThread}
+     * @param listener the new listener
+     * @throws IllegalArgumentException if the <code>listener</code> is <code>null</code> or if the listener is already registered.
+     */
     public void addListener(ComObjectListener listener) {
         if(listener==null)
             throw new IllegalArgumentException("listener is null");
@@ -222,6 +257,11 @@ final class ComThread extends Thread {
         listeners.add(listener);
     }
 
+    /**
+     * Removes the {@link ComObjectListener} from this {@link ComThread}
+     * @param listener The listener to remove
+     * @throws IllegalArgumentException if the listener was not registered to this {@link ComThread}
+     */
     public void removeListener(ComObjectListener listener) {
         if(!listeners.remove(listener))
             throw new IllegalArgumentException("listener isn't registered");
@@ -229,18 +269,34 @@ final class ComThread extends Thread {
 
 
     /**
-     * Live {@link ComThread}s.
+     * All living and running {@link ComThread}s.
      */
     static final Set<ComThread> threads = Collections.synchronizedSet(new HashSet<ComThread>());
 
     static {
         // before shut-down clean up all ComThreads
-        Runtime.getRuntime().addShutdownHook(new Thread() {
+        COM4J.addCom4JShutdownTask(new Thread("Com4J ComThread ShutdownHook") {
             public void run() {
-                // move threads to array to avoid concurrent modification
-                for (ComThread thread : threads.toArray(new ComThread[threads.size()]) ) {
-                    thread.kill();
+              // we need to synchronize the access to threads.
+              // Not just to avoid concurrent modification, but also to make sure, that an kill-task is not waiting for ever for the
+              // thread to execute the task. (The thread might want to shut down itself concurrently, because the liveObjects dropped to zero.)
+              Thread[] threadsSnapshot;
+              synchronized(threads) {
+                threadsSnapshot = threads.toArray(new ComThread[threads.size()]);
+                for (ComThread thread : threads) {
+                    thread.disposeLiveObjects(); // this will terminate the ComThead, since the peer thread of the ComThread has terminated (prerequisite for a VM shutdown)
                 }
+              }
+              // release the monitor. This is necessary for the dying threads to acquire the monitor to
+              // remove themselves form the threads field.
+              for(Thread t : threadsSnapshot){
+                try {
+                  t.join();
+                } catch (InterruptedException e) {
+                  // since this is a shutdown hook, we do not want to interrupt
+                  Thread.currentThread().interrupt(); // reset the interrupt
+                }
+              }
             }
         });
     }

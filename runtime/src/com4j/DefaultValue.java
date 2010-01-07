@@ -23,5 +23,9 @@ import java.lang.annotation.Target;
 @Target(PARAMETER)
 @Documented
 public @interface DefaultValue {
+  /**
+   * Returns the default value of the annotated argument
+   * @return the default value of the annotated argument
+   */
     String value();
 }

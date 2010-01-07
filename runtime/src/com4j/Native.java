@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
  * Native methods implemented in the dll.
  *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
+ * @author Michael Schnell (ScM)
  */
 class Native {
 
@@ -32,8 +33,23 @@ class Native {
      */
     static native int getObject( String fileName, String progId );
 
+    /**
+     * returns a pointer to the running object table.
+     * @return a pointer to the running object table
+     */
     static native int getRunningObjectTable();
+    /**
+     * Returns an enum moniker for the given running object table.
+     * @param rotPointer the pointer to the running object table
+     * @return an enum moniker for the given running object table
+     */
     static native int getEnumMoniker(int rotPointer);
+    /**
+     * Returns a pointer to the next object of the running object table.
+     * @param rotPointer a pointer to the running object table
+     * @param enumMonikerPointer a pointer to an enum moniker
+     * @return a pointer to the next object of the running object table
+     */
     static native int getNextRunningObject(int rotPointer, int enumMonikerPointer);
 
     /**

@@ -5,41 +5,42 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.ByteBuffer;
-import java.util.logging.Logger;
+import java.util.ArrayList;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * The root of the COM4J library.
  *
  * <p>
  * Provides various global services that don't fit into the rest of classes.
- *
+ * </p>
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
+ * @author Michael Schnell (ScM, (C) 2008, 2009 Michael-Schnell@gmx.de)
  */
 public abstract class COM4J {
-    private COM4J() {} // no instanciation allowed
+    private COM4J() {} // no instantiation allowed
 
     /**
      * Creates a new COM object of the given CLSID and returns
      * it in a wrapped interface.
      *
-     * @param primaryInterface
-     *      The created COM object is returned as this interface.
+     * @param primaryInterface The created COM object is returned as this interface.
      *      Must be non-null. Passing in {@link Com4jObject} allows
      *      the caller to create a new instance without knowing
      *      its primary interface.
-     * @param clsid
-     *      The CLSID of the COM object to be created. Must be non-null.
+     * @param clsid The CLSID of the COM object to be created. Must be non-null.
      *
-     * @return
-     *      non-null valid object.
+     * @param <T> the type of the return value and the type parameter of the class object of primaryInterface
      *
-     * @throws ComException
-     *      if the instanciation fails.
+     * @return non-null valid object.
+     *
+     * @throws ComException if the instantiation fails.
      */
     public static<T extends Com4jObject>
     T createInstance( Class<T> primaryInterface, GUID clsid ) throws ComException {
@@ -50,21 +51,19 @@ public abstract class COM4J {
      * Creates a new COM object of the given CLSID and returns
      * it in a wrapped interface.
      *
-     * @param primaryInterface
-     *      The created COM object is returned as this interface.
+     * @param primaryInterface The created COM object is returned as this interface.
      *      Must be non-null. Passing in {@link Com4jObject} allows
      *      the caller to create a new instance without knowing
      *      its primary interface.
-     * @param clsid
-     *      The CLSID of the COM object in the
+     * @param clsid The CLSID of the COM object in the
      *      "<tt>{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}</tt>" format,
      *      or the ProgID of the object (like "Microsoft.XMLParser.1.0")
      *
-     * @return
-     *      non-null valid object.
+     * @param <T> the type of the return value and the type parameter of the class object of primaryInterface
      *
-     * @throws ComException
-     *      if the instanciation fails.
+     * @return non-null valid object.
+     *
+     * @throws ComException if the instantiation fails.
      */
     public static<T extends Com4jObject>
     T createInstance( Class<T> primaryInterface, String clsid ) throws ComException {
@@ -80,11 +79,14 @@ public abstract class COM4J {
      * <p>
      * Compared to {@link #createInstance(Class,String)},
      * this method allows the caller to specify <tt>CLSCTX_XXX</tt>
-     * constants to control the server instanciation.
+     * constants to control the server instantiation.
      *
-     * @param clsctx
-     *      Normally this is {@link CLSCTX#ALL}, but can be any combination
-     *      of {@link CLSCTX} constants.
+     * @param primaryInterface type parameter of the primaryInterface type
+     * @param clsid a string representation of the class id
+     * @param clsctx Normally this is {@link CLSCTX#ALL}, but can be any combination of {@link CLSCTX} constants.
+     * @param <T> the type of the return value and the type parameter of the class object of primaryInterface
+     * @return the new instance of the COM object
+     * @throws ComException if an error occurred in the native COM part
      *
      * @see CLSCTX
      */
@@ -95,6 +97,10 @@ public abstract class COM4J {
         return new CreateInstanceTask<T>(clsid,clsctx,primaryInterface).execute();
     }
 
+    /**
+     * Wraps the creation of a COM object in a {@link Task}
+     * @param <T> the type of the return value of {@link #call()}
+     */
     private static class CreateInstanceTask<T extends Com4jObject> extends Task<T> {
         private final String clsid;
         private final int clsctx;
@@ -115,19 +121,19 @@ public abstract class COM4J {
     /**
      * Gets an already running object from the running object table.
      *
-     * @param primaryInterface
-     *      The returned COM object is returned as this interface.
+     * @param <T> the type of the return value and the type parameter of the class object of primaryInterface
+     *
+     * @param primaryInterface The returned COM object is returned as this interface.
      *      Must be non-null. Passing in {@link Com4jObject} allows
      *      the caller to create a new instance without knowing
      *      its primary interface.
-     * @param clsid
-     *      The CLSID of the object to be retrieved.
+     * @param clsid The CLSID of the object to be retrieved.
      *
-     * @throws ComException
-     *      if the retrieval fails.
+     * @return the retrieved object
      *
-     * @see
-     *  <a href="http://msdn2.microsoft.com/en-us/library/ms221467.aspx">MSDN documentation</a>
+     * @throws ComException if the retrieval fails.
+     *
+     * @see <a href="http://msdn2.microsoft.com/en-us/library/ms221467.aspx">MSDN documentation</a>
      */
     public static <T extends Com4jObject> T getActiveObject(Class<T> primaryInterface, GUID clsid ) {
         return new GetActiveObjectTask<T>(clsid,primaryInterface).execute();
@@ -136,21 +142,19 @@ public abstract class COM4J {
     /**
      * Gets an already object from the running object table.
      *
-     * @param primaryInterface
-     *      The returned COM object is returned as this interface.
+     * @param <T> the type of the return value and the type parameter of the class object of primaryInterface
+     *
+     * @param primaryInterface The returned COM object is returned as this interface.
      *      Must be non-null. Passing in {@link Com4jObject} allows
      *      the caller to create a new instance without knowing
      *      its primary interface.
-     * @param clsid
-     *      The CLSID of the COM object to be retrieved, in the
+     * @param clsid The CLSID of the COM object to be retrieved, in the
      *      "<tt>{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}</tt>" format,
      *      or the ProgID of the object (like "Microsoft.XMLParser.1.0")
      *
-     * @return
-     *      non-null valid object.
+     * @return non-null valid object.
      *
-     * @throws ComException
-     *      if the retrieval fails.
+     * @throws ComException if the retrieval fails.
      *
      * @see #getActiveObject(Class,GUID)
      */
@@ -158,6 +162,12 @@ public abstract class COM4J {
         return getActiveObject(primaryInterface,new GUID(clsid));
     }
 
+    /**
+     * Wraps {@link Native#getActiveObject(long, long)}, {@link Native#queryInterface(int, long, long)}
+     * and {@link Wrapper#create(int)} into a {@link Task}
+     *
+     * @param <T> the type of the return value of {@link #call()}
+     */
     private static class GetActiveObjectTask<T extends Com4jObject> extends Task<T> {
         private final GUID clsid;
         private final Class<T> intf;
@@ -207,23 +217,29 @@ public abstract class COM4J {
      * {@link #getActiveObject(Class, String)}.
      *
      * </ul>
+     * @param <T> the type of the return value and the type parameter of the class object of primaryInterface
      *
-     * @param primaryInterface
-     *      The returned COM object is returned as this interface.
+     * @param primaryInterface The returned COM object is returned as this interface.
      *      Must be non-null. Passing in {@link Com4jObject} allows
      *      the caller to create a new instance without knowing
      *      its primary interface.
+     * @param fileName path to the file
+     * @param progId the progID in string representation
      *
-     * @return
-     *      non-null valid object.
+     * @return non-null valid object.
      *
-     * @throws ComException
-     *      if the retrieval fails.
+     * @throws ComException if the retrieval fails.
      */
     public static <T extends Com4jObject> T getObject(Class<T> primaryInterface, String fileName, String progId ) {
         return new GetObjectTask<T>(fileName,progId,primaryInterface).execute();
     }
 
+    /**
+     * Wraps the call to {@link Native#getObject(String, String)}, {@link Native#queryInterface(int, long, long)}
+     * and {@link Wrapper#create(int)} into a {@link Task}
+     *
+     * @param <T> the type of the return value of {@link #call()}
+     */
     private static class GetObjectTask<T extends Com4jObject> extends Task<T> {
         private final String fileName,progId;
         private final Class<T> intf;
@@ -243,6 +259,10 @@ public abstract class COM4J {
         }
     }
 
+    /**
+     * Returns the singleton ROT instance.
+     * @return the singleton ROT instance
+     */
     public static ROT getROT(){
       return ROT.getInstance();
     }
@@ -254,11 +274,10 @@ public abstract class COM4J {
      * This method retrieves the associated {@link IID} annotation from the
      * interface and return it.
      *
-     * @throws IllegalArgumentException
-     *      if the interface doesn't have any {@link IID} annotation.
+     * @param _interface reference to an object that has the {@link IID} annotation.
+     * @return always return no-null valid {@link GUID} object.
+     * @throws IllegalArgumentException if the interface doesn't have any {@link IID} annotation.
      *
-     * @return
-     *      always return no-null valid {@link GUID} object.
      */
     public static GUID getIID( Class<?> _interface ) {
         IID iid = _interface.getAnnotation(IID.class);
@@ -268,10 +287,14 @@ public abstract class COM4J {
     }
 
     /**
-     * Loads a type library from a given file and returns its IUnknown.
-     *
      * <p>
+     * Loads a type library from a given file and returns its IUnknown.
+     * </p>
+     *
      * Exposed for <tt>tlbimp</tt>.
+     *
+     * @param typeLibraryFile the path to the file containing the type library
+     * @return reference to the type library object
      */
     public static Com4jObject loadTypeLibrary( final File typeLibraryFile ) {
         return new Task<Com4jObject>() {
@@ -298,13 +321,10 @@ public abstract class COM4J {
      *
      * @see "http://java.sun.com/j2se/1.4.2/docs/guide/jni/jni-14.html#NewDirectByteBuffer"
      *
-     * @param ptr
-     *      The pointer value that points to the top of the buffer.
-     * @param size
-     *      The size of the memory region to be mapped to {@link ByteBuffer}.
+     * @param ptr The pointer value that points to the top of the buffer.
+     * @param size The size of the memory region to be mapped to {@link ByteBuffer}.
      *
-     * @return
-     *      always non-null valid {@link ByteBuffer}.
+     * @return always non-null valid {@link ByteBuffer}.
      */
     public static ByteBuffer createBuffer( int ptr, int size ) {
         return Native.createBuffer(ptr,size);
@@ -320,13 +340,14 @@ public abstract class COM4J {
      */
     public static final GUID IID_IDispatch = new GUID("{00020400-0000-0000-C000-000000000046}");
 
-
+    /** IID of IPicture */
     public static final GUID IID_IPicture     = new GUID("{7BF80980-BF32-101A-8BBB-00AA00300CAB}");
+    /** IID of IPictureDisp */
     public static final GUID IID_IPictureDisp = new GUID("{7BF80981-BF32-101A-8BBB-00AA00300CAB}");
-
+    /** IID of IFont */
     public static final GUID IID_IFont     = new GUID("{BEF6E002-A874-101A-8BBA-00AA00300CAB}");
+    /** IID of IFontDisp **/
     public static final GUID IID_IFontDisp = new GUID("{BEF6E003-A874-101A-8BBA-00AA00300CAB}");
-
 
 
     /**
@@ -336,8 +357,8 @@ public abstract class COM4J {
      * The registered listener will receive a notification each time
      * a new proxy is created.
      *
-     * @throws IllegalArgumentException
-     *      If the listener is null or it is already registered.
+     * @param listener the listener to be added
+     * @throws IllegalArgumentException If the listener is null or it is already registered.
      *
      * @see #removeListener(ComObjectListener)
      */
@@ -348,11 +369,9 @@ public abstract class COM4J {
     /**
      * Removes a registered {@link ComObjectListener} from the current thread.
      *
-     * @param listener
-     *      this listner has to be registered via {@link #addListener(ComObjectListener)}.
+     * @param listener the listener to remove.
      *
-     * @throws IllegalArgumentException
-     *      If the listener is not currently registered.
+     * @throws IllegalArgumentException if the listener is not currently registered.
      *
      * @see #addListener(ComObjectListener)
      */
@@ -366,8 +385,8 @@ public abstract class COM4J {
      * <p>
      * This method can be invoked explicitly by a thread that used COM objects,
      * to clean up resources, such as references to out-of-process COM objects.
+     * </p>
      *
-     * <p>
      * In COM terminology, this effectively amounts to calling {@code CoUninitialize}.
      *
      * After this method is invoked, a thread can still go use other COM resources.
@@ -376,10 +395,91 @@ public abstract class COM4J {
         ComThread.detach();
     }
 
+    /**
+     * List of application defined task, they are executed _before_ com4j shuts down.
+     */
+    protected static ArrayList<Runnable> applicationShutdownTasks = new ArrayList<Runnable>();
+
+    /**
+     * List of shutdown task defined by Com4J itself.
+     */
+    protected static ArrayList<Runnable> com4JShutdownTasks = new ArrayList<Runnable>();
+
+    /**
+     * Add a shutdown task.
+     * <p>
+     *  Com4J adds a shutdown hook to the java runtime. As soon as the java runtime shuts down, Com4J shuts down, too. To enable the developer to release
+     *  external resources, accessed via Com4J, such as an automation server object that is running in the background, this method provides a mechanism
+     *  to add shutdown tasks, that are executed <strong>before</strong> Com4J really shuts down.
+     * </p>
+     * <p>
+     *  Do not add your own shutdown hooks to the java runtime to do such things, because it is likely that the com4j shutdown hook is running first, and
+     *  then you can't access the resources any more.
+     * </p>
+     * <p>
+     *  Tasks are executed sequential in LIFO order.
+     * </p>
+     * @param task The task to be executed before Com4J shuts down.
+     */
+    public static void addShutdownTask(Runnable task) {
+        applicationShutdownTasks.add(task);
+    }
+
+    /**
+     * Remove an already registered shutdown task
+     * @param task The task that is to remove from the list.
+     * @return <code>true</code> if the task was registered.
+     */
+    public static boolean removeShutdownTask(Runnable task) {
+        return applicationShutdownTasks.remove(task);
+    }
+
+    /**
+     * Adds a shutdown task.
+     * <p>
+     *  These tasks are shutting down Com4J itself and are executed <strong>after</strong> all application defined shutdown task are executed.
+     * </p>
+     * @see #addShutdownTask(Runnable)
+     * @param task The task to be added.
+     */
+    static void addCom4JShutdownTask(Runnable task) {
+        com4JShutdownTasks.add(task);
+    }
+
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread("Com4J shutdown hook"){
+            @Override
+            public void run() {
+                // first execute the application defined shutdown tasks in LIFO order
+                for(int i = applicationShutdownTasks.size()-1 ; i>=0; i--){
+                    applicationShutdownTasks.get(i).run();
+                }
+                // then execute the shutdown tasks defined by com4j itself in LIFO order
+                for(int i = com4JShutdownTasks.size()-1 ; i>=0; i--){
+                    com4JShutdownTasks.get(i).run();
+                }
+            }
+        });
+    }
+
+    /**
+     * Calls {@link Native#queryInterface(int, long, long)}
+     * @param ptr the interface pointer
+     * @param iid the IID
+     * @return the queried interface pointer or null, if the query failed
+     *
+     * TODO: Think about whether to remove this method or mark it as deprecated. Methods could use {@link Native#queryInterface(int, GUID)} instead.
+     */
     static int queryInterface( int ptr, GUID iid ) {
         return Native.queryInterface(ptr,iid.v[0],iid.v[1]);
     }
 
+    /**
+     * Unwraps a given {@link Com4jObject} (returns the Wrapper object of the Com4jObject, which might be a proxy object)
+     * @param obj the Com4jObject
+     * @return the {@link Wrapper} object of the {@link Com4jObject}
+     * TODO: Think about whether to remove this method or mark it as deprecated, since this method is not used any more by Com4J itself
+     */
     static Wrapper unwrap( Com4jObject obj ) {
         if( obj instanceof Wrapper )
             return (Wrapper)obj;
@@ -387,15 +487,17 @@ public abstract class COM4J {
             return (Wrapper)Proxy.getInvocationHandler(obj);
     }
 
-    // called by the native side to get the raw pointer value of Com4jObject.
+    /**
+     * @deprecated use {@link Com4jObject#getPtr()} instead.
+     */
+    @Deprecated
     static int getPtr( Com4jObject obj ) {
         if(obj==null)   return 0;
-        return unwrap(obj).getPtr();
+        return obj.getPtr();
     }
 
     static {
         loadNativeLibrary();
-        Native.init();
     }
 
     private static void loadNativeLibrary() {
@@ -422,7 +524,14 @@ public abstract class COM4J {
                 filePortion = filePortion.substring(6);
                 if(filePortion.startsWith("//"))
                     filePortion = filePortion.substring(2);
-                filePortion = URLDecoder.decode(filePortion);
+                try{
+                  // this is the same as the deprecated URLDecoder.decode(String) would do.
+                  filePortion = URLDecoder.decode(filePortion,  System.getProperty("file.encoding"));
+                }catch (UnsupportedEncodingException e ){
+                  // according to a comment in the deprecated URLDecoder.decode(String),
+                  // this should never happen
+                  e.printStackTrace();
+                }
                 File jarFile = new File(filePortion);
                 File dllFile = new File(jarFile.getParentFile(),"com4j.dll");
                 if(!dllFile.exists()) {

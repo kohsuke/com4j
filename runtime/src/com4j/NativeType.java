@@ -46,7 +46,7 @@ public enum NativeType {
      */
     Unicode(2,4),
     /**
-     * String will be marshalled as "char*".
+     * String will be marshaled as "char*".
      *
      * <p>
      * More concretely, it becomes a '\0'-terminated
@@ -70,7 +70,13 @@ public enum NativeType {
      *      {@link Number}
      */
     Int8(100,1),
-    Int8_ByRef(100|BYREF,1), // should we add enum message/unmessage?
+    
+    /**
+     * {@link #Int8} passed by reference
+     * TODO should we add enum message/unmessage?
+     */
+    Int8_ByRef(100|BYREF,1), //FIXME: BYREF -> pointer size is 4 bytes
+    
     /**
      * <tt>INT16</tt> (short).
      *
@@ -96,6 +102,10 @@ public enum NativeType {
             return param;
         }
     },
+    
+    /**
+     * {@link #Int16} passed by reference
+     */
     Int16_ByRef(101|BYREF,2){
         @Override
         Object toNative(Object param) {
@@ -244,7 +254,7 @@ public enum NativeType {
         Object toNative(Object param) {
             if(param==null)
                 return 0;
-            return COM4J.unwrap((Com4jObject)param).getPtr();
+            return ((Com4jObject)param).getPtr();
         }
 
         Object toJava(Class<?> type, Type genericSignature, Object param) {
@@ -424,7 +434,7 @@ public enum NativeType {
         // the native code will see the raw pointer value as Integer
         Object toNative(Object param) {
             if(param==null) return 0;
-            int ptr = COM4J.unwrap((Com4jObject)param).getPtr();
+            int ptr = ((Com4jObject)param).getPtr();
             int disp = COM4J.queryInterface( ptr, COM4J.IID_IDispatch );
             return disp;
         }
@@ -607,8 +617,7 @@ public enum NativeType {
      * This allows {@link NativeType}s to take more Java-friendly argument and
      * convert it to more native code friendly form behind the scene.
      *
-     * @param param
-     *      can be null.
+     * @param param can be null.
      */
     Object toNative(Object param) {
         return param;
@@ -616,13 +625,11 @@ public enum NativeType {
     /**
      * Changes the parameter type before the method call returns.
      * <p>
-     * The opposite of {@link #massage(java.lang.Object)}. Only useful for
+     * The opposite of {@link #toNative(Object)}. Only useful for
      * BYREFs.
      *
-     * @param signature
-     *      the parameter type in its raw form.
-     * @param genericSignature
-     *      the parameter type in its generified form.
+     * @param signature         the parameter type in its raw form.
+     * @param genericSignature  the parameter type in its generified form.
      * @param param
      */
     Object toJava(Class<?> signature, Type genericSignature, Object param) {

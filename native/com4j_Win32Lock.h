@@ -39,6 +39,14 @@ JNIEXPORT void JNICALL Java_com4j_Win32Lock_activate0
 JNIEXPORT void JNICALL Java_com4j_Win32Lock_suspend0
   (JNIEnv *, jclass, jint);
 
+/*
+ * Class:     com4j_Win32Lock
+ * Method:    suspend1
+ * Signature: (II)V
+ */
+JNIEXPORT void JNICALL Java_com4j_Win32Lock_suspend1
+  (JNIEnv *, jclass, jint, jint);
+
 #ifdef __cplusplus
 }
 #endif

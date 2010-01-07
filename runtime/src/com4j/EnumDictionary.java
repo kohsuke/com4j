@@ -24,7 +24,7 @@ abstract class EnumDictionary<T extends Enum<T>> {
      */
     public static <T extends Enum<T>>
     EnumDictionary<T> get( Class<T> clazz ) {
-        EnumDictionary<T> dic = (EnumDictionary<T>)registry.get(clazz);
+        EnumDictionary<T> dic = registry.get(clazz);
         if(dic==null) {
             boolean sparse = ComEnum.class.isAssignableFrom(clazz);
             if(sparse)

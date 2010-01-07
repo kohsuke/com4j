@@ -5,6 +5,7 @@ import java.util.concurrent.Callable;
 /**
  * Used to execute a chunk of code from {@link ComThread}.
  *
+ * @param <T> the type of the return value of the {@link #execute()} and {@link #execute(ComThread)} methods
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
 abstract class Task<T> implements Callable<T> {
@@ -12,7 +13,8 @@ abstract class Task<T> implements Callable<T> {
 
 
     /**
-     * Executes the task.
+     * Executes the task in a {@link ComThread}
+     * @return the return value of the Task execution (returned by {@link #call()}).
      */
     public final T execute() {
         if( ComThread.isComThread() )
@@ -23,6 +25,11 @@ abstract class Task<T> implements Callable<T> {
             return ComThread.get().execute(this);
     }
 
+    /**
+     * Executes the task in the given {@link ComThread}
+     * @param t the ComThread to execute the task
+     * @return the return value of the Task execution (returned by {@link #call()}).
+     */
     public final T execute(ComThread t) {
         if(Thread.currentThread()==t)
             // if invoked from within ComThread, execute it at once
@@ -53,6 +60,7 @@ abstract class Task<T> implements Callable<T> {
     /**
      * Managed by {@link ComThread} to form a linked list from
      * {@link ComThread#taskList}.
+     * TODO: revisit this linked list design. Replace it with a "real" linked list (from java.lang.util)
      */
     Task<?> next;
 
@@ -68,5 +76,8 @@ abstract class Task<T> implements Callable<T> {
      */
     Throwable exception;
 
+    /**
+     * TODO: do we need this field at all?
+     */
     Error error;
 }

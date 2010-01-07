@@ -15,14 +15,15 @@ JNIEXPORT void JNICALL Java_com4j_Win32Lock_activate0( JNIEnv* env, jclass _, ji
 	::SetEvent(reinterpret_cast<HANDLE>(handle));	
 }
 
-JNIEXPORT void JNICALL Java_com4j_Win32Lock_suspend0( JNIEnv* env, jclass _, jint handle ) {
-	HANDLE h = reinterpret_cast<HANDLE>(handle);
+void suspend00(JNIEnv* env, HANDLE h, DWORD timeoutMillis) {
 	while(true) {
 		MSG msg;
-		DWORD r = ::MsgWaitForMultipleObjects(1,&h,FALSE,INFINITE,QS_ALLINPUT);
+		DWORD r = ::MsgWaitForMultipleObjects(1, &h, FALSE, timeoutMillis, QS_ALLINPUT);
 		switch(r) {
 		case WAIT_OBJECT_0:
 			// event signaled
+		case WAIT_TIMEOUT:
+			// timeout elapsed
 			return;
 		case WAIT_OBJECT_0 +1:
 			// message arrived
@@ -36,4 +37,14 @@ JNIEXPORT void JNICALL Java_com4j_Win32Lock_suspend0( JNIEnv* env, jclass _, jin
 			return;
 		}
 	}
+}
+
+JNIEXPORT void JNICALL Java_com4j_Win32Lock_suspend0(JNIEnv* env, jclass _, jint handle) {
+	HANDLE h = reinterpret_cast<HANDLE>(handle);
+	suspend00(env, h, INFINITE);
+}
+
+JNIEXPORT void JNICALL Java_com4j_Win32Lock_suspend1(JNIEnv* env, jclass _, jint handle, jint timeoutMillis) {
+	HANDLE h = reinterpret_cast<HANDLE>(handle);
+	suspend00(env, h, timeoutMillis);
 }

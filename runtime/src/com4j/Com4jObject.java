@@ -24,6 +24,9 @@ public interface Com4jObject {
      * you see them as two different objects. Thus you
      * cannot rely on <tt>==</tt> to check if they represent
      * the same COM object.
+     *
+     * @param o the other {@link Com4jObject}
+     * @return true if the IUnknown pointer of the two objects are equal
      */
     boolean equals(Object o);
 
@@ -39,11 +42,27 @@ public interface Com4jObject {
      * on the identity of the underlying COM objects. Two {@link Com4jObject}
      * that are holding different interfaces of the same COM object is
      * considered "equal".
+     *
+     * @return The hash coded for this {@link Com4jObject}
      */
     int hashCode();
 
     /**
+     * Returns the interface pointer as an integer
+     * @return the interface pointer of this object.
+     */
+    int getPtr();
+
+    /**
+     * Every Com4jObject has a ComThread that is running handling all the calls to this object. This method has to return that thread.
+     * @return the ComThread handling all the calls to this object.
+     */
+    ComThread getComThread();
+
+    /**
      * Prints the raw interface pointer that this object represents.
+     *
+     * @return a String representation of this object.
      */
     String toString();
 
@@ -67,8 +86,9 @@ public interface Com4jObject {
      * return queryInterface(comInterface)!=null;
      * </pre>
      *
-     * @return
-     *      true if the wrapped COM object implements a given interface.
+     * @param comInterface The class object of the Com4J interface
+     * @param <T> the type of the interface class object
+     * @return true if the wrapped COM object implements a given interface.
      */
     <T extends Com4jObject> boolean is( Class<T> comInterface );
 
@@ -76,30 +96,28 @@ public interface Com4jObject {
      * Invokes the queryInterface of the wrapped COM object and attempts
      * to obtain a different interface of the same object.
      *
-     * @return null
-     *      if the queryInterface fails.
+     * @param <T> the type of the interface class object
+     * @param comInterface the class object of the requested Com4J interface
+     * @return a reference to the requested interface or null if the queryInterface fails.
      */
     <T extends Com4jObject> T queryInterface( Class<T> comInterface );
 
     /**
      * Subscribes to the given event interface of this object.
      *
-     * @param eventInterface
-     *      The event interface definition. This interface/class
+     * @param eventInterface The event interface definition. This interface/class
      *      has to have an {@link IID} annotation that designates
      *      the event interface GUID, and also methods annotated with
      *      {@link DISPID} that designates what methods are event methods.
      *      Must not be null.
      *
-     * @param receiver
-     *      The object that receives events.
+     * @param receiver The object that receives events.
      *
-     * @throws ComException
-     *      if a subscription fails.
+     * @param <T> the type of the eventInterface class object.
+     * @throws ComException if a subscription fails.
      *
-     * @return
-     *      Always non-null. Call {@link EventCookie#close()} to shut down
-     *      the event subscription.
+     * @return Always non-null. Call {@link EventCookie#close()} to shut down
+     *         the event subscription.
      */
     <T> EventCookie advise( Class<T> eventInterface, T receiver );
 

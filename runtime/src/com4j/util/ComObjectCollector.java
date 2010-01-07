@@ -47,8 +47,14 @@ import java.util.WeakHashMap;
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
 public class ComObjectCollector implements ComObjectListener {
+    /**
+     * The collected {@link Com4jObject}s
+     */
     protected final Map<Com4jObject,Object> objects = new WeakHashMap<Com4jObject,Object>();
 
+    /* (non-Javadoc)
+     * @see com4j.ComObjectListener#onNewObject(com4j.Com4jObject)
+     */
     public void onNewObject(Com4jObject obj) {
         objects.put(obj,null);
     }
@@ -65,6 +71,7 @@ public class ComObjectCollector implements ComObjectListener {
      * <p>
      * If the object passed in is not known to this {@link ComObjectCollector},
      * it is a no-op.
+     * @param obj The object to remove
      */
     public void remove(Com4jObject obj) {
         objects.remove(obj);

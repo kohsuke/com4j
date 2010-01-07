@@ -1,6 +1,5 @@
 package com4j;
 
-import java.io.Serializable;
 import java.io.File;
 
 /**
@@ -12,8 +11,7 @@ import java.io.File;
  * @author Kohsuke Kawaguchi
  */
 
-@SuppressWarnings("serial")
-public class ErrorInfo implements Serializable {
+public class ErrorInfo {
 
     private GUID guid;
 

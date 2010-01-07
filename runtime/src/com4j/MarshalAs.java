@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Controls how a Java parameter should be marshalled
+ * Controls how a Java parameter should be marshaled
  * to a native type.
  *
  * <p>
@@ -18,5 +18,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER})
 public @interface MarshalAs {
+    /**
+     * Returns the NativeType to which this Java parameter should be marshaled.
+     * @return the NativeType to which this Java parameter should be marshaled.
+     */
     NativeType value();
 }

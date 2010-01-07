@@ -8,7 +8,9 @@ package com4j;
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
 public final class GUID {
-    // 2 long value to represent the bit image
+    /**
+     * Array of 2 long value to represent the bit image
+     */
     final long[] v;
 
     /**
@@ -22,6 +24,7 @@ public final class GUID {
     /**
      * Parses the string representation "<tt>{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}</tt>"
      * or "<tt>xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</tt>".
+     * @param str the String to be parsed
      */
     public GUID( String str ) {
         if(str.length()==32+4)
@@ -50,7 +53,9 @@ public final class GUID {
     }
 
     /**
-     * Returns true if two {@link GUID} objects have the same bit representation.
+     * Returns true if the given object is a {@link GUID} object and has the same bit representation.
+     * @param o the second object
+     * @return true, if the given GUID object and this object have the same bit representation.
      */
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -73,6 +78,7 @@ public final class GUID {
 
     /**
      * Returns the GUID in the "<tt>{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}</tt>" format.
+     * @return the String representation of this GUID object.
      */
     public String toString() {
         StringBuffer buf = new StringBuffer(38);
@@ -104,7 +110,10 @@ public final class GUID {
         }
     }
 
+    /** The NULL GUID */
     public static final GUID GUID_NULL = new GUID("{00000000-0000-0000-0000-000000000000}");
+
+    /** The GUID of STDOLE */
     public static final GUID GUID_STDOLE = new GUID("{00020430-0000-0000-C000-000000000046}");
 
 }

@@ -1,10 +1,9 @@
 package com4j.stdole;
 
-import com4j.*;
 
 /**
  * <p>
- * This interface was generated using tlbimp on stdole2.tlb
+ * This enum was generated using tlbimp on stdole2.tlb
  * </p>
 */
 public enum OLE_TRISTATE {

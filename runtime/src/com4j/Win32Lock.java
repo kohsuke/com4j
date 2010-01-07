@@ -9,10 +9,14 @@ package com4j;
  * We need to use this instead.
  *
  * @author Kohsuke Kawaguchi
+ * @author Michael Schnell (ScM, (C) 2009, Michael-Schnell@gmx.de)
  */
 final class Win32Lock {
     private final int eventHandle;
 
+    /**
+     * Constructs a new native win32 lock object.
+     */
     Win32Lock() {
         eventHandle = createEvent();
     }
@@ -34,6 +38,15 @@ final class Win32Lock {
     }
 
     /**
+     * Blocks until the event is signaled or the timeout is reached.
+     *
+     * This runs Windows message loop.
+     */
+    void suspend(int timeoutMillis){
+        suspend1(eventHandle, timeoutMillis);
+    }
+
+    /**
      * Closes the allocated resource.
      */
     void dispose() {
@@ -44,4 +57,5 @@ final class Win32Lock {
     private static native int createEvent();
     private static native void activate0(int handle);
     private static native void suspend0(int handle);
+    private static native void suspend1(int handle, int timeoutMillis);
 }

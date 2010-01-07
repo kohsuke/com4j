@@ -26,18 +26,51 @@ import java.util.Map;
  */
 abstract class ComMethod {
 
+    /** The Java method that corresponds to the native COM method */
     final protected Method method;
+
+    /**
+     * The array of default parameters of the COM methods
+     * @see #defaultParameterIndex
+     */
     final protected Object[] defaultParameters;
+
+    /**
+     * The parameter indexes of default parameters. Each position in this array corresponds to a position in {@link #defaultParameters}
+     *
+     * <p>
+     *  <h3>Example</h3>
+     *  Let's assume the following values:
+     *  <pre>
+     *  defaultParameterIndex = {2, 4};
+     *  defaultParameters = {new Integer(3), "Hello"};
+     *  </pre>
+     *  In this example the second parameter of the {@link ComMethod} has a default value of <code>new Integer(3)</code> and the
+     *  forth parameter has a default value of "Hello".
+     * </p>
+     * @see #defaultParameters
+     */
     final protected int[] defaultParameterIndex;
 
+    /** Array of NativeTypes that describe the parameters of the method */
     final NativeType[] params;
+    /** The parameter conversion codes passed to the native part of the invoke method */
     final int[] paramConvs;
+    /** The index in the parameters of the return value ([retval, out] value) */
     final int returnIndex;
+    /** True, if the [retval] parameters is [in, out] */
     final boolean returnIsInOut;
+    /** The value conversion code for the return value */
     final NativeType returnConv;
+    /** The Class objects of the parameters */
     final Class<?>[] paramTypes;
+    /** The Type objects of the generic parameters */
     final Type[] genericParamTypes;
 
+    /**
+     * Constructs a new ComMethod for the given {@link Method}
+     * @param method The Method designed to be a ComMethod (annotations)
+     */
     public ComMethod(Method method){
       this.method = method;
 
@@ -124,15 +157,20 @@ abstract class ComMethod {
     /**
      * Invokes a method and returns a value.
      *
-     * @param ptr
-     *      The interface pointer. {@link ComMethod} has apriori knowledge
-     *      of what interface it points to.
+     * @param ptr  The interface pointer. {@link ComMethod} has apriori knowledge
+     *             of what interface it points to.
      *
-     * @param args
-     *      The invocation arguments.
+     * @param args The invocation arguments.
+     *
+     * @return The return value of the method invocation
      */
     abstract Object invoke( int ptr, Object[] args );
 
+    /**
+     * Converts the parameters to be more native friendly.
+     * @param args the array of objects to be converted.
+     */
+    @SuppressWarnings("unchecked")
     protected void messageParameters(Object[] args){
         for( int i=0; i<args.length; i++ ) {
             if(args[i] instanceof Holder && params[i].getNoByRef()!=null) {
@@ -214,6 +252,10 @@ abstract class ComMethod {
         throw new IllegalAnnotationException("no default conversion available for "+t);
     }
 
+    /**
+     * Generates the default values for this ComMethod using the given {@link UseDefaultValues} annotation
+     * @param defValues the annotation containing the information to generate the default values.
+     */
     protected void generateDefaultParameters(UseDefaultValues defValues){
       int count = defValues.optParamIndex().length;
       NativeType[] nt = defValues.nativeType();

@@ -229,6 +229,7 @@ static SetterEntry setters[] = {
 	{ &javaLangShort,	VT_I2,			new VariantHandlerImpl<VT_I2,		xducer::BoxedShortXducer>() },
 	{ &javaLangInteger,	VT_I4,			new VariantHandlerImpl<VT_I4,		xducer::BoxedIntXducer>() },
 	{ &javaLangLong,	VT_I8,			new VariantHandlerImpl<VT_I8,		xducer::BoxedLongXducer>() },
+	{ &javaLangLong,	VT_INT,			new VariantHandlerImpl<VT_INT,		xducer::BoxedIntXducer>() },
 	{ &javaUtilDate,	VT_DATE,		new DateHandlerImpl() },
 	{ &javaMathBigDecimal,	VT_DECIMAL,	new DecimalHandlerImpl() },
 	// see issue 2 on java.net. I used to convert a COM object to VT_UNKNOWN
