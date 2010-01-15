@@ -82,10 +82,15 @@ final class Driver {
                   }
                 }
 
-                if( libs.containsKey(libid) ) {
-                    String pkg = libs.get(libid).getPackage();
-                    if(pkg!=null)
-                        return packageName + "." + pkg;
+                if (libs.containsKey(libid)) {
+                  String pkg = libs.get(libid).getPackage();
+                  if (pkg != null) {
+                    if (packageName != null && !packageName.isEmpty()) {
+                      return packageName + "." + pkg;
+                    } else {
+                      return pkg;
+                    }
+                  }
                 }
 
 //                if( libsToGen.add(lib) )
