@@ -349,10 +349,6 @@ final class Wrapper implements InvocationHandler, Com4jObject {
         public Integer call() {
             int nptr = Native.queryInterface(ptr,iid);
             if(nptr!=0) {
-              System.out.println("release "+nptr+ " in Wrapper.QITestTask.call ");
-              for(StackTraceElement e : Thread.currentThread().getStackTrace()){
-                  System.out.println(e.toString());
-              }
               Native.release(nptr);
             }
             return nptr;
