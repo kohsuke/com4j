@@ -1,5 +1,6 @@
 package com4j.tlbimp;
 
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -123,6 +124,23 @@ abstract class MethodBinder
     Variant.Type variantType;
     String literal;
     String javaCode;
+
+      /**
+       * {@link #javaTypeName} can be a {@link Type}, not just {@link Class} (for example, {@code Holder&lt;Something>},
+       * so here we try to convert it to a Class object.
+       *
+       * <p>
+       * It's not clear to me if this even makes sense --- this loss of information might kill the runtime.
+       * But at least it gets the compiler going.
+       *
+       * TODO: verify that the runtime works with this loss of information. If it doesn't,
+       * tlbimp shouldn't generate such a signature.
+       */
+      public String toClassName() {
+          int idx = javaTypeName.indexOf('<');
+          if (idx>=0)   return javaTypeName.substring(0,idx);
+          else  return javaTypeName;
+      }
   }
 
   private Parameter[] generateDefaults(){
@@ -346,7 +364,7 @@ abstract class MethodBinder
                 firstDefault = false;
               }
               optParamIndices += i;
-              javaTypes += defaultParam[i].javaTypeName+".class";
+              javaTypes += defaultParam[i].toClassName()+".class";
               nativeTypes += "NativeType." + defaultParam[i].nativeType.name();
               variantTypes += "Variant.Type." + defaultParam[i].variantType.name();
               literals += '"'+defaultParam[i].literal+'"';

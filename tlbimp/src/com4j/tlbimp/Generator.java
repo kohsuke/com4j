@@ -80,7 +80,7 @@ public final class Generator {
      * This feature still appears to be unstable, so turning it off by default.
      * For example, try the word demo to see how it breaks.
      */
-    boolean generateDefaultMethodOverloads = false;
+    boolean generateDefaultMethodOverloads = true;
 
     public Generator( CodeWriter writer, ReferenceResolver resolver, ErrorListener el, Locale locale ) {
         this.el = el;
