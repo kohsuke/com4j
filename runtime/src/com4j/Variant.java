@@ -763,6 +763,7 @@ public final class Variant extends Number {
      * Represents the special variant instance used for
      * missing parameters.
      */
+    public static final Variant MISSING = new Variant();
 
     /**
      * Generates a new Variant object, representing the VARIANT MISSING
