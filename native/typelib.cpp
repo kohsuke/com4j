@@ -142,7 +142,7 @@ CTypeDecl::~CTypeDecl() {
 	_ASSERT(m_ThreadID == curThread);
 #endif
 	m_pType->ReleaseTypeAttr(m_pAttr);
-	int r = m_pParent->children.erase(m_pType);
+	size_t r = m_pParent->children.erase(m_pType);
 	_ASSERT(r==1);
 }
 

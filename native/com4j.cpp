@@ -100,11 +100,11 @@ static IUnknown* toComObject( jlong pComObject ) {
 	return reinterpret_cast<IUnknown*>(pComObject);
 }
 
-JNIEXPORT jlong JNICALL Java_com4j_Native_addRef( JNIEnv* env, jclass __unused__, jlong pComObject ) {
+JNIEXPORT jint JNICALL Java_com4j_Native_addRef( JNIEnv* env, jclass __unused__, jlong pComObject ) {
 	return toComObject(pComObject)->AddRef();
 }
 
-JNIEXPORT jlong JNICALL Java_com4j_Native_release( JNIEnv* env, jclass __unused__, jlong pComObject ) {
+JNIEXPORT jint JNICALL Java_com4j_Native_release( JNIEnv* env, jclass __unused__, jlong pComObject ) {
 	IUnknown *ptr = toComObject(pComObject);
 	if(ptr != NULL) {
 		return ptr->Release();
@@ -323,7 +323,7 @@ JNIEXPORT jstring JNICALL Java_com4j_Native_getErrorMessage(
 		return NULL;	// failed
 
 	// trim off the trailing NL
-	int len = wcslen(p);
+	jsize len = (jsize)wcslen(p);
 	while(len>0 && (p[len-1]==L'\r' || p[len-1]==L'\n'))
 		len--;
 

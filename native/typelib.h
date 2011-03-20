@@ -723,7 +723,7 @@ public:
 
 	CTypeLib() {}
 	~CTypeLib() {
-		int cnt = libraries.erase(m_pTypeLib);
+		size_t cnt = libraries.erase(m_pTypeLib);
 		_ASSERT(cnt==1);
 		m_pTypeLib->ReleaseTLibAttr(m_pAttr);
 		m_pTypeLib=NULL;

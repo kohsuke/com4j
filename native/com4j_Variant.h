@@ -9,6 +9,10 @@ extern "C" {
 #endif
 #undef com4j_Variant_serialVersionUID
 #define com4j_Variant_serialVersionUID -8742448824652078965i64
+#undef com4j_Variant_ARRAY
+#define com4j_Variant_ARRAY 8192L
+#undef com4j_Variant_MISSING_ERROR_CODE
+#define com4j_Variant_MISSING_ERROR_CODE -2147352572L
 #undef com4j_Variant_MSPD
 #define com4j_Variant_MSPD 86400000i64
 /*
@@ -29,16 +33,8 @@ JNIEXPORT void JNICALL Java_com4j_Variant_changeType0
 
 /*
  * Class:     com4j_Variant
- * Method:    convertTo
- * Signature: (Ljava/lang/Class;)Ljava/lang/Object;
- */
-JNIEXPORT jobject JNICALL Java_com4j_Variant_convertTo
-  (JNIEnv *, jobject, jclass);
-
-/*
- * Class:     com4j_Variant
  * Method:    set0
- * Signature: (Ljava/lang/String;Ljava/nio/ByteBuffer;)V
+ * Signature: (Ljava/lang/Object;Ljava/nio/ByteBuffer;)V
  */
 JNIEXPORT void JNICALL Java_com4j_Variant_set0
   (JNIEnv *, jobject, jobject, jobject);
@@ -51,17 +47,14 @@ JNIEXPORT void JNICALL Java_com4j_Variant_set0
 JNIEXPORT jobject JNICALL Java_com4j_Variant_get0
   (JNIEnv *, jobject, jobject);
 
-#ifdef __cplusplus
-}
-#endif
-#endif
-/* Header for class com4j_Variant_Type */
+/*
+ * Class:     com4j_Variant
+ * Method:    convertTo
+ * Signature: (Ljava/lang/Class;)Ljava/lang/Object;
+ */
+JNIEXPORT jobject JNICALL Java_com4j_Variant_convertTo
+  (JNIEnv *, jobject, jclass);
 
-#ifndef _Included_com4j_Variant_Type
-#define _Included_com4j_Variant_Type
-#ifdef __cplusplus
-extern "C" {
-#endif
 #ifdef __cplusplus
 }
 #endif

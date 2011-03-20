@@ -3,8 +3,15 @@
 #include "unmarshaller.h"
 #include "safearray.h"
 #include "variant.h"
-#include "ffi.h"
 #include <stdio.h>
+
+#ifdef WIN64
+	#define X86_WIN64
+#else
+	#define	X86_WIN32
+#endif
+
+#include "../libffi/include/ffi.h"
 
 /**  
  * Original auther  (C) Kohsuke Kawaguchi (kk@kohsuke.org)
@@ -515,7 +522,7 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 		jobject str = NULL;
 		if(!FAILED(FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM, NULL, hr, 0, (LPWSTR)&pmsg, 0, NULL ))) {
 			if(pmsg!=NULL) {
-				str = env->NewString(pmsg,wcslen(pmsg));
+				str = env->NewString(pmsg,(jsize)wcslen(pmsg));
 				LocalFree(pmsg);
 			}
 		}
