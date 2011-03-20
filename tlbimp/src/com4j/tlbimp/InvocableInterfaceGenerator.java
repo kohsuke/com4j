@@ -3,6 +3,7 @@ package com4j.tlbimp;
 import java.util.ArrayList;
 import java.util.List;
 
+import com4j.ReturnValue;
 import com4j.tlbimp.Generator.LibBinder;
 import com4j.tlbimp.def.IDispInterfaceDecl;
 import com4j.tlbimp.def.IInterface;
