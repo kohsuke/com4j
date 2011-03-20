@@ -106,10 +106,9 @@ import java.util.NoSuchElementException;
   }
 
     /**
-   * Returns whether this collection is empty.
-   * @return whether this collection is empty
-   */
-  public boolean isEmpty() {
-    return count == 0;
-  }
+     * Returns whether this collection is empty.
+     */
+    public boolean isEmpty() {
+        return getCount()==0;
+    }
 }
