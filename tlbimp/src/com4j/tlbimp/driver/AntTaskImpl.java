@@ -63,6 +63,10 @@ public class AntTaskImpl extends Task implements ErrorListener {
         driver.alwaysUseComEnums = alwaysUseComEnums;
     }
 
+    public void setGenerateDefaultMethodOverloads(boolean v) {
+        driver.generateDefaultMethodOverloads = v;
+    }
+
     public void addConfiguredLib( Lib r ) {
         r.validate();
         driver.addLib(r);

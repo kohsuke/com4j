@@ -74,6 +74,14 @@ public final class Generator {
      */
     boolean alwaysUseComEnums = false;
 
+    /**
+     * If true, generate the overloaded methods by skipping optional parameters.
+     *
+     * This feature still appears to be unstable, so turning it off by default.
+     * For example, try the word demo to see how it breaks.
+     */
+    boolean generateDefaultMethodOverloads = false;
+
     public Generator( CodeWriter writer, ReferenceResolver resolver, ErrorListener el, Locale locale ) {
         this.el = el;
         this.writer = writer;
@@ -87,6 +95,10 @@ public final class Generator {
 
     public void setAlwaysUseComEnums(boolean alwaysUseComEnums) {
         this.alwaysUseComEnums = alwaysUseComEnums;
+    }
+
+    public void setGenerateDefaultMethodOverloads(boolean v) {
+        this.generateDefaultMethodOverloads  = v;
     }
 
     /**

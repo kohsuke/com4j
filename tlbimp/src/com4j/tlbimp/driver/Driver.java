@@ -31,6 +31,7 @@ final class Driver {
 
     boolean renameGetterAndSetters = false;
     boolean alwaysUseComEnums = false;
+    boolean generateDefaultMethodOverloads = false;
 
 
     public void addLib( Lib r ) {
@@ -120,6 +121,7 @@ final class Driver {
         Generator generator = new Generator(cw,resolver,el,locale);
         generator.setAlwaysUseComEnums(alwaysUseComEnums);
         generator.setRenameGetterAndSetters(renameGetterAndSetters);
+        generator.setGenerateDefaultMethodOverloads(generateDefaultMethodOverloads);
 
         // repeatedly generate all the libraries that need to be generated
         Set<IWTypeLib> generatedLibs = new HashSet<IWTypeLib>();

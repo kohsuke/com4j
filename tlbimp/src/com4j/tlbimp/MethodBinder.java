@@ -98,28 +98,24 @@ abstract class MethodBinder
     return outIdx;
   }
 
-  public void declare(IndentingWriter o) throws BindingException {
-    Parameter[] defaultParams = generateDefaults();
-    boolean[] useDefault = new boolean[defaultParams.length];
-    for(int i = 0; i < useDefault.length; i ++){
-      useDefault[i] = defaultParams[i] != null;
-    }
-    int nextOptParamPos = 0;
-    do {
-      // search the next optional parameter
-      while (nextOptParamPos < useDefault.length && !useDefault[nextOptParamPos]) {
-        nextOptParamPos++;
-      }
-      if(nextOptParamPos < useDefault.length && useDefault[nextOptParamPos]){
-        // if we have default parameters left, then declare with there default value
-        declareWithDefaults(o, defaultParams, useDefault);
-        useDefault[nextOptParamPos] = false;
-      } else {
-        // else declare the method without default values
+    public void declare(IndentingWriter o) throws BindingException {
+        Parameter[] defaultParams = generateDefaults();
+        boolean[] useDefault = new boolean[defaultParams.length];
+        for (int i = 0; i < useDefault.length; i++) {
+            useDefault[i] = defaultParams[i] != null;
+        }
+
+        for (int pos = 0; g.generateDefaultMethodOverloads && pos < useDefault.length; pos++) {
+            // search the next optional parameter
+            if (!useDefault[pos])   continue;
+
+            // if we have default parameters left, then declare with there default value
+            declareWithDefaults(o, defaultParams, useDefault);
+            useDefault[pos] = false;
+        }
+        
         declareWithDefaults(o, defaultParams, null);
-      }
-    } while (nextOptParamPos < defaultParams.length);
-  }
+    }
 
   class Parameter {
     String javaTypeName;
