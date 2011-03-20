@@ -762,6 +762,11 @@ public final class Variant extends Number {
     /**
      * Represents the special variant instance used for
      * missing parameters.
+     *
+     * @deprecated
+     *      This constant instance is mutable (both by Java methods and COM code where
+     *      this gets passed into as a reference), so it's fundamentally unsafe.
+     *      use {@link #getMissing()} instead.
      */
     public static final Variant MISSING = new Variant();
 
