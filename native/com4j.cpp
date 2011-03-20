@@ -111,6 +111,7 @@ JNIEXPORT jint JNICALL Java_com4j_Native_release( JNIEnv* env, jclass __unused__
 	} else {
 	// Throw a NullPointerException!
 	env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "IUnknown pointer is NULL");
+	return 0; // doesn't matter what we return
   }
 }
 
