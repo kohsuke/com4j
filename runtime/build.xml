@@ -9,6 +9,8 @@
   
   <target name="jar" depends="compile">
     <tstamp/>
+    <copy file="../native/Release/com4j.dll"     tofile="build/classes/com4j/com4j.dll"/>
+    <copy file="../native/x64/Release/com4j.dll" tofile="build/classes/com4j/com4j-x64.dll"/>
     <jar file="build/com4j.jar">
       <manifest>
         <attribute name="Build-Date" value="${DSTAMP}" />
@@ -16,7 +18,6 @@
       <metainf dir="../../www" includes="LICENSE.txt" />
       <fileset dir="build/classes" includes="**/*.class"/>
       <fileset dir="src" includes="**/*.properties"/>
-      <zipfileset dir="../native/Release" includes="com4j.dll" prefix="com4j" />
     </jar>
     <zip file="build/com4j-src.zip">
       <fileset dir="src" excludes="**/CVS"/>
