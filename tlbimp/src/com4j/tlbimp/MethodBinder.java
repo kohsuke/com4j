@@ -1,6 +1,5 @@
 package com4j.tlbimp;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -8,6 +7,7 @@ import java.util.Set;
 
 import com4j.ComException;
 import com4j.GUID;
+import com4j.MarshalAs;
 import com4j.NativeType;
 import com4j.Variant;
 import com4j.tlbimp.def.IMethod;
@@ -384,7 +384,7 @@ abstract class MethodBinder
 
         declareReturnType(o,null, useDefault!= null);
         declareMethodName(o);
-        declareParameters(o, defaultParam, useDefault);
+        declareParameters(o, useDefault);
         o.println();
     }
 
@@ -431,7 +431,7 @@ abstract class MethodBinder
     o.print(name);
   }
 
-  protected final void declareParameters(IndentingWriter o, Parameter[] defaultParam, boolean[] useDefaults) throws BindingException {
+  protected final void declareParameters(IndentingWriter o, boolean[] useDefaults) throws BindingException {
     o.print('(');
     o.in();
 
