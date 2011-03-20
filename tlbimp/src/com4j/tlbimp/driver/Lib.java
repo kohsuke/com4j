@@ -78,11 +78,6 @@ public final class Lib {
     }
 
     public String getPackage() {
-        if(packageName == null){
-          IWTypeLib tlb = COM4J.loadTypeLibrary(file).queryInterface(IWTypeLib.class);
-          packageName = tlb.getName().toLowerCase();
-          tlb.dispose();
-        }
         return packageName;
     }
 
