@@ -349,7 +349,7 @@ abstract class MethodBinder
               javaTypes += defaultParam[i].javaTypeName+".class";
               nativeTypes += "NativeType." + defaultParam[i].nativeType.name();
               variantTypes += "Variant.Type." + defaultParam[i].variantType.name();
-              literals += "\""+defaultParam[i].literal+"\"";
+              literals += '"'+defaultParam[i].literal+'"';
             } else {
               if(!firstJavaParam){
                 paramIndexMappings += ", ";
