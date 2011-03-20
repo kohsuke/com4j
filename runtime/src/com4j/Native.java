@@ -43,14 +43,14 @@ class Native {
      * @param rotPointer the pointer to the running object table
      * @return an enum moniker for the given running object table
      */
-    static native long getEnumMoniker(int rotPointer);
+    static native long getEnumMoniker(long rotPointer);
     /**
      * Returns a pointer to the next object of the running object table.
      * @param rotPointer a pointer to the running object table
      * @param enumMonikerPointer a pointer to an enum moniker
      * @return a pointer to the next object of the running object table
      */
-    static native long getNextRunningObject(int rotPointer, int enumMonikerPointer);
+    static native long getNextRunningObject(long rotPointer, long enumMonikerPointer);
 
     /**
      * Calls <tt>IUnknown.AddRef</tt>.
