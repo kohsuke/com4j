@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 
 /**
@@ -60,7 +61,7 @@ import java.util.NoSuchElementException;
         // dispose0() -> calls thread.removeLiveObject() -> calls this method.
         it.remove();
         count--;
-        break; 
+        break;
       }
     }
       if (list.isEmpty())
@@ -80,15 +81,31 @@ import java.util.NoSuchElementException;
    * @return a snapshot of the collection as a list
    */
   public synchronized List<WeakReference<Com4jObject>> getSnapshot() {
-    ArrayList<WeakReference<Com4jObject>> snapshot = new ArrayList<WeakReference<Com4jObject>>(count);
-    for (Integer i : objects.keySet()) {
-      List<WeakReference<Com4jObject>> list = objects.get(i);
-        snapshot.addAll(list);
-    }
-    return snapshot;
+      ArrayList<WeakReference<Com4jObject>> snapshot = new ArrayList<WeakReference<Com4jObject>>(count);
+
+      Iterator<Entry<Integer, LinkedList<WeakReference<Com4jObject>>>> i = objects.entrySet().iterator();
+      while (i.hasNext()) {
+          Entry<Integer, LinkedList<WeakReference<Com4jObject>>> e = i.next();
+
+          // clean up the list since we are walking the list anyway
+          for (Iterator<WeakReference<Com4jObject>> j = e.getValue().iterator(); j.hasNext();) {
+              if (j.next().get() == null) {
+                  j.remove();
+                  count--;
+              }
+          }
+
+          if (e.getValue().isEmpty()) {
+              i.remove();
+              continue;
+          }
+
+          snapshot.addAll(e.getValue());
+      }
+      return snapshot;
   }
 
-  /**
+    /**
    * Returns whether this collection is empty.
    * @return whether this collection is empty
    */
