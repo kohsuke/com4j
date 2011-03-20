@@ -1,5 +1,7 @@
 package com4j;
 
+import com4j.stdole.IEnumVARIANT;
+
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
