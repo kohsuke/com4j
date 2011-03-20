@@ -90,7 +90,7 @@ public final class ComThread extends Thread {
     /**
      * If set to true, this thread will commit suicide.
      */
-    private boolean die = false;
+    private volatile boolean die = false;
 
     /**
      * Used instead of the monitor of an object, so that we can run
@@ -111,12 +111,19 @@ public final class ComThread extends Thread {
     }
 
     /**
-     * Kills this {@link ComThread}. Use this with caution! This method does not dispose living objects! Use {@link #disposeLiveObjects()} to terminate the thread normally.
-     * @see #disposeLiveObjects()
+     * Kills this {@link ComThread} gracefully
+     * and blocks until a thread dies.
      */
     public void kill() {
         die = true;
         lock.activate(); // wake up the sleeping thread.
+
+        // wait for it to die. if someone interrupts us, process that later.
+        try {
+            join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     public void run() {
@@ -136,9 +143,7 @@ public final class ComThread extends Thread {
         Native.coInitialize();
 
         while(!canExit()) {
-            // wake up once per second to check if we can clean up some objects or even terminate this thread. 
-            //(01.10.2009: Is this still necessary? Cleanup of objects is scheduled as a task now)
-            lock.suspend(1000);
+            lock.suspend();
 
             synchronized(this) {
                 // do any scheduled tasks that need to be done
@@ -149,6 +154,14 @@ public final class ComThread extends Thread {
                 }
                 taskListTail = null; // taskListHead is null after the loop, so the tail should be null as well.
             }
+        }
+
+        // dispose all the live objects before we leave
+        for (WeakReference<Com4jObject> object : liveObjects.getSnapshot()) {
+          Com4jObject liveObject = object.get();
+          if(liveObject != null) {
+            liveObject.dispose();
+          }
         }
 
         Native.coUninitialize();
@@ -220,24 +233,6 @@ public final class ComThread extends Thread {
     }
     
     /**
-     * Disposes all living objects of this thread. The thread will exit normally after all living objects are disposed if the peer thread has terminated.
-     */
-    public void disposeLiveObjects() {
-      new Task<Void>() {
-        @Override
-        public Void call() {
-          for (WeakReference<Com4jObject> object : liveObjects.getSnapshot()) {
-            Com4jObject liveObject = object.get();
-            if(liveObject != null) {
-              liveObject.dispose();
-            }
-          }
-          return null;
-        }
-      }.execute(this);      
-    }
-
-    /**
      * Checks if the current thread is a {@link ComThread}.
      */
     static boolean isComThread() {
@@ -275,27 +270,18 @@ public final class ComThread extends Thread {
 
     static {
         // before shut-down clean up all ComThreads
-        COM4J.addCom4JShutdownTask(new Thread("Com4J ComThread ShutdownHook") {
+        COM4J.addCom4JShutdownTask(new Runnable() {
             public void run() {
               // we need to synchronize the access to threads.
-              // Not just to avoid concurrent modification, but also to make sure, that an kill-task is not waiting for ever for the
+              // Not just to avoid concurrent modification, but also to make sure, that a kill-task is not waiting forever for the
               // thread to execute the task. (The thread might want to shut down itself concurrently, because the liveObjects dropped to zero.)
-              Thread[] threadsSnapshot;
+              ComThread[] threadsSnapshot;
               synchronized(threads) {
                 threadsSnapshot = threads.toArray(new ComThread[threads.size()]);
-                for (ComThread thread : threads) {
-                    thread.disposeLiveObjects(); // this will terminate the ComThead, since the peer thread of the ComThread has terminated (prerequisite for a VM shutdown)
-                }
               }
-              // release the monitor. This is necessary for the dying threads to acquire the monitor to
-              // remove themselves form the threads field.
-              for(Thread t : threadsSnapshot){
-                try {
-                  t.join();
-                } catch (InterruptedException e) {
-                  // since this is a shutdown hook, we do not want to interrupt
-                  Thread.currentThread().interrupt(); // reset the interrupt
-                }
+
+              for (ComThread thread : threadsSnapshot) {
+                  thread.kill();
               }
             }
         });
