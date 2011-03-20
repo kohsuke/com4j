@@ -43,7 +43,7 @@ public class WordDemo {
         // Variant _ = Variant.MISSING;
         // app.documents().open("c:\\foo.doc", _, _, _, _, _, _, _, _, _, _, _);
 
-        app.documents().add( Variant.MISSING, false, false, true);
+        app.documents().add( Variant.getMissing(), false, false, true);
         app.selection().typeText("Welcome to com4j");
         app.selection().typeParagraph();
         app.selection().typeText("Your Java/COM bridging solution");
