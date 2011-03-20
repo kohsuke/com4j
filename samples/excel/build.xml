@@ -15,7 +15,7 @@
   <target name="tlbimp">
     <mkdir dir="build/src"/>
     <!-- compile Excel type library -->
-    <tlbimp destdir="build/src">
+    <tlbimp destdir="build/src" renameGetterAndSetters="true">
       <lib libid="00020813-0000-0000-C000-000000000046" package="excel" />
       <lib libid="0002E157-0000-0000-C000-000000000046" package="vba" />
       <lib libid="2DF8D04C-5BFA-101B-BDE5-00AA0044DE52" package="office" />
