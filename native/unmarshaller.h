@@ -116,7 +116,7 @@ public:
 		if(pv==NULL)
 			return NULL;
 
-		return javaLangInteger_valueOf( env, reinterpret_cast<jint>(pv) );
+		return javaLangLong_valueOf( env, reinterpret_cast<jlong>(pv) );
 	}
 };
 

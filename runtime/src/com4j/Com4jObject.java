@@ -50,8 +50,15 @@ public interface Com4jObject {
     /**
      * Returns the interface pointer as an integer
      * @return the interface pointer of this object.
+     *
+     * @deprecated 64bit unasfe.
      */
     int getPtr();
+
+    /**
+     * Returns the interface pointer as an integer
+     */
+    long getPointer();
 
     /**
      * Every Com4jObject has a ComThread that is running handling all the calls to this object. This method has to return that thread.

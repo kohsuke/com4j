@@ -179,8 +179,8 @@ public abstract class COM4J {
 
         public T call() {
             GUID iid = getIID(intf);
-            int o1 = Native.getActiveObject(clsid.v[0], clsid.v[1]);
-            int o2 = Native.queryInterface(o1, iid.v[0], iid.v[1]);
+            long o1 = Native.getActiveObject(clsid.v[0], clsid.v[1]);
+            long o2 = Native.queryInterface(o1, iid.v[0], iid.v[1]);
             Native.release(o1);
             return Wrapper.create(intf,o2);
         }
@@ -252,8 +252,8 @@ public abstract class COM4J {
 
         public T call() {
             GUID iid = getIID(intf);
-            int o1 = Native.getObject(fileName,progId);
-            int o2 = Native.queryInterface(o1, iid.v[0], iid.v[1]);
+            long o1 = Native.getObject(fileName,progId);
+            long o2 = Native.queryInterface(o1, iid.v[0], iid.v[1]);
             Native.release(o1);
             return Wrapper.create(intf,o2);
         }
@@ -326,7 +326,7 @@ public abstract class COM4J {
      *
      * @return always non-null valid {@link ByteBuffer}.
      */
-    public static ByteBuffer createBuffer( int ptr, int size ) {
+    public static ByteBuffer createBuffer( long ptr, int size ) {
         return Native.createBuffer(ptr,size);
     }
 
@@ -470,7 +470,7 @@ public abstract class COM4J {
      *
      * TODO: Think about whether to remove this method or mark it as deprecated. Methods could use {@link Native#queryInterface(int, GUID)} instead.
      */
-    static int queryInterface( int ptr, GUID iid ) {
+    static long queryInterface( int ptr, GUID iid ) {
         return Native.queryInterface(ptr,iid.v[0],iid.v[1]);
     }
 
@@ -488,12 +488,12 @@ public abstract class COM4J {
     }
 
     /**
-     * @deprecated use {@link Com4jObject#getPtr()} instead.
+     * @deprecated use {@link Com4jObject#getPointer()} instead.
      */
     @Deprecated
-    static int getPtr( Com4jObject obj ) {
+    static long getPtr( Com4jObject obj ) {
         if(obj==null)   return 0;
-        return obj.getPtr();
+        return obj.getPointer();
     }
 
     static {
@@ -505,7 +505,7 @@ public abstract class COM4J {
         try {
             // load the native part of the code.
             // first try java.library.path
-            System.loadLibrary("com4j");
+            System.loadLibrary("com4j-" + System.getProperty("os.arch"));
             return;
         } catch( Throwable t ) {
             cause = t;
@@ -533,12 +533,12 @@ public abstract class COM4J {
                   e.printStackTrace();
                 }
                 File jarFile = new File(filePortion);
-                File dllFile = new File(jarFile.getParentFile(),"com4j.dll");
+        		File dllFile = new File(jarFile.getParentFile(),"com4j-" + System.getProperty("os.arch") + ".dll");
                 if(!dllFile.exists()) {
                     // try to extract from within the jar
                     try {
                         copyStream(
-                            COM4J.class.getResourceAsStream("com4j.dll"),
+                            COM4J.class.getResourceAsStream("com4j-" + System.getProperty("os.arch") + ".dll"),
                             new FileOutputStream(dllFile));
                     } catch (IOException e) {
                         LOGGER.log(Level.WARNING, "Failed to write com4j.dll", e);

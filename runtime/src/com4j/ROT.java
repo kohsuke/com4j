@@ -28,7 +28,6 @@ public class ROT implements Iterable<Com4jObject>
    * Returns an iterator over the elements of the running object table
    * @return The Iterator.
    */
-  @Override
   public Iterator<Com4jObject> iterator() {
     return new ROTIterator();
   }
@@ -40,10 +39,10 @@ public class ROT implements Iterable<Com4jObject>
   private static class ROTIterator implements Iterator<Com4jObject>
   {
     /** The native win32 pointer to the running object table (IRunningObjectTable*) */
-    int rotPointer = 0;
+    long rotPointer = 0;
 
     /** The native win32 pointer to the EnumMoniker object (IEnumMoniker*) */
-    int enumMonikerPointer = 0;
+    long enumMonikerPointer = 0;
 
     /**
      * The next object of the running object table. To be able to provide the functionality of the hasNext method, we always need to prefetch one object ahead.
@@ -77,12 +76,10 @@ public class ROT implements Iterable<Com4jObject>
       nextObject = new GetNextRunningObjectTask().execute();
     }
 
-    @Override
     public boolean hasNext() {
       return nextObject != null;
     }
 
-    @Override
     public Com4jObject next() {
       if (rotPointer != 0 && enumMonikerPointer != 0 && nextObject != null) {
         Com4jObject current = nextObject;
@@ -96,7 +93,6 @@ public class ROT implements Iterable<Com4jObject>
     /**
      * Removing elements form the ROT through an Iterator does not make sense (we cannot unregister third party objects).
      */
-    @Override
     public void remove() {
       throw new UnsupportedOperationException("You cannot remove an arbitary object form the table");
     }
@@ -112,7 +108,7 @@ public class ROT implements Iterable<Com4jObject>
     private class GetNextRunningObjectTask extends Task<Com4jObject>
     {
       public Com4jObject call() {
-        int pointer = Native.getNextRunningObject(rotPointer, enumMonikerPointer);
+        long pointer = Native.getNextRunningObject(rotPointer, enumMonikerPointer);
         if (pointer == 0) {
           // we reached the end of the ROT. So we can clean up the native COM pointers.
           cleanUp();

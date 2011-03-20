@@ -23,7 +23,7 @@ import java.util.NoSuchElementException;
    * case for all COM references ({@link Com4jObject#queryInterface(Class)} often returns the same pointer value) the runtime of {@link #remove(Com4jObject)} is
    * slightly slower, since we need to search the object in a (short) linked list.
    */
-  private HashMap<Integer, LinkedList<WeakReference<Com4jObject>>> objects = new HashMap<Integer, LinkedList<WeakReference<Com4jObject>>>(20);
+  private HashMap<Long, LinkedList<WeakReference<Com4jObject>>> objects = new HashMap<Long, LinkedList<WeakReference<Com4jObject>>>(20);
 
   /** The count of objects in this collection */
   private int count = 0;
@@ -33,10 +33,10 @@ import java.util.NoSuchElementException;
    * @param object the object to add
    */
   public synchronized void add(Com4jObject object) {
-    LinkedList<WeakReference<Com4jObject>> list = objects.get(object.getPtr());
+    LinkedList<WeakReference<Com4jObject>> list = objects.get(object.getPointer());
     if (list == null) {
       list = new LinkedList<WeakReference<Com4jObject>>();
-      objects.put(object.getPtr(), list);
+      objects.put(object.getPointer(), list);
     }
     list.add(new WeakReference<Com4jObject>(object));
     count++;
@@ -47,7 +47,7 @@ import java.util.NoSuchElementException;
    * @param object the object to remove
    */
   public synchronized void remove(Com4jObject object) {
-      int key = object.getPtr();
+      long key = object.getPointer();
       List<WeakReference<Com4jObject>> list = objects.get(key);
     if (list == null) {
       throw new NoSuchElementException("The Com4jObject " + object + " is not in this collection!");

@@ -19,48 +19,48 @@ class Native {
     /**
      * Creates a COM object and returns its pointer.
      */
-    static native int createInstance( String clsid, int clsctx, long iid1, long iid2 );
+    static native long createInstance( String clsid, int clsctx, long iid1, long iid2 );
 
     /**
      * Calls {@code GetActiveObject} Win32 API.
      */
-    static native int getActiveObject( long clsid1, long clsid2 );
+    static native long getActiveObject( long clsid1, long clsid2 );
 
     /**
      * Equivalent of {@code GetObject} in VB.
      *
      * See http://support.microsoft.com/kb/122288
      */
-    static native int getObject( String fileName, String progId );
+    static native long getObject( String fileName, String progId );
 
     /**
      * returns a pointer to the running object table.
      * @return a pointer to the running object table
      */
-    static native int getRunningObjectTable();
+    static native long getRunningObjectTable();
     /**
      * Returns an enum moniker for the given running object table.
      * @param rotPointer the pointer to the running object table
      * @return an enum moniker for the given running object table
      */
-    static native int getEnumMoniker(int rotPointer);
+    static native long getEnumMoniker(int rotPointer);
     /**
      * Returns a pointer to the next object of the running object table.
      * @param rotPointer a pointer to the running object table
      * @param enumMonikerPointer a pointer to an enum moniker
      * @return a pointer to the next object of the running object table
      */
-    static native int getNextRunningObject(int rotPointer, int enumMonikerPointer);
+    static native long getNextRunningObject(int rotPointer, int enumMonikerPointer);
 
     /**
      * Calls <tt>IUnknown.AddRef</tt>.
      */
-    static native int addRef( int pComObject );
+    static native int addRef( long pComObject );
 
     /**
      * Calls <tt>IUnknown.Release</tt>.
      */
-    static native int release( int pComObject );
+    static native int release( long pComObject );
 
     /**
      * Invokes a method.
@@ -69,7 +69,7 @@ class Native {
      *      if the invocation returns a failure HRESULT, and the return type
      *      is not HRESULT.
      */
-    static native Object invoke( int pComObject, int vtIndex,
+    static native Object invoke( long pComObject, long vtIndex,
                                  Object[] args, int[] parameterConversions,
                                  int returnIndex, boolean returnIsInOut, int returnConversion );
 
@@ -77,7 +77,7 @@ class Native {
      * Invokes {@code IDispatch.Invoke}.
      */
     static native Variant invokeDispatch(
-        int pComObject, int dispId, int flag, Object[] args );
+        long pComObject, int dispId, int flag, Object[] args );
 
     /**
      * Gets the error info.
@@ -92,11 +92,11 @@ class Native {
      * @return
      *      the pointer to <tt>IErrorInfo</tt> or null if not available.
      */
-    static native int getErrorInfo( int pComObject, long iid1, long iid2 );
+    static native long getErrorInfo( long pComObject, long iid1, long iid2 );
 
-    static IErrorInfo getErrorInfo( int pComObject, Class<? extends Com4jObject> _interface ) {
+    static IErrorInfo getErrorInfo( long pComObject, Class<? extends Com4jObject> _interface ) {
         GUID guid = COM4J.getIID(_interface);
-        int p = getErrorInfo(pComObject,guid.v[0],guid.v[1]);
+        long p = getErrorInfo(pComObject,guid.v[0],guid.v[1]);
         if(p==0)    return null;
         else        return Wrapper.create(IErrorInfo.class,p);
     }
@@ -108,16 +108,16 @@ class Native {
      */
     static native String getErrorMessage( int hresult );
 
-    static native int queryInterface( int pComObject, long iid1, long iid2 );
+    static native long queryInterface( long pComObject, long iid1, long iid2 );
 
-    static int queryInterface( int pComObject, GUID guid ) {
+    static long queryInterface( long pComObject, GUID guid ) {
         return queryInterface(pComObject, guid.v[0], guid.v[1]);
     }
 
     /**
      * Loads a type library from a given file, wraps it, and returns its IUnknown.
      */
-    static native int loadTypeLibrary(String name);
+    static native long loadTypeLibrary(String name);
 
     /**
      * Calls "CoInitialize"
@@ -136,15 +136,15 @@ class Native {
      * @return
      *      pointer to the native proxy
      */
-    static native int advise(int connectionPoint, EventProxy<?> eventProxy, long iid1, long iid2);
+    static native long advise(long connectionPoint, EventProxy<?> eventProxy, long iid1, long iid2);
 
     /**
      * Shuts down the event subscription by calling IConnectionPoint::Unadvise.
      */
-    static native void unadvise(int nativeProxy);
+    static native void unadvise(long nativeProxy);
 
     /**
      * Creates a direct buffer.
      */
-    static native ByteBuffer createBuffer(int ptr, int size);
+    static native ByteBuffer createBuffer(long ptr, int size);
 }

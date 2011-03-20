@@ -1,5 +1,7 @@
 package com4j;
 
+import com4j.stdole.IEnumVARIANT;
+
 import static com4j.Const.BYREF;
 
 import java.lang.reflect.ParameterizedType;
@@ -250,11 +252,11 @@ public enum NativeType {
      *      {@link Com4jObject}
      */
     ComObject(300,4) {
-        // the native code will see the raw pointer value as Integer
+        // the native code will see the raw pointer value as Long
         Object toNative(Object param) {
             if(param==null)
-                return 0;
-            return ((Com4jObject)param).getPtr();
+                return 0L;
+            return ((Com4jObject)param).getPointer();
         }
 
         Object toJava(Class<?> type, Type genericSignature, Object param) {
@@ -267,7 +269,7 @@ public enum NativeType {
                     if(it instanceof Class)
                         itemType = (Class<?>)it;
                 }
-                Com4jObject base = Wrapper.create((Integer) param);
+                Com4jObject base = Wrapper.create((Long) param);
                 IEnumVARIANT enumVar = base.queryInterface(IEnumVARIANT.class);
                 base.dispose();
                 return new ComCollection(itemType,enumVar);
@@ -280,7 +282,7 @@ public enum NativeType {
             // software called addRef for a pointer we passed in! So we call addRef ourself. (see issues 25 and 36)
             Native.addRef((Integer) param);
 
-            return Wrapper.create( (Class<? extends Com4jObject>)type, (Integer)param );
+            return Wrapper.create( (Class<? extends Com4jObject>)type, (Long)param );
         }
     },
 
@@ -431,17 +433,17 @@ public enum NativeType {
      *      {@link Com4jObject}
      */
     Dispatch(303,4) {
-        // the native code will see the raw pointer value as Integer
+        // the native code will see the raw pointer value as Long
         Object toNative(Object param) {
-            if(param==null) return 0;
-            int ptr = ((Com4jObject)param).getPtr();
-            int disp = COM4J.queryInterface( ptr, COM4J.IID_IDispatch );
+            if(param==null) return 0L;
+            long ptr = ((Com4jObject)param).getPointer();
+            long disp = COM4J.queryInterface( ptr, COM4J.IID_IDispatch );
             return disp;
         }
 
         Object toJava(Class<?> type, Type genericSignature, Object param) {
             if(param==null)     return null;
-            int disp = (Integer)param;
+            long disp = (Long)param;
             if(disp==0)      return null;
 
             Class<? extends Com4jObject> itf = (Class<? extends Com4jObject>) type;

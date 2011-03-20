@@ -29,7 +29,7 @@ final class EventProxy<T> implements EventCookie {
     /**
      * Pointer to the native proxy.
      */
-    int nativeProxy;
+    long nativeProxy;
 
     /**
      * Creates a new event proxy that implements the event interface {@code intf}

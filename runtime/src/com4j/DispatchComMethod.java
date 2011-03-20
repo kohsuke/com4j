@@ -40,7 +40,7 @@ final class DispatchComMethod extends ComMethod {
         return DISPATCH_METHOD;
     }
 
-    Object invoke(int ptr, Object[] args) {
+    Object invoke(long ptr, Object[] args) {
         messageParameters(args);
 
         Variant v = Native.invokeDispatch(ptr,dispId,flag,args);

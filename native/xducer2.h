@@ -32,7 +32,7 @@ namespace xducer {
 		static inline NativeType toNative( JNIEnv* env, JavaType value ) {
 			if(value==NULL)		return NULL;
 
-			jint p = com4j_COM4J_getPtr(env,value);
+			jlong p = com4j_COM4J_getPtr(env,value);
 			NativeType ptr = reinterpret_cast<NativeType>(p);
 			
 			if(p==NULL)		return NULL;

@@ -3,11 +3,78 @@
 #include "unmarshaller.h"
 #include "safearray.h"
 #include "variant.h"
+#include "ffi.h"
+#include <stdio.h>
 
 /**  
  * Original auther  (C) Kohsuke Kawaguchi (kk@kohsuke.org)
  * Modified by      (C) Michael Schnell (scm, 2008, Michael-Schnell@gmx.de)
+ * Modified by      (C) Mike Poindexter (staticsnow@gmail.com, 2009)
  */
+
+#ifdef X86_WIN32
+#define FFI_CALL_CONV FFI_STDCALL
+#endif
+
+#ifdef X86_WIN64
+#define FFI_CALL_CONV FFI_WIN64
+#endif
+
+typedef union arg_value {
+	INT64		v_int64;
+	INT32		v_int32;
+    INT16		v_int16;
+    INT8		v_int8;
+    float		v_float;
+	double		v_double;
+	void*		v_ptr;
+} arg_value;
+
+ffi_type *brecord_types[] = { &ffi_type_pointer, &ffi_type_pointer };
+ffi_type ffi_type_brecord = {
+	sizeof(void*) * 2,
+	0,
+	FFI_TYPE_STRUCT,
+	brecord_types
+};
+
+ffi_type *decimal_types[] = { &ffi_type_uint16, &ffi_type_schar, &ffi_type_schar, &ffi_type_uint32, &ffi_type_uint64 };
+ffi_type ffi_type_decimal = {
+	sizeof(DECIMAL),
+	0,
+	FFI_TYPE_STRUCT,
+	decimal_types
+};
+
+ffi_type *variant_types[] = { &ffi_type_uint16, &ffi_type_uint16, &ffi_type_uint16, &ffi_type_uint16, &ffi_type_brecord, &ffi_type_decimal };
+ffi_type ffi_type_variant = {
+	sizeof(VARIANT),
+	0,
+	FFI_TYPE_STRUCT,
+	variant_types
+};
+
+jboolean
+ffi_error(JNIEnv* env, const char* op, ffi_status status) {
+  char msg[256];
+  switch(status) {
+  case FFI_BAD_ABI:
+    _snprintf(msg, sizeof(msg), "Invalid calling convention");
+    comexception_new(env, env->NewStringUTF(msg), env->NewStringUTF(__FILE__), (jint)__LINE__);
+    return JNI_TRUE;
+  case FFI_BAD_TYPEDEF:
+    _snprintf(msg, sizeof(msg),
+             "Invalid structure definition (native typedef error)");
+	comexception_new(env, env->NewStringUTF(msg), env->NewStringUTF(__FILE__), (jint)__LINE__);
+    return JNI_TRUE;
+  default:
+    _snprintf(msg, sizeof(msg), "%s failed (%d)", op, status);
+    comexception_new(env, env->NewStringUTF(msg), env->NewStringUTF(__FILE__), (jint)__LINE__);
+    return JNI_TRUE;
+  case FFI_OK:
+    return JNI_FALSE;
+  }
+}
 
 Environment::~Environment() {
 	// run post actions
@@ -24,276 +91,266 @@ static int invocationCount = 0;
 #endif
 
 jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray args, jint* convs, int retIndex, bool retIsInOut, jint retConv ) {
-	// list of clean up actions
-	int i;
-	DWORD spBefore,spAfter;
-	// the unmarshaller if this method should return an object.
+	Unmarshaller* unm = NULL;
 	Unmarshaller* retUnm = NULL;
 
-// somehow anonymous union here makes the compiler upset
-// --- when we do "push pv" it pushes something different!
-//	union {
-		BSTR bstr;
-		Unmarshaller* unm;
-		const wchar_t*	lpcwstr;
-		const char*		lpcstr;
-		INT8	int8;
-		INT16	int16;
-		INT32	int32;
-		INT64	int64;
-		double d;
-		float f;
-		void*	pv;
-		SAFEARRAY* psa;
-		VARIANT* pvar;
-		// VARIANT_BOOL vbool;
-//	};
-
 	HRESULT hr;
+	void* result;
 
+	ffi_cif cif;
+	ffi_type** ffi_types;
+	void** ffi_values;
+	arg_value* c_args;
+	ffi_status status;
 	const int paramLen = env->GetArrayLength(args);
 
-	__asm mov [spBefore],ESP;
+	ffi_types = (ffi_type**)alloca((paramLen + 2) * sizeof(ffi_type*));
+	ffi_values = (void**)alloca((paramLen + 2) * sizeof(void*));
+	c_args = (arg_value*)alloca((paramLen + 1)* sizeof(arg_value));
 
-	// push arguments to the stack
-	// since we are accumlating things to the stack
-	for( i=paramLen; i>=0; i-- ) {
-		// to handle the case where the [retval] comes as the last in the parameter,
-		// we start from i=length, not usual i=lengh-1
+	VARIANT* pvar;
+	SAFEARRAY* psa;
+
+	int ffi_arg_count = 1;
+	for(int i=0; i <= paramLen; i++ ) {
 		unm = NULL;
 		jobject arg = NULL;
-		// TODO: check if we can safely use local variables
-		
-		if( i!=paramLen ) {
+		if(i < paramLen) {
+			ffi_arg_count++;
 			arg = env->GetObjectArrayElement(args,i);
 			switch( convs[i] ) {
 			case cvBSTR:
-				bstr = toBSTR((jstring)arg);
-				_asm push bstr;
+				c_args[i].v_ptr = toBSTR((jstring)arg);
+				ffi_types[i + 1] = &ffi_type_pointer;
+				ffi_values[i + 1] = &c_args[i].v_ptr;
 				break;
 
 			case cvBSTR_byRef:
 				if(arg==NULL) {
-					pv = NULL;
+					c_args[i].v_ptr = NULL;
 				} else {
 					unm = new BSTRUnmarshaller(toBSTR((jstring)jholder(arg)->get(env)));
 					add( new OutParamHandler( jholder(arg), unm ) );
-					pv = unm->addr();
+					c_args[i].v_ptr = unm->addr();
 				}
-				_asm push pv;
+				ffi_types[i + 1] = &ffi_type_pointer;
+				ffi_values[i + 1] = &c_args[i].v_ptr;
 				break;
 
 			case cvLPCWSTR:
-				lpcwstr = toLPCWSTR((jstring)arg);
-				_asm push lpcwstr;
+				c_args[i].v_ptr = (void*)toLPCWSTR((jstring)arg);
+				ffi_types[i + 1] = &ffi_type_pointer;
+				ffi_values[i + 1] = &c_args[i].v_ptr;
 				break;
 
 			case cvLPCSTR:
-				lpcstr = toLPCSTR((jstring)arg);
-				_asm push lpcstr;
+				c_args[i].v_ptr = (void*)toLPCSTR((jstring)arg);
+				ffi_types[i + 1] = &ffi_type_pointer;
+				ffi_values[i + 1] = &c_args[i].v_ptr;
 				break;
 
 			case cvINT8:
-				_ASSERT( sizeof(INT8)==sizeof(jbyte) );
-				int8 = javaLangNumber_byteValue(env,arg);
-				// scm: Unlike push int16, pushing int8 will correctly push a dword (32bit) onto stack, but will issue an compiler waring (C4409)
-				// _asm push int8; // See also compiler warning C4409! (scm)
-				int32 = int8;
-				_asm push int32;
+				c_args[i].v_int8 = javaLangNumber_byteValue(env,arg);
+				ffi_types[i + 1] = &ffi_type_sint8;
+				ffi_values[i + 1] = &c_args[i].v_int8;
 				break;
 
 			case cvINT8_byRef:
 				if(arg==NULL) {
-					pv = NULL;
+					c_args[i].v_ptr = NULL;
 				} else {
 					unm = new ByteUnmarshaller(env,jholder(arg)->get(env));
 					add(new OutParamHandler( jholder(arg), unm ) );
-					pv = unm->addr();
+					c_args[i].v_ptr = unm->addr();
 				}
-				_asm push pv;
+				ffi_types[i + 1] = &ffi_type_pointer;
+				ffi_values[i + 1] = &c_args[i].v_ptr;
 				break;
 
 			case cvINT16:
 				_ASSERT( sizeof(INT16)==sizeof(jshort) );
-				int16 = javaLangNumber_shortValue(env,arg);        
-				// scm: 
-				// We need to push 32 bit (4 byte) on the stack. 
-				// the call   _asm push int16;   is NOT what we want.. (this would use an opcode and really pushing only a WORD (16 bit) onto stack.)
-				int32 = int16;   // wrapping the 2 byte short into a 4 byte int
-				_asm push int32; // pushing this onto the stack.
+				c_args[i].v_int16 = javaLangNumber_shortValue(env,arg);
+				ffi_types[i + 1] = &ffi_type_sint16;
+				ffi_values[i + 1] = &c_args[i].v_int16;
 				break;
 
 			case cvINT16_byRef:
 				if(arg==NULL) {
-					pv = NULL;
+					c_args[i].v_ptr = NULL;
 				} else {
 					unm = new ShortUnmarshaller(env,jholder(arg)->get(env));
 					add(new OutParamHandler( jholder(arg), unm ) );
-					pv = unm->addr();
+					c_args[i].v_ptr = unm->addr();
 				}
-				_asm push pv;
+				ffi_types[i + 1] = &ffi_type_pointer;
+				ffi_values[i + 1] = &c_args[i].v_ptr;
 				break;
 
 			case cvINT32:
+				c_args[i].v_int32 = javaLangNumber_intValue(env,arg);
+				ffi_types[i + 1] = &ffi_type_sint32;
+				ffi_values[i + 1] = &c_args[i].v_int32;
+				break;
+
 			case cvComObject:
 			case cvDISPATCH:
-				_ASSERT( sizeof(INT32)==sizeof(jint) );
-				int32 = javaLangNumber_intValue(env,arg);
-				_asm push int32;
+				c_args[i].v_ptr = (void *)javaLangNumber_longValue(env,arg);
+				ffi_types[i + 1] = &ffi_type_pointer;
+				ffi_values[i + 1] = &c_args[i].v_ptr;
 				break;
 
 			case cvINT64:
-				//_asm int 3;
-				int64 = javaLangNumber_longValue(env,arg);
-				// scm: pushing a 64 bit value (a QUAD WORD) is pushing two DWORDs
-				_asm push dword ptr [int64 + 4]; // pushing the "upper" part first. (address of int64 + 4 bytes)
-				_asm push dword ptr [int64];
+				c_args[i].v_int64 = javaLangNumber_longValue(env,arg);
+				ffi_types[i + 1] = &ffi_type_sint64;
+				ffi_values[i + 1] = &c_args[i].v_int64;
 				break;
 
 			case cvPVOID:
 				if(arg==NULL)
-					pv = NULL;
+					c_args[i].v_ptr = NULL;
 				else
-					pv = env->GetDirectBufferAddress(arg);
-				if(pv==NULL) {
+					c_args[i].v_ptr = env->GetDirectBufferAddress(arg);
+				if(c_args[i].v_ptr==NULL) {
 					error(env,__FILE__,__LINE__,"the given Buffer object is not a direct buffer");
-					__asm mov ESP,[spBefore];
 					return NULL;
 				}
-				_asm push pv;
+				ffi_types[i + 1] = &ffi_type_pointer;
+				ffi_values[i + 1] = &c_args[i].v_ptr;
 				break;
 
 			case cvINT32_byRef:
 				if(arg==NULL) {
-					pv = NULL;
+					c_args[i].v_ptr = NULL;
 				} else {
 					unm = new IntUnmarshaller(env,jholder(arg)->get(env));
 					add( new OutParamHandler( jholder(arg), unm ) );
-					pv = unm->addr();
+					c_args[i].v_ptr = unm->addr();
 				}
-				_asm push pv;
+				ffi_types[i + 1] = &ffi_type_pointer;
+				ffi_values[i + 1] = &c_args[i].v_ptr;
 				break;
 
 			case cvDATE:
 			case cvDouble:
-				d = javaLangNumber_doubleValue(env,arg);
-				// scm: pushing a double (64 bit) onto stack is pushing two 32 bit values (DWORDs)
-				_asm push dword ptr [d + 4]; // push the "upper" part first (adress of d + 4 bytes)
-				_asm push dword ptr [d];
+				// TODO: check if this is correct
+				c_args[i].v_double = javaLangNumber_doubleValue(env,arg);
+				ffi_types[i + 1] = &ffi_type_double;
+				ffi_values[i + 1] = &c_args[i].v_double;
 				break;
 
 			case cvDouble_byRef:
 				if(arg==NULL) {
-					pv = NULL;
+					c_args[i].v_ptr = NULL;
 				} else {
 					unm = new DoubleUnmarshaller(env,jholder(arg)->get(env));
 					add(new OutParamHandler( jholder(arg), unm ));
-					pv = unm->addr();
+					c_args[i].v_ptr = unm->addr();
 				}
-				_asm push pv;
+				ffi_types[i + 1] = &ffi_type_pointer;
+				ffi_values[i + 1] = &c_args[i].v_ptr;
 				break;
 
 			case cvFloat:
-				f = javaLangNumber_floatValue(env,arg);
-				_asm push f;
+				c_args[i].v_float = javaLangNumber_floatValue(env,arg);
+				ffi_types[i + 1] = &ffi_type_float;
+				ffi_values[i + 1] = &c_args[i].v_float;
 				break;
 
 			case cvFloat_byRef:
 				if(arg==NULL) {
-					pv = NULL;
+					c_args[i].v_ptr = NULL;
 				} else {
 					unm = new FloatUnmarshaller(env,jholder(arg)->get(env));
 					add(new OutParamHandler( jholder(arg), unm ));
-					pv = unm->addr();
+					c_args[i].v_ptr = unm->addr();
 				}
-				_asm push pv;
+				ffi_types[i + 1] = &ffi_type_pointer;
+				ffi_values[i + 1] = &c_args[i].v_ptr;
 				break;
 
 			case cvBool:
 				if(javaLangBoolean_booleanValue(env,arg)) {
-					int32 = TRUE;
+					c_args[i].v_int32 = TRUE;
 				} else {
-					int32 = FALSE;
+					c_args[i].v_int32 = FALSE;
 				}
-				_asm push int32;
+				ffi_types[i + 1] = &ffi_type_sint;
+				ffi_values[i + 1] = &c_args[i].v_int32;
 				break;
 
 			case cvVariantBool:
 				if(javaLangBoolean_booleanValue(env,arg)) {
-					int32 = VARIANT_TRUE;
+					c_args[i].v_int32 = VARIANT_TRUE;
 				} else {
-					int32 = VARIANT_FALSE;
+					c_args[i].v_int32 = VARIANT_FALSE;
 				}
-				_asm push int32;
+				ffi_types[i + 1] = &ffi_type_sint;
+				ffi_values[i + 1] = &c_args[i].v_int32;
 				break;
 
 			case cvVariantBool_byRef:
 				if(arg==NULL) {
-					pv = NULL;
+					c_args[i].v_ptr = NULL;
 				} else {
 					unm = new VariantBoolUnmarshaller(env,jholder(arg)->get(env));
 					add( new OutParamHandler( jholder(arg), unm ) );
-					pv = unm->addr();
+					c_args[i].v_ptr = unm->addr();
 				}
-				_asm push pv;
+				ffi_types[i + 1] = &ffi_type_pointer;
+				ffi_values[i + 1] = &c_args[i].v_ptr;
 				break;
 
 			case cvGUID:
 				_ASSERT( sizeof(GUID)==sizeof(jlong)*2 );
-				pv = env->GetLongArrayElements( (jlongArray)arg, NULL );
-				add(new LongArrayCleanUp((jlongArray)arg,pv));
-				_asm push pv;
+				c_args[i].v_ptr = env->GetLongArrayElements( (jlongArray)arg, NULL );
+				add(new LongArrayCleanUp((jlongArray)arg,c_args[i].v_ptr));
+				ffi_types[i + 1] = &ffi_type_pointer;
+				ffi_values[i + 1] = &c_args[i].v_ptr;
 				break;
 
 			case cvCURRENCY:
 				if(arg==NULL) {
-					// push 0 for 8 bytes
-					int32 = 0;
-					_asm push int32;
-					_asm push int32;
+					c_args[i].v_int64 = 0;
+					ffi_types[i + 1] = &ffi_type_sint64;
+					ffi_values[i + 1] = &c_args[i].v_int16;
 				} else {
 					jstring strRep = javaMathBigDecimal_toString(env,arg);
 					CComCurrency cy((LPCSTR)JString(env,strRep));
-					_asm push cy.m_currency.Hi;
-					_asm push cy.m_currency.Lo;
+					c_args[i].v_int64 = cy.m_currency.int64;
+					ffi_types[i + 1] = &ffi_type_sint64;
+					ffi_values[i + 1] = &c_args[i].v_int64;
 				}
 				break;
 
 			case cvCURRENCY_byRef:
 				if(arg==NULL) {
-					pv = NULL;
+					c_args[i].v_ptr = NULL;
 				} else {
 					jstring strRep = javaMathBigDecimal_toString(env,jholder(arg)->get(env));
 					CComCurrency cy((LPCSTR)JString(env,strRep));
 					
 					unm = new CurrencyUnmarshaller(cy);
 					add(new OutParamHandler( jholder(arg), unm ));
-					pv = unm->addr();
+					c_args[i].v_ptr = unm->addr();
 				}
-				_asm push pv;
+				ffi_types[i + 1] = &ffi_type_pointer;
+				ffi_values[i + 1] = &c_args[i].v_ptr;
 				break;
 
 			case cvVARIANT:
-				_ASSERT(sizeof(VARIANT)==0x10);
-				_asm sub ESP,0x10;
-				_asm mov [pvar],ESP;
-
 				if(arg==NULL) {
-					*pvar = vtMissing;
+					pvar = &vtMissing;
 				} else {
-					// otherwise convert a value to a VARIANT, and simply use that for the stack var.
-					// since we aren't using VariantCopy, there's no need to VariantClear pSrc.
-					// hence just 'delete'
-					VARIANT* pSrc = convertToVariant(env,arg);
-					if(pSrc==NULL) {
+					pvar = convertToVariant(env,arg);
+					if(pvar==NULL) {
 						jstring name = javaLangClass_getName(env,env->GetObjectClass(arg));
 						error(env,__FILE__,__LINE__,E_FAIL,"Unable to convert %s to VARIANT",LPCSTR(JString(env,name)));
-						__asm mov ESP,[spBefore];
 						return NULL;
 					}
-					*reinterpret_cast<VARIANT*>(pvar) = *pSrc;
-					delete pSrc;
+					add(new VARIANTCleanUp(pvar));
 				}
+				ffi_types[i + 1] = &ffi_type_variant;
+				ffi_values[i + 1] = pvar;
 				break;
 
 			case cvVARIANT_byRef:
@@ -323,7 +380,9 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 					pvar = convertToVariant(env,arg);
 					add(new VARIANTCleanUp(pvar));
 				}
-				_asm push pvar;
+				c_args[i].v_ptr = pvar;
+				ffi_types[i + 1] = &ffi_type_pointer;
+				ffi_values[i + 1] = &c_args[i].v_ptr;
 				break;
 
 			case cvSAFEARRAY:
@@ -333,20 +392,11 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 					return NULL;
 				}
 				add( new SAFEARRAYCleanUp(psa) );
-				_asm push psa;
+				c_args[i].v_ptr = psa;
+				ffi_types[i + 1] = &ffi_type_pointer;
+				ffi_values[i + 1] = &c_args[i].v_ptr;
 				break;
-
-			// Not supported, yet.
-			//case cvSAFEARRAY_byRef:
- 			//	if(arg==NULL) {
-			//		pv = NULL;
-			//	} else {
-			//		unm = new SaveArrayUnmarshaller(env,jholder(arg)->get(env));
-			//		add(new OutParamHandler( jholder(arg), unm ));
-			//		pv = unm->addr();
-			//	}
-			//	_asm push pv;
-			//break;
+				
 
 			default:
 				error(env,__FILE__,__LINE__,"unexpected conversion type: %d",convs[i]);
@@ -425,8 +475,10 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				}
 
 				if(retUnm!=NULL) {
-					pv = retUnm->addr();
-					_asm push pv;
+					ffi_arg_count++;
+					c_args[i].v_ptr = retUnm->addr();
+					ffi_types[i + 1] = &ffi_type_pointer;
+					ffi_values[i + 1] = &c_args[i].v_ptr;
 				}
 			}
 		}
@@ -436,25 +488,16 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 	invocationCount++;	// for debugging. this makes it easier to set a break-point.
 #endif
 
-	// push the 'this' pointer
-	__asm push pComObject;
+	ffi_types[0] = &ffi_type_pointer;
+	ffi_values[0] = &pComObject;
 
-	// invoke the method.
-	__asm call method;
-
-	__asm mov [spAfter],ESP;
-
-	// once the call returns, stack should have been cleaned up,
-	// and the return value should be in EAX.
-	__asm mov hr,EAX;
-
-	// check that the stack size is correct
-	if(spBefore!=spAfter) {
-		__asm mov ESP, [spBefore];
-		error(env,__FILE__,__LINE__,"Unexpected stack corruption. Is the method definition correct?");
+	status = ffi_prep_cif(&cif, FFI_CALL_CONV, ffi_arg_count, &ffi_type_uint32, ffi_types);
+	if (ffi_error(env, "Native call setup", status)) {
 		return NULL;
 	}
+	ffi_call(&cif, method, &result, ffi_values);
 
+	hr = (HRESULT)result;
 
 	// if the caller wants the HRESULT as the return value,
 	// don't throw ComException

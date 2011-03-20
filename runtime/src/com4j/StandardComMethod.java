@@ -35,7 +35,7 @@ final class StandardComMethod extends ComMethod {
         vtIndex = vtid.value();
     }
 
-    Object invoke( int ptr, Object[] args ) {
+    Object invoke( long ptr, Object[] args ) {
         messageParameters(args);
 
         try {

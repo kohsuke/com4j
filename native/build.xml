@@ -3,16 +3,25 @@
   <target name="clean">
     <delete dir="Debug"/>
     <delete dir="Release"/>
+    <delete dir="x64"/>
   </target>
   
   <target name="jar">
     <exec dir="." executable="devenv" 
       failonerror="yes">
-      <arg line="com4j.vcproj /rebuild Release"/>
+      <arg line="com4j.vcproj /rebuild Release|Win32"/>
     </exec>
     <exec dir="." executable="devenv" 
       failonerror="yes">
-      <arg line="com4j.vcproj /rebuild Debug"/>
+      <arg line="com4j.vcproj /rebuild Debug|Win32"/>
+    </exec>
+    <exec dir="." executable="devenv" 
+      failonerror="yes">
+      <arg line="com4j.vcproj /rebuild Release|x64"/>
+    </exec>
+    <exec dir="." executable="devenv" 
+      failonerror="yes">
+      <arg line="com4j.vcproj /rebuild Debug|x64"/>
     </exec>
   </target>
 

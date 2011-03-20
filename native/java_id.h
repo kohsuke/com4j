@@ -2,7 +2,7 @@
 
 
 extern JClassID com4j_COM4J;
-extern JStaticMethodID<jint> com4j_COM4J_getPtr;
+extern JStaticMethodID<jlong> com4j_COM4J_getPtr;
 
 // reference to org.kohsuke.com4j.comexception
 extern JClassID comexception;

@@ -131,7 +131,7 @@ BEGIN_COM_MAP(CPtrType)
 	COM_INTERFACE_ENTRY_FUNC_BLIND(0,castDynamic)
 END_COM_MAP()
 
-	static HRESULT WINAPI castDynamic(void* pv, REFIID riid, LPVOID* ppv, DWORD dw) {
+	static HRESULT WINAPI castDynamic(void* pv, REFIID riid, LPVOID* ppv, DWORD_PTR dw) {
 		CPtrType* pThis = static_cast<CPtrType*>(pv);
 		if( pThis->isPtr && riid==__uuidof(IPtrType) ) {
 			*ppv = static_cast<IPtrType*>(pThis);
@@ -536,7 +536,7 @@ DECLARE_PROTECT_FINAL_CONSTRUCT()
 	#define	DYNAMIC_CAST_TEST(CONST,INTF) \
 		if(riid==__uuidof(INTF) && kind==CONST) { *ppv = static_cast<INTF*>(pThis); pThis->AddRef(); return S_OK; }
 
-	static HRESULT WINAPI castDynamic(void* pv, REFIID riid, LPVOID* ppv, DWORD dw) {
+	static HRESULT WINAPI castDynamic(void* pv, REFIID riid, LPVOID* ppv, DWORD_PTR dw) {
 		CTypeDecl* pThis = static_cast<CTypeDecl*>(pv);
 		TYPEKIND kind = pThis->m_pAttr->typekind;
 

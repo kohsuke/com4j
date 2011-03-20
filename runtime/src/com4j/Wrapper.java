@@ -25,7 +25,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
     /**
      * interface pointer.
      */
-    private final int ptr;
+    private final long ptr;
     
     private boolean isDisposed = false;
 
@@ -50,7 +50,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
     /**
      * Wraps a new COM object. The pointer needs to be addRefed by the caller if needed.
      */
-    private Wrapper(int ptr) {
+    private Wrapper(long ptr) {
         if(ptr==0)   throw new IllegalArgumentException();
         assert ComThread.isComThread();
 
@@ -65,7 +65,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
      * Must be run from a {@link ComThread}. This method doesn't do AddRef.
      */
     static <T extends Com4jObject>
-    T create( Class<T> primaryInterface, int ptr ) {
+    T create( Class<T> primaryInterface, long ptr ) {
         Wrapper w = new Wrapper(ptr);
         T r = primaryInterface.cast(Proxy.newProxyInstance(
             primaryInterface.getClassLoader(),
@@ -75,11 +75,19 @@ final class Wrapper implements InvocationHandler, Com4jObject {
     }
 
     /**
+     *
+     * @deprecated 64bit unsafe.
+     */
+    static Com4jObject create( int ptr ) {
+        return create((long)ptr);
+    }
+    
+    /**
      * Creates a new proxy object to a given COM pointer.
      * <p>
      * Must be run from a {@link ComThread}.
      */
-    static Com4jObject create( int ptr ) {
+    static Com4jObject create( long ptr ) {
         Wrapper w = new Wrapper(ptr);
         return w;
     }
@@ -91,6 +99,10 @@ final class Wrapper implements InvocationHandler, Com4jObject {
      */
     @Override
     public int getPtr() {
+        return (int)ptr;
+    }
+
+    public long getPointer() {
         return ptr;
     }
 
@@ -231,7 +243,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
         return new Task<T>() {
             public T call() {
                 GUID iid = COM4J.getIID(comInterface);
-                int nptr = Native.queryInterface(ptr,iid);
+                long nptr = Native.queryInterface(ptr,iid);
                 if(nptr==0)
                     return null;    // failed to cast
                 return create( comInterface, nptr );
@@ -248,7 +260,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
                 GUID iid = COM4J.getIID(eventInterface);
                 Com4jObject cp = cpc.FindConnectionPoint(iid);
                 EventProxy<T> proxy = new EventProxy<T>(eventInterface, object);
-                proxy.nativeProxy = Native.advise(cp.getPtr(), proxy,iid.v[0], iid.v[1]);
+                proxy.nativeProxy = Native.advise(cp.getPointer(), proxy,iid.v[0], iid.v[1]);
 
                 // clean up resources to be nice
                 cpc.dispose();
@@ -266,9 +278,9 @@ final class Wrapper implements InvocationHandler, Com4jObject {
 
     public String toString() {
         if(name == null) {
-            return "ComObject:"+Integer.toHexString(ptr);
+            return "ComObject:"+Long.toHexString(ptr);
         } else {
-            return name+":"+Integer.toHexString(ptr);
+            return name+":"+Long.toHexString(ptr);
         }
     }
 
@@ -277,7 +289,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
             if(isDisposed) {
               hashCode = 0;
             } else {
-              hashCode = new QITestTask(COM4J.IID_IUnknown).execute(thread);
+              hashCode = new QITestTask(COM4J.IID_IUnknown).execute(thread).hashCode();
             }
         }
         return hashCode;
@@ -285,7 +297,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
 
     public final boolean equals( Object rhs ) {
         if(!(rhs instanceof Com4jObject))   return false;
-        return hashCode()==rhs.hashCode();
+        return ptr==COM4J.getPtr((Com4jObject)rhs);
     }
 
     /**
@@ -339,15 +351,15 @@ final class Wrapper implements InvocationHandler, Com4jObject {
      * Invokes QueryInterface but immediately releases that pointer.
      * Useful for checking if an object implements a particular interface.
      */
-    private final class QITestTask extends Task<Integer> {
+    private final class QITestTask extends Task<Long> {
         private final GUID iid;
 
         public QITestTask(GUID iid) {
             this.iid = iid;
         }
 
-        public Integer call() {
-            int nptr = Native.queryInterface(ptr,iid);
+        public Long call() {
+            long nptr = Native.queryInterface(ptr,iid);
             if(nptr!=0) {
               Native.release(nptr);
             }

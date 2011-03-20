@@ -18,25 +18,25 @@ JNIEXPORT void JNICALL Java_com4j_Native_init
 /*
  * Class:     com4j_Native
  * Method:    createInstance
- * Signature: (Ljava/lang/String;IJJ)I
+ * Signature: (Ljava/lang/String;IJJ)J
  */
-JNIEXPORT jint JNICALL Java_com4j_Native_createInstance
+JNIEXPORT jlong JNICALL Java_com4j_Native_createInstance
   (JNIEnv *, jclass, jstring, jint, jlong, jlong);
 
 /*
  * Class:     com4j_Native
  * Method:    getActiveObject
- * Signature: (JJ)I
+ * Signature: (JJ)J
  */
-JNIEXPORT jint JNICALL Java_com4j_Native_getActiveObject
+JNIEXPORT jlong JNICALL Java_com4j_Native_getActiveObject
   (JNIEnv *, jclass, jlong, jlong);
 
 /*
  * Class:     com4j_Native
  * Method:    getObject
- * Signature: (Ljava/lang/String;Ljava/lang/String;)I
+ * Signature: (Ljava/lang/String;Ljava/lang/String;)J
  */
-JNIEXPORT jint JNICALL Java_com4j_Native_getObject
+JNIEXPORT jlong JNICALL Java_com4j_Native_getObject
   (JNIEnv *, jclass, jstring, jstring);
 
 /*
@@ -50,67 +50,67 @@ JNIEXPORT jobject JNICALL Java_com4j_Native_getROTSnapshot(JNIEnv *, jclass);
 /*
  * Class:     com4j_Native
  * Method:    getRunningObjectTable
- * Signature: ()I
+ * Signature: ()J
  */
-JNIEXPORT jint JNICALL Java_com4j_Native_getRunningObjectTable
+JNIEXPORT jlong JNICALL Java_com4j_Native_getRunningObjectTable
   (JNIEnv *, jclass);
 
 /*
  * Class:     com4j_Native
  * Method:    getEnumMoniker
- * Signature: (I)I
+ * Signature: (J)J
  */
-JNIEXPORT jint JNICALL Java_com4j_Native_getEnumMoniker
-  (JNIEnv *, jclass, jint);
+JNIEXPORT jlong JNICALL Java_com4j_Native_getEnumMoniker
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     com4j_Native
  * Method:    getNextRunningObject
- * Signature: (II)I
+ * Signature: (JJ)J
  */
-JNIEXPORT jint JNICALL Java_com4j_Native_getNextRunningObject
-  (JNIEnv *, jclass, jint, jint);
+JNIEXPORT jlong JNICALL Java_com4j_Native_getNextRunningObject
+  (JNIEnv *, jclass, jlong, jlong);
 
 
 /*
  * Class:     com4j_Native
  * Method:    addRef
- * Signature: (I)V
+ * Signature: (J)V
  */
 JNIEXPORT jint JNICALL Java_com4j_Native_addRef
-  (JNIEnv *, jclass, jint);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     com4j_Native
  * Method:    release
- * Signature: (I)V
+ * Signature: (J)I
  */
 JNIEXPORT jint JNICALL Java_com4j_Native_release
-  (JNIEnv *, jclass, jint);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     com4j_Native
  * Method:    invoke
- * Signature: (II[Ljava/lang/Object;[IIZI)Ljava/lang/Object;
+ * Signature: (JJ[Ljava/lang/Object;[IIZI)Ljava/lang/Object;
  */
 JNIEXPORT jobject JNICALL Java_com4j_Native_invoke
-  (JNIEnv *, jclass, jint, jint, jobjectArray, jintArray, jint, jboolean, jint);
+  (JNIEnv *, jclass, jlong, jlong, jobjectArray, jintArray, jint, jboolean, jint);
 
 /*
  * Class:     com4j_Native
  * Method:    invokeDispatch
- * Signature: (III[Ljava/lang/Object;)Lcom4j/Variant;
+ * Signature: (JII[Ljava/lang/Object;)Lcom4j/Variant;
  */
 JNIEXPORT jobject JNICALL Java_com4j_Native_invokeDispatch
-  (JNIEnv *, jclass, jint, jint, jint, jobjectArray);
+  (JNIEnv *, jclass, jlong, jint, jint, jobjectArray);
 
 /*
  * Class:     com4j_Native
  * Method:    getErrorInfo
- * Signature: (IJJ)I
+ * Signature: (JJJ)J
  */
-JNIEXPORT jint JNICALL Java_com4j_Native_getErrorInfo
-  (JNIEnv *, jclass, jint, jlong, jlong);
+JNIEXPORT jlong JNICALL Java_com4j_Native_getErrorInfo
+  (JNIEnv *, jclass, jlong, jlong, jlong);
 
 /*
  * Class:     com4j_Native
@@ -123,17 +123,17 @@ JNIEXPORT jstring JNICALL Java_com4j_Native_getErrorMessage
 /*
  * Class:     com4j_Native
  * Method:    queryInterface
- * Signature: (IJJ)I
+ * Signature: (JJJ)J
  */
-JNIEXPORT jint JNICALL Java_com4j_Native_queryInterface
-  (JNIEnv *, jclass, jint, jlong, jlong);
+JNIEXPORT jlong JNICALL Java_com4j_Native_queryInterface
+  (JNIEnv *, jclass, jlong, jlong, jlong);
 
 /*
  * Class:     com4j_Native
  * Method:    loadTypeLibrary
- * Signature: (Ljava/lang/String;)I
+ * Signature: (Ljava/lang/String;)J
  */
-JNIEXPORT jint JNICALL Java_com4j_Native_loadTypeLibrary
+JNIEXPORT jlong JNICALL Java_com4j_Native_loadTypeLibrary
   (JNIEnv *, jclass, jstring);
 
 /*
@@ -155,26 +155,26 @@ JNIEXPORT void JNICALL Java_com4j_Native_coUninitialize
 /*
  * Class:     com4j_Native
  * Method:    advise
- * Signature: (ILcom4j/EventProxy;JJ)I
+ * Signature: (JLcom4j/EventProxy;JJ)J
  */
-JNIEXPORT jint JNICALL Java_com4j_Native_advise
-  (JNIEnv *, jclass, jint, jobject, jlong, jlong);
+JNIEXPORT jlong JNICALL Java_com4j_Native_advise
+  (JNIEnv *, jclass, jlong, jobject, jlong, jlong);
 
 /*
  * Class:     com4j_Native
  * Method:    unadvise
- * Signature: (I)V
+ * Signature: (J)V
  */
 JNIEXPORT void JNICALL Java_com4j_Native_unadvise
-  (JNIEnv *, jclass, jint);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     com4j_Native
  * Method:    createBuffer
- * Signature: (II)Ljava/nio/ByteBuffer;
+ * Signature: (JI)Ljava/nio/ByteBuffer;
  */
 JNIEXPORT jobject JNICALL Java_com4j_Native_createBuffer
-  (JNIEnv *, jclass, jint, jint);
+  (JNIEnv *, jclass, jlong, jint);
 
 #ifdef __cplusplus
 }

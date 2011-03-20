@@ -15,7 +15,7 @@ private:
 	boolean connected;
 	IID expectedIID;
 
-	static HRESULT WINAPI CustomQueryInterface(void* pv, REFIID riid, LPVOID* ppv, DWORD dw) {
+	static HRESULT WINAPI CustomQueryInterface(void* pv, REFIID riid, LPVOID* ppv, DWORD_PTR pdw) {
 		CComObject<CEventReceiver>* pThis = static_cast<CComObject<CEventReceiver>*>(pv);
 		if( pThis->expectedIID==riid ) {
 			*ppv = static_cast<IDispatch*>(pThis);

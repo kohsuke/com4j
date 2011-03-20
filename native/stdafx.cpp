@@ -8,8 +8,6 @@ BOOL APIENTRY DllMain( HINSTANCE hModule,
                        LPVOID lpReserved
 					 )
 {
-	// sanity check
-	_ASSERT( sizeof(void*)==sizeof(jint) );
 	_Module.DllMain(hModule, dwReason, lpReserved, NULL, NULL );
 //    _Module.Init(ObjectMap, m_hInstance, &LIBID_LIB2USRLib);
 	AtlAxWinInit();

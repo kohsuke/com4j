@@ -164,7 +164,7 @@ abstract class ComMethod {
      *
      * @return The return value of the method invocation
      */
-    abstract Object invoke( int ptr, Object[] args );
+    abstract Object invoke( long ptr, Object[] args );
 
     /**
      * Converts the parameters to be more native friendly.

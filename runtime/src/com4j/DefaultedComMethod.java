@@ -47,12 +47,12 @@ public class DefaultedComMethod extends ComMethod {
         return null;
     }
 
-    Object invoke(int ptr, Object[] args) {
+    Object invoke(long ptr, Object[] args) {
         Native.addRef(ptr);
 
         // invoke default properties
         for (int vtid : vtids) {
-            int newPtr = (Integer) Native.invoke(
+            long newPtr = (Long) Native.invoke(
                 ptr, vtid, EMPTY_ARRAY, EMPTY_INTARRAY,
                 0, false, NativeType.ComObject.code);
             Native.release(ptr);

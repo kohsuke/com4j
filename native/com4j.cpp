@@ -17,8 +17,8 @@ JavaVM* jvm;
 
 JNIEXPORT jobject JNICALL Java_com4j_Native_invoke(JNIEnv* env,
 	jclass __unused,
-	jint pComObject,		// pointer to the COM object
-	jint pFuncIndex,		// which function are we trying to call?
+	jlong pComObject,		// pointer to the COM object
+	jlong pFuncIndex,		// which function are we trying to call?
 	jobjectArray args,		// arguments
 	jintArray _convs,		// conversions
 	jint returnIndex,		// index of the return value in the parameter list
@@ -38,7 +38,7 @@ JNIEXPORT jobject JNICALL Java_com4j_Native_invoke(JNIEnv* env,
 	return r;
 }
 
-JNIEXPORT jobject JNICALL Java_com4j_Native_invokeDispatch( JNIEnv* env, jclass _, jint pComObject, jint dispId, jint flag, jobjectArray args) {
+JNIEXPORT jobject JNICALL Java_com4j_Native_invokeDispatch( JNIEnv* env, jclass _, jlong pComObject, jint dispId, jint flag, jobjectArray args) {
 	
 	DISPPARAMS params;
 	DISPID dispIdPropertyPut = DISPID_PROPERTYPUT;
@@ -96,27 +96,27 @@ JNIEXPORT void JNICALL Java_com4j_Native_init( JNIEnv* env, jclass __unused__ ) 
 }
 
 extern "C"
-static IUnknown* toComObject( jint pComObject ) {
+static IUnknown* toComObject( jlong pComObject ) {
 	return reinterpret_cast<IUnknown*>(pComObject);
 }
 
-JNIEXPORT jint JNICALL Java_com4j_Native_addRef( JNIEnv* env, jclass __unused__, jint pComObject ) {
+JNIEXPORT jlong JNICALL Java_com4j_Native_addRef( JNIEnv* env, jclass __unused__, jlong pComObject ) {
 	return toComObject(pComObject)->AddRef();
 }
 
-JNIEXPORT jint JNICALL Java_com4j_Native_release( JNIEnv* env, jclass __unused__, jint pComObject ) {
+JNIEXPORT jlong JNICALL Java_com4j_Native_release( JNIEnv* env, jclass __unused__, jlong pComObject ) {
 	IUnknown *ptr = toComObject(pComObject);
 	if(ptr != NULL) {
 		return ptr->Release();
 	} else {
-	// Throw a NullPointerException!
-	env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "IUnknown pointer is NULL");
-	return 0; // doesn't matter what we return
+        // Throw a NullPointerException!
+        env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "IUnknown pointer is NULL");
+        return 0; // doesn't matter what we return
   }
 }
 
-JNIEXPORT jint JNICALL Java_com4j_Native_queryInterface( JNIEnv* env, jclass __unused__,
-	jint pComObject, jlong iid1, jlong iid2 ) {
+JNIEXPORT jlong JNICALL Java_com4j_Native_queryInterface( JNIEnv* env, jclass __unused__,
+	jlong pComObject, jlong iid1, jlong iid2 ) {
 	
 	MyGUID iid(iid1,iid2);
 	void* p;
@@ -125,10 +125,10 @@ JNIEXPORT jint JNICALL Java_com4j_Native_queryInterface( JNIEnv* env, jclass __u
 	if(FAILED(hr)) {
 		return 0;
 	}
-	return reinterpret_cast<jint>(p);
+	return reinterpret_cast<jlong>(p);
 }
 
-JNIEXPORT jint JNICALL Java_com4j_Native_createInstance(
+JNIEXPORT jlong JNICALL Java_com4j_Native_createInstance(
 	JNIEnv* env, jclass __unused__, jstring _progId, jint clsctx, jlong iid1, jlong iid2 ) {
 	
 	MyGUID iid(iid1,iid2);
@@ -172,10 +172,10 @@ JNIEXPORT jint JNICALL Java_com4j_Native_createInstance(
 			return 0;
 		}
 	}
-	return reinterpret_cast<jint>(p);
+	return reinterpret_cast<jlong>(p);
 }
 
-JNIEXPORT jint JNICALL Java_com4j_Native_getActiveObject(
+JNIEXPORT jlong JNICALL Java_com4j_Native_getActiveObject(
 	JNIEnv* env, jclass __unused__, jlong clsid1, jlong clsid2) {
 
 	MyGUID clsid(clsid1,clsid2);
@@ -189,10 +189,10 @@ JNIEXPORT jint JNICALL Java_com4j_Native_getActiveObject(
 		return 0;
 	}
 
-	return reinterpret_cast<jint>(pUnk);
+	return reinterpret_cast<jlong>(pUnk);
 }
 
-JNIEXPORT jint JNICALL Java_com4j_Native_getObject(
+JNIEXPORT jlong JNICALL Java_com4j_Native_getObject(
 	JNIEnv* env, jclass __unused__, jstring _fileName, jstring _progId) {
 
 	HRESULT hr;
@@ -220,7 +220,7 @@ JNIEXPORT jint JNICALL Java_com4j_Native_getObject(
 			return 0;
 		}
 
-		return reinterpret_cast<jint>(pDisp);
+		return reinterpret_cast<jlong>(pDisp);
 	}
 
 	JString progId(env,_progId);
@@ -240,7 +240,7 @@ JNIEXPORT jint JNICALL Java_com4j_Native_getObject(
 			error(env,__FILE__,__LINE__,hr,"Failed to GetActiveObject");
 			return 0;
 		}
-		return reinterpret_cast<jint>(pUnk);
+		return reinterpret_cast<jlong>(pUnk);
 	}
 
 	// case 3: both file name and progID
@@ -258,7 +258,7 @@ JNIEXPORT jint JNICALL Java_com4j_Native_getObject(
 		return 0;
 	}
 
-	return reinterpret_cast<jint>(pUnk);
+	return reinterpret_cast<jlong>(pUnk);
 }
 
 //JNIEXPORT jobject JNICALL Java_com4j_Native_getROTSnapshot(JNIEnv *, jclass){
@@ -268,17 +268,17 @@ JNIEXPORT jint JNICALL Java_com4j_Native_getObject(
 //#include "objidl.h"
 //}
 
-JNIEXPORT jint JNICALL Java_com4j_Native_getRunningObjectTable(JNIEnv* env, jclass __unused__){
+JNIEXPORT jlong JNICALL Java_com4j_Native_getRunningObjectTable(JNIEnv* env, jclass __unused__){
   IRunningObjectTable *rot;
   HRESULT hr = ::GetRunningObjectTable(0, &rot);
   if(hr != S_OK){
     error(env,__FILE__,__LINE__,hr,"GetRunningObjectTable failed");
 		return 0;
   }
-  return reinterpret_cast<jint>(rot);
+  return reinterpret_cast<jlong>(rot);
 }
 
-JNIEXPORT jint JNICALL Java_com4j_Native_getEnumMoniker(JNIEnv* env, jclass __unused__, jint rotPointer){
+JNIEXPORT jlong JNICALL Java_com4j_Native_getEnumMoniker(JNIEnv* env, jclass __unused__, jlong rotPointer){
   IRunningObjectTable *rot = reinterpret_cast<IRunningObjectTable*>(rotPointer);
   IEnumMoniker *moniker;
   HRESULT hr = rot->EnumRunning(&moniker);
@@ -287,10 +287,10 @@ JNIEXPORT jint JNICALL Java_com4j_Native_getEnumMoniker(JNIEnv* env, jclass __un
     return 0;
   }
   moniker->Reset();
-  return reinterpret_cast<jint>(moniker);
+  return reinterpret_cast<jlong>(moniker);
 }
 
-JNIEXPORT jint JNICALL Java_com4j_Native_getNextRunningObject(JNIEnv *env, jclass __unused__, jint rotPointer, jint enumMonikerPointer){
+JNIEXPORT jlong JNICALL Java_com4j_Native_getNextRunningObject(JNIEnv *env, jclass __unused__, jlong rotPointer, jlong enumMonikerPointer){
   IRunningObjectTable *rot = reinterpret_cast<IRunningObjectTable*>(rotPointer);
   IEnumMoniker *enumMoniker = reinterpret_cast<IEnumMoniker*>(enumMonikerPointer);
   IMoniker *moniker;
@@ -305,7 +305,7 @@ JNIEXPORT jint JNICALL Java_com4j_Native_getNextRunningObject(JNIEnv *env, jclas
   }
   IUnknown *unknown;
   rot->GetObject(moniker, &unknown);
-  return reinterpret_cast<jint>(unknown);
+  return reinterpret_cast<jlong>(unknown);
 }
 
 JNIEXPORT jstring JNICALL Java_com4j_Native_getErrorMessage(
@@ -333,8 +333,8 @@ JNIEXPORT jstring JNICALL Java_com4j_Native_getErrorMessage(
 	return result;
 }
 
-JNIEXPORT jint JNICALL Java_com4j_Native_getErrorInfo(
-	JNIEnv* env, jclass __unused__, jint pComObject, jlong iid1, jlong iid2) {
+JNIEXPORT jlong JNICALL Java_com4j_Native_getErrorInfo(
+	JNIEnv* env, jclass __unused__, jlong pComObject, jlong iid1, jlong iid2) {
 
 	MyGUID iid(iid1,iid2);
 
@@ -359,7 +359,7 @@ JNIEXPORT jint JNICALL Java_com4j_Native_getErrorInfo(
 	  }
 
 	  // return the pointer
-	  return reinterpret_cast<jint>(pError);
+	  return reinterpret_cast<jlong>(pError);
   } catch (...) {
     // an exception occured. This might happen, if the automation server is not available due to a crash.
     return 0;
@@ -384,7 +384,7 @@ JNIEXPORT jint JNICALL Java_com4j_Native_loadTypeLibrary(
 }
 */
 
-JNIEXPORT jint JNICALL Java_com4j_Native_loadTypeLibrary(
+JNIEXPORT jlong JNICALL Java_com4j_Native_loadTypeLibrary(
 	JNIEnv* env, jclass __unused__, jstring _name ) {
 
 	JString name(env,_name);
@@ -396,7 +396,7 @@ JNIEXPORT jint JNICALL Java_com4j_Native_loadTypeLibrary(
 		return 0;
 	}
 	
-	return reinterpret_cast<jint>(typelib::CTypeLib::get(pLib));
+	return reinterpret_cast<jlong>(typelib::CTypeLib::get(pLib));
 }
 
 JNIEXPORT void JNICALL Java_com4j_Native_coInitialize(
@@ -414,18 +414,18 @@ JNIEXPORT void JNICALL Java_com4j_Native_coUninitialize(
 	CoUninitialize();
 }
 
-JNIEXPORT jint JNICALL Java_com4j_Native_advise( JNIEnv* env, jclass _, jint ptr, jobject proxy,jlong iid1, jlong iid2) {
+JNIEXPORT jlong JNICALL Java_com4j_Native_advise( JNIEnv* env, jclass _, jlong ptr, jobject proxy,jlong iid1, jlong iid2) {
 	CEventReceiver* p = CEventReceiver::create( env, reinterpret_cast<IConnectionPoint*>(ptr), proxy, MyGUID(iid1,iid2) );
-	return reinterpret_cast<jint>(p);
+	return reinterpret_cast<jlong>(p);
 }
 
-JNIEXPORT void JNICALL Java_com4j_Native_unadvise( JNIEnv* env, jclass _, jint p ) {
+JNIEXPORT void JNICALL Java_com4j_Native_unadvise( JNIEnv* env, jclass _, jlong p ) {
 	CEventReceiver* er = reinterpret_cast<CEventReceiver*>(p);
 	er->Disconnect(env);
 	delete er;
 }
 
-JNIEXPORT jobject JNICALL Java_com4j_Native_createBuffer(JNIEnv* env, jclass _, jint ptr, jint size) {
+JNIEXPORT jobject JNICALL Java_com4j_Native_createBuffer(JNIEnv* env, jclass _, jlong ptr, jint size) {
 	return env->NewDirectByteBuffer(reinterpret_cast<void*>(ptr),size);
 }
 

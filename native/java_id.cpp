@@ -6,7 +6,7 @@
 JClassID javaLangObject("java/lang/Object");
 
 JClassID com4j_COM4J("com4j/COM4J");
-JStaticMethodID<jint> com4j_COM4J_getPtr(com4j_COM4J,"getPtr","(Lcom4j/Com4jObject;)I");
+JStaticMethodID<jlong> com4j_COM4J_getPtr(com4j_COM4J,"getPtr","(Lcom4j/Com4jObject;)J");
 
 JClassID comexception("com4j/ComException");
 JConstructorID comexception_new_hr(comexception,"(Ljava/lang/String;ILjava/lang/String;I)V");
@@ -24,7 +24,7 @@ JStaticMethodID<jobject> com4j_Variant_toDate(com4j_Variant,"toDate","(D)Ljava/u
 JStaticMethodID<jdouble> com4j_Variant_fromDate(com4j_Variant,"fromDate","(Ljava/util/Date;)D");
 
 JClassID com4jWrapper("com4j/Wrapper");
-JConstructorID com4jWrapper_new(com4jWrapper,"(I)V");
+JConstructorID com4jWrapper_new(com4jWrapper,"(J)V");
 JMethodID<jobject> com4jWrapper_queryInterface(com4jWrapper,"queryInterface","(Ljava/lang/Class;)Lcom4j/Com4jObject;");
 
 JClassID com4j_ComEnum("com4j/ComEnum");

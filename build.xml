@@ -39,8 +39,9 @@
   
   <target name="src-zip">
     <zip file="build/src.zip">
-      <fileset dir="." includes="native/**/*" excludes="native/Debug/**, native/Release/**, native/driver/**, native/*.ncb, native/*.suo" />
+      <fileset dir="." includes="native/**/*" excludes="native/Debug/**, native/Release/**, native/driver/**, native/*.ncb, native/*.suo, native/x64/**" />
       <fileset dir="." includes="jnitl/**/*" excludes="jnitl/build/**, jnitl/lib/**, jnitl/*.ncb, jnitl/*.suo" />
+      <fileset dir="." includes="libffi/**/*" excludes="libffi/build/**, libffi/Debug/**, libffi/Release/**, libffi/x64/**, libffi/*.ncb, libffi/*.suo" />
       <fileset dir="." includes="runtime/**/*" excludes="runtime/build/**" />
       <fileset dir="." includes="tlbimp/**/*" excludes="tlbimp/build/**" />
       <fileset dir="." includes="build.xml, com4j.*" />
@@ -56,7 +57,8 @@
       <fileset dir="runtime/build" includes="com4j.jar, com4j-src.zip"/>
       <fileset dir="tlbimp/build" includes="tlbimp.jar, tlbimp-src.zip"/>
       <fileset dir="tlbimp/lib" includes="args4j-*.jar"/>
-      <fileset dir="native/Release" includes="com4j.dll" />
+      <fileset dir="native/Release" includes="com4j-x86.dll" />
+      <fileset dir="native/x64/Release" includes="com4j-amd64.dll" />
     </copy>
     <ant dir="build/dist/samples" target="compile"/>
     
