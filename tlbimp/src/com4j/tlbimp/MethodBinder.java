@@ -1,5 +1,7 @@
 package com4j.tlbimp;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -15,6 +17,8 @@ import com4j.tlbimp.def.IPtrType;
 import com4j.tlbimp.def.IType;
 import com4j.tlbimp.def.InvokeKind;
 import com4j.tlbimp.def.VarType;
+
+import static java.util.Arrays.asList;
 
 /**
  * Binds a native method to a Java method.
@@ -365,13 +369,9 @@ abstract class MethodBinder
           nativeTypes += "}";
           variantTypes += "}";
           literals += "}";
-          String defaultsAnnotation = "@UseDefaultValues(";
-          defaultsAnnotation += paramIndexMappings + ", ";
-          defaultsAnnotation += optParamIndices + ", ";
-          defaultsAnnotation += javaTypes + ", ";
-          defaultsAnnotation += nativeTypes + ", ";
-          defaultsAnnotation += variantTypes + ", ";
-          defaultsAnnotation += literals + ")";
+
+          String defaultsAnnotation = "@UseDefaultValues("
+                  +join(asList(paramIndexMappings, optParamIndices, javaTypes, nativeTypes, variantTypes, literals),", ")+')';
 
           o.println(defaultsAnnotation);
         }
@@ -386,6 +386,16 @@ abstract class MethodBinder
         declareMethodName(o);
         declareParameters(o, defaultParam, useDefault);
         o.println();
+    }
+
+    // TODO: what's the better place for this?
+    private static String join(Collection<?> args, String delim) {
+        StringBuilder buf = new StringBuilder();
+        for (Object arg : args) {
+            if (buf.length()>0) buf.append(delim);
+            buf.append(arg);
+        }
+        return buf.toString();
     }
 
   /**
