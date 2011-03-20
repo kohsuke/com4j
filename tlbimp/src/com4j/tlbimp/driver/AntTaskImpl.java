@@ -5,6 +5,7 @@ import com4j.GUID;
 import com4j.tlbimp.BindingException;
 import com4j.tlbimp.ErrorListener;
 import com4j.tlbimp.FileCodeWriter;
+import com4j.tlbimp.Generator;
 import com4j.tlbimp.def.IWTypeLib;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -52,6 +53,14 @@ public class AntTaskImpl extends Task implements ErrorListener {
 
     public void setLocale(String locale) {
         driver.setLocale(locale);
+    }
+
+    public void setRenameGetterAndSetters(boolean renameGetterAndSetters) {
+        driver.renameGetterAndSetters = renameGetterAndSetters;
+    }
+
+    public void setAlwaysUseComEnums(boolean alwaysUseComEnums) {
+        driver.alwaysUseComEnums = alwaysUseComEnums;
     }
 
     public void addConfiguredLib( Lib r ) {

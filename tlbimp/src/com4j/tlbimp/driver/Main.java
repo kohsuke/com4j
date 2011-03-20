@@ -43,6 +43,12 @@ public class Main implements ErrorListener {
     @Option(name="-locale")
     public String locale = null;
 
+    @Option(name="-javaGetterSetterName",usage="Generate getters/setters in the Java naming convention")
+    public boolean javaGetterSetterName = false;
+
+    @Option(name="-alwaysUseComEnums",usage="Always use ComEnum for generating enums")
+    public boolean alwaysUseComEnums = false;
+
     @Argument
     private List<String> files = new ArrayList<String>();
 
@@ -117,6 +123,8 @@ public class Main implements ErrorListener {
             driver.addLib(lib);
         }
 
+        driver.alwaysUseComEnums = alwaysUseComEnums;
+        driver.renameGetterAndSetters = javaGetterSetterName;
 
         try {
             if(locale!=null)

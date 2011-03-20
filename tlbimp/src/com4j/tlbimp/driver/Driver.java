@@ -29,6 +29,10 @@ final class Driver {
 
     private Locale locale = Locale.getDefault();
 
+    boolean renameGetterAndSetters = false;
+    boolean alwaysUseComEnums = false;
+
+
     public void addLib( Lib r ) {
         libs.put(r.getLibid(),r);
     }
@@ -85,7 +89,7 @@ final class Driver {
                 if (libs.containsKey(libid)) {
                   String pkg = libs.get(libid).getPackage();
                   if (pkg != null) {
-                    if (packageName != null && !packageName.isEmpty()) {
+                    if (packageName != null && packageName.length()>0) {
                       return packageName + "." + pkg;
                     } else {
                       return pkg;
@@ -114,6 +118,8 @@ final class Driver {
         };
 
         Generator generator = new Generator(cw,resolver,el,locale);
+        generator.setAlwaysUseComEnums(alwaysUseComEnums);
+        generator.setRenameGetterAndSetters(renameGetterAndSetters);
 
         // repeatedly generate all the libraries that need to be generated
         Set<IWTypeLib> generatedLibs = new HashSet<IWTypeLib>();

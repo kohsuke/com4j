@@ -66,19 +66,27 @@ public final class Generator {
      * like fashion. If true, a COM put method named "Item" will be named "setItem" on the
      * Java side. If false, it will be named "item" (scm)
      */
-    boolean renameGetterAndSetters = false; // TODO: make this configurable via arguments to tlbimp
+    boolean renameGetterAndSetters = false;
 
     /**
      * If this value is true, the type generator will always generate enums that implement
      * the ComEnum interface. (scm)
      */
-    boolean alwaysUseComEnums = false;// TODO: make this configurable via arguments to tlbimp
+    boolean alwaysUseComEnums = false;
 
     public Generator( CodeWriter writer, ReferenceResolver resolver, ErrorListener el, Locale locale ) {
         this.el = el;
         this.writer = writer;
         this.referenceResolver = resolver;
         this.locale = locale;
+    }
+
+    public void setRenameGetterAndSetters(boolean renameGetterAndSetters) {
+        this.renameGetterAndSetters = renameGetterAndSetters;
+    }
+
+    public void setAlwaysUseComEnums(boolean alwaysUseComEnums) {
+        this.alwaysUseComEnums = alwaysUseComEnums;
     }
 
     /**
