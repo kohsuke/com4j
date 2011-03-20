@@ -280,7 +280,7 @@ public enum NativeType {
             // And then, after the call, this method (toJava) gets called from com4j.StandardComMethod.invoke(int, Object[])
             // So we create a new Wrapper object for an interface pointer. But we can not assume, that the native code of the third party
             // software called addRef for a pointer we passed in! So we call addRef ourself. (see issues 25 and 36)
-            Native.addRef((Integer) param);
+            Native.addRef((Long) param);
 
             return Wrapper.create( (Class<? extends Com4jObject>)type, (Long)param );
         }
