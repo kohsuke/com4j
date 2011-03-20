@@ -66,7 +66,7 @@ public final class Generator {
      * like fashion. If true, a COM put method named "Item" will be named "setItem" on the
      * Java side. If false, it will be named "item" (scm)
      */
-    boolean renameGetterAndSetters = true; // TODO: make this configurable via arguments to tlbimp
+    boolean renameGetterAndSetters = false; // TODO: make this configurable via arguments to tlbimp
 
     /**
      * If this value is true, the type generator will always generate enums that implement
