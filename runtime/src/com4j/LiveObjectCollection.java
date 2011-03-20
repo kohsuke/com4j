@@ -46,7 +46,8 @@ import java.util.NoSuchElementException;
    * @param object the object to remove
    */
   public synchronized void remove(Com4jObject object) {
-    List<WeakReference<Com4jObject>> list = objects.get(object.getPtr());
+      int key = object.getPtr();
+      List<WeakReference<Com4jObject>> list = objects.get(key);
     if (list == null) {
       throw new NoSuchElementException("The Com4jObject " + object + " is not in this collection!");
     }
@@ -62,6 +63,8 @@ import java.util.NoSuchElementException;
         break; 
       }
     }
+      if (list.isEmpty())
+          objects.remove(key); // the list is now empty
   }
 
   /**
@@ -78,13 +81,9 @@ import java.util.NoSuchElementException;
    */
   public List<WeakReference<Com4jObject>> getSnapshot() {
     ArrayList<WeakReference<Com4jObject>> snapshot = new ArrayList<WeakReference<Com4jObject>>(count);
-    int destIndex = 0;
     for (Integer i : objects.keySet()) {
       List<WeakReference<Com4jObject>> list = objects.get(i);
-      for (WeakReference<Com4jObject> weakReference : list) {
-        snapshot.add(weakReference);
-        destIndex++;
-      }
+        snapshot.addAll(list);
     }
     return snapshot;
   }
