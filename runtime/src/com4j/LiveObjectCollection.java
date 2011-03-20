@@ -79,7 +79,7 @@ import java.util.NoSuchElementException;
    * Returns a snapshot of the collection as a list.
    * @return a snapshot of the collection as a list
    */
-  public List<WeakReference<Com4jObject>> getSnapshot() {
+  public synchronized List<WeakReference<Com4jObject>> getSnapshot() {
     ArrayList<WeakReference<Com4jObject>> snapshot = new ArrayList<WeakReference<Com4jObject>>(count);
     for (Integer i : objects.keySet()) {
       List<WeakReference<Com4jObject>> list = objects.get(i);
