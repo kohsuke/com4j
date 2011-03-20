@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <project name="runtime" default="compile" basedir=".">
+  <property name="mode" value="Release"/><!-- set to Debug to bundle debug builds of the DLL -->
+
   <target name="compile">
     <mkdir dir="build/classes"/>
     <javac srcdir="src" destdir="build/classes"
@@ -9,8 +11,8 @@
   
   <target name="jar" depends="compile">
     <tstamp/>
-    <copy file="../native/Release/com4j.dll"     tofile="build/classes/com4j/com4j-x86.dll"/>
-    <copy file="../native/x64/Release/com4j.dll" tofile="build/classes/com4j/com4j-x64.dll"/>
+    <copy file="../native/${mode}/com4j.dll"     tofile="build/classes/com4j/com4j-x86.dll"/>
+    <copy file="../native/x64/${mode}/com4j.dll" tofile="build/classes/com4j/com4j-x64.dll"/>
     <jar file="build/com4j.jar">
       <manifest>
         <attribute name="Build-Date" value="${DSTAMP}" />
