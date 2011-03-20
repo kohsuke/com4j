@@ -163,7 +163,7 @@ public abstract class COM4J {
     }
 
     /**
-     * Wraps {@link Native#getActiveObject(long, long)}, {@link Native#queryInterface(int, long, long)}
+     * Wraps {@link Native#getActiveObject(long, long)}, {@link Native#queryInterface(long, long, long)}
      * and {@link Wrapper#create(int)} into a {@link Task}
      *
      * @param <T> the type of the return value of {@link #call()}
@@ -235,7 +235,7 @@ public abstract class COM4J {
     }
 
     /**
-     * Wraps the call to {@link Native#getObject(String, String)}, {@link Native#queryInterface(int, long, long)}
+     * Wraps the call to {@link Native#getObject(String, String)}, {@link Native#queryInterface(long, long, long)}
      * and {@link Wrapper#create(int)} into a {@link Task}
      *
      * @param <T> the type of the return value of {@link #call()}
@@ -463,14 +463,14 @@ public abstract class COM4J {
     }
 
     /**
-     * Calls {@link Native#queryInterface(int, long, long)}
+     * Calls {@link Native#queryInterface(long, long, long)}
      * @param ptr the interface pointer
      * @param iid the IID
      * @return the queried interface pointer or null, if the query failed
      *
-     * TODO: Think about whether to remove this method or mark it as deprecated. Methods could use {@link Native#queryInterface(int, GUID)} instead.
+     * TODO: Think about whether to remove this method or mark it as deprecated. Methods could use {@link Native#queryInterface(long, GUID)} instead.
      */
-    static long queryInterface( int ptr, GUID iid ) {
+    static long queryInterface( long ptr, GUID iid ) {
         return Native.queryInterface(ptr,iid.v[0],iid.v[1]);
     }
 

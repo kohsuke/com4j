@@ -83,9 +83,9 @@ import java.util.NoSuchElementException;
   public synchronized List<WeakReference<Com4jObject>> getSnapshot() {
       ArrayList<WeakReference<Com4jObject>> snapshot = new ArrayList<WeakReference<Com4jObject>>(count);
 
-      Iterator<Entry<Integer, LinkedList<WeakReference<Com4jObject>>>> i = objects.entrySet().iterator();
+      Iterator<Entry<Long, LinkedList<WeakReference<Com4jObject>>>> i = objects.entrySet().iterator();
       while (i.hasNext()) {
-          Entry<Integer, LinkedList<WeakReference<Com4jObject>>> e = i.next();
+          Entry<Long, LinkedList<WeakReference<Com4jObject>>> e = i.next();
 
           // clean up the list since we are walking the list anyway
           for (Iterator<WeakReference<Com4jObject>> j = e.getValue().iterator(); j.hasNext();) {
