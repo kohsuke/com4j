@@ -119,6 +119,28 @@ public abstract class COM4J {
     }
 
     /**
+     * Wraps an externally obtained interface pointer into a COM wrapper object.
+     *
+     * <p>
+     * This method doesn't call addRef on the given interface pointer. Instead, this method
+     * takes over the ownership of the given pointer.
+     *
+     * @param primaryInterface
+     *      The interface type to wrap the pointer into.
+     * @param ptr
+     *      The rar interface pointer value.
+     */
+    public static<T extends Com4jObject>
+    T wrap( final Class<T> primaryInterface, final long ptr ) throws ComException {
+        return new Task<T>() {
+            @Override
+            public T call() {
+                return Wrapper.create(primaryInterface,ptr);
+            }
+        }.execute();
+    }
+
+    /**
      * Gets an already running object from the running object table.
      *
      * @param <T> the type of the return value and the type parameter of the class object of primaryInterface
