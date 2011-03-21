@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
 <project name="com4j" default="dist">
   <!--
-    if the dist target fails with "Unable to load com4j.dll", make sure your path
-    includes native/Debug.
+    if the dist target fails with "Unable to load com4j.dll",
+    make sure to run Ant with -lib dir
+    where 'dir' is a directory that contains com4j.jar
   -->
   
   <target name="clean">
