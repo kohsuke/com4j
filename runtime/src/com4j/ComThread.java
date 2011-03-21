@@ -177,7 +177,7 @@ public final class ComThread extends Thread {
     public <T> T execute(Task<T> task) {
         synchronized(task) {
             synchronized(this) {
-                // add it to the tail (fix issue 40)
+                // add it to the tail
                 if(taskListTail != null){
                     taskListTail.next = task;
                 }

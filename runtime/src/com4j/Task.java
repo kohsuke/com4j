@@ -59,8 +59,7 @@ abstract class Task<T> implements Callable<T> {
 
     /**
      * Managed by {@link ComThread} to form a linked list from
-     * {@link ComThread#taskList}.
-     * TODO: revisit this linked list design. Replace it with a "real" linked list (from java.lang.util)
+     * {@link ComThread#taskListHead}.
      */
     Task<?> next;
 
