@@ -51,13 +51,15 @@
   
   <target name="dist" depends="jar,javadoc,src-zip">
     <tstamp/>
-    <mkdir dir="build/dist"/>
+    <mkdir dir="build/dist/dll"/>
     
     <copy todir="build/dist">
       <fileset dir="." includes="samples/**/*" excludes="**/CVS, samples/*/test/**, **/*.log"/>
       <fileset dir="runtime/build" includes="com4j.jar, com4j-src.zip"/>
       <fileset dir="tlbimp/build" includes="tlbimp.jar, tlbimp-src.zip"/>
       <fileset dir="tlbimp/lib" includes="args4j-*.jar"/>
+    </copy>
+    <copy todir="build/dist/dll">
       <fileset dir="native" includes="**/*.dll, **/*.pdb" />
     </copy>
     <ant dir="build/dist/samples" target="compile"/>

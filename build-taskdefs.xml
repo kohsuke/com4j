@@ -21,7 +21,7 @@
         <arg value="deploy:deploy-file"/>
         <arg value="-Dfile=@{file}"/>
         <arg value="-DpomFile=pom.xml"/>
-        <arg value="-Durl=java-net:/maven2-repository/trunk/www/repository/" />
+        <arg value="-Durl=java-net:/maven2-repository~svn/trunk/repository/" />
         <args />
       </exec>
     </sequential>
