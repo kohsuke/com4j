@@ -4,13 +4,6 @@
 #include "safearray.h"
 #include "variant.h"
 #include <stdio.h>
-
-#ifdef WIN64
-	#define X86_WIN64
-#else
-	#define	X86_WIN32
-#endif
-
 #include "../libffi/include/ffi.h"
 
 /**  
@@ -40,7 +33,7 @@ typedef union arg_value {
 ffi_type *brecord_types[] = { &ffi_type_pointer, &ffi_type_pointer };
 ffi_type ffi_type_brecord = {
 	sizeof(void*) * 2,
-	0,
+	4,
 	FFI_TYPE_STRUCT,
 	brecord_types
 };
@@ -48,7 +41,7 @@ ffi_type ffi_type_brecord = {
 ffi_type *decimal_types[] = { &ffi_type_uint16, &ffi_type_schar, &ffi_type_schar, &ffi_type_uint32, &ffi_type_uint64 };
 ffi_type ffi_type_decimal = {
 	sizeof(DECIMAL),
-	0,
+	4,
 	FFI_TYPE_STRUCT,
 	decimal_types
 };
@@ -56,7 +49,7 @@ ffi_type ffi_type_decimal = {
 ffi_type *variant_types[] = { &ffi_type_uint16, &ffi_type_uint16, &ffi_type_uint16, &ffi_type_uint16, &ffi_type_brecord, &ffi_type_decimal };
 ffi_type ffi_type_variant = {
 	sizeof(VARIANT),
-	0,
+	4,
 	FFI_TYPE_STRUCT,
 	variant_types
 };
@@ -101,22 +94,19 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 	Unmarshaller* unm = NULL;
 	Unmarshaller* retUnm = NULL;
 
-	HRESULT hr;
 	void* result;
 
-	ffi_cif cif;
-	ffi_type** ffi_types;
-	void** ffi_values;
-	arg_value* c_args;
-	ffi_status status;
 	const int paramLen = env->GetArrayLength(args);
 
-	ffi_types = (ffi_type**)alloca((paramLen + 2) * sizeof(ffi_type*));
-	ffi_values = (void**)alloca((paramLen + 2) * sizeof(void*));
-	c_args = (arg_value*)alloca((paramLen + 1)* sizeof(arg_value));
+	ffi_type** ffi_types = (ffi_type**)alloca((paramLen + 2) * sizeof(ffi_type*));
+	void** ffi_values = (void**)alloca((paramLen + 2) * sizeof(void*)); // +2: 1 for 'this' and 1 for return value
+	arg_value* c_args = (arg_value*)alloca((paramLen + 1)* sizeof(arg_value)); // this is +1 because 'this' doesn't need its own arg_value
 
 	VARIANT* pvar;
 	SAFEARRAY* psa;
+
+	ffi_types[0] = &ffi_type_pointer;
+	ffi_values[0] = &pComObject;
 
 	int ffi_arg_count = 1;
 	for(int i=0; i <= paramLen; i++ ) {
@@ -495,16 +485,14 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 	invocationCount++;	// for debugging. this makes it easier to set a break-point.
 #endif
 
-	ffi_types[0] = &ffi_type_pointer;
-	ffi_values[0] = &pComObject;
-
-	status = ffi_prep_cif(&cif, FFI_CALL_CONV, ffi_arg_count, &ffi_type_uint32, ffi_types);
+	ffi_cif cif;
+	ffi_status status = ffi_prep_cif(&cif, FFI_CALL_CONV, ffi_arg_count, &ffi_type_uint32, ffi_types);
 	if (ffi_error(env, "Native call setup", status)) {
 		return NULL;
 	}
 	ffi_call(&cif, method, &result, ffi_values);
 
-	hr = (HRESULT)result;
+	HRESULT hr = (HRESULT)result;
 
 	// if the caller wants the HRESULT as the return value,
 	// don't throw ComException
