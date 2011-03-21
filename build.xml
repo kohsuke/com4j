@@ -57,8 +57,7 @@
       <fileset dir="runtime/build" includes="com4j.jar, com4j-src.zip"/>
       <fileset dir="tlbimp/build" includes="tlbimp.jar, tlbimp-src.zip"/>
       <fileset dir="tlbimp/lib" includes="args4j-*.jar"/>
-      <fileset dir="native/Release" includes="com4j-x86.dll" />
-      <fileset dir="native/x64/Release" includes="com4j-amd64.dll" />
+      <fileset dir="native" includes="**/*.dll, **/*.pdb" />
     </copy>
     <ant dir="build/dist/samples" target="compile"/>
     
@@ -72,7 +71,7 @@
   
   
   <target name="-exec-target">
-    <ant dir="native" target="${target}"/>
+    <!--ant dir="native" target="${target}"/-->
     <ant dir="runtime" target="${target}"/>
     <ant dir="tlbimp" target="${target}"/>
   </target>
