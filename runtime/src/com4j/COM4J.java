@@ -523,7 +523,7 @@ public abstract class COM4J {
     }
 
     private static void loadNativeLibrary() {
-        Throwable cause = null;
+        Throwable cause;
         try {
             // load the native part of the code.
             // first try java.library.path
