@@ -145,7 +145,7 @@ public:
 
 	virtual jobject unmarshal( JNIEnv* env ) {
 		char w[128];
-		sprintf(w,"%Lu",cy.m_currency.int64); // TODO: change this to %I64i, see issue 32
+		sprintf(w,"%I64i",cy.m_currency.int64);
 
 		jobject absolute = javaMathBigInteger_new(env,env->NewStringUTF(w));
 		return javaMathBigDecimal_new(env,absolute,4);
