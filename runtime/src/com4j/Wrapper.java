@@ -32,7 +32,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
     /**
      * Cached hash code. The value of {@code IUnknown*}.
      */
-    private int hashCode=0;
+    private long hashCode=0;
 
     /**
      * All the invocation to the wrapper COM object must go through this thread.
@@ -285,11 +285,16 @@ final class Wrapper implements InvocationHandler, Com4jObject {
     }
 
     public final int hashCode() {
+        long l = getIUnknownPointer();
+        return (int)(l ^ (l >>> 32));
+    }
+
+    public long getIUnknownPointer() {
         if(hashCode==0) {
             if(isDisposed) {
               hashCode = 0;
             } else {
-              hashCode = new QITestTask(COM4J.IID_IUnknown).execute(thread).hashCode();
+              hashCode = new QITestTask(COM4J.IID_IUnknown).execute(thread);
             }
         }
         return hashCode;
@@ -297,7 +302,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
 
     public final boolean equals( Object rhs ) {
         if(!(rhs instanceof Com4jObject))   return false;
-        return ptr==COM4J.getPtr((Com4jObject)rhs);
+        return this.getIUnknownPointer()== ((Com4jObject)rhs).getIUnknownPointer();
     }
 
     /**

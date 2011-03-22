@@ -61,6 +61,12 @@ public interface Com4jObject {
     long getPointer();
 
     /**
+     * QueryInterface to IUnknown and return its raw pointer value.
+     * This is the object identity in COM.
+     */
+    long getIUnknownPointer();
+
+    /**
      * Every Com4jObject has a ComThread that is running handling all the calls to this object. This method has to return that thread.
      * @return the ComThread handling all the calls to this object.
      */
