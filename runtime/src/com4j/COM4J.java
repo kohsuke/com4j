@@ -555,13 +555,14 @@ public abstract class COM4J {
                   e.printStackTrace();
                 }
                 File jarFile = new File(filePortion);
-        		File dllFile = new File(jarFile.getParentFile(),"com4j-" + System.getProperty("os.arch") + ".dll");
+                String fileName = "com4j-" + System.getProperty("os.arch") + ".dll";
+                File dllFile = new File(jarFile.getParentFile(), fileName);
                 if(!dllFile.exists()) {
                     // try to extract from within the jar
                     try {
-                        copyStream(
-                            COM4J.class.getResourceAsStream("com4j-" + System.getProperty("os.arch") + ".dll"),
-                            new FileOutputStream(dllFile));
+                        InputStream in = COM4J.class.getResourceAsStream(fileName);
+                        if (in==null)   throw new IOException(fileName+" not bundled in the resource. Packaging problem?");
+                        copyStream(in, new FileOutputStream(dllFile));
                     } catch (IOException e) {
                         LOGGER.log(Level.WARNING, "Failed to write com4j.dll", e);
                     }
