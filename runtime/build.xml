@@ -17,7 +17,6 @@
       <manifest>
         <attribute name="Build-Date" value="${DSTAMP}" />
       </manifest>
-      <metainf dir="../../www" includes="LICENSE.txt" />
       <fileset dir="build/classes" includes="**/*.class,**/*.dll"/>
       <fileset dir="src" includes="**/*.properties"/>
     </jar>

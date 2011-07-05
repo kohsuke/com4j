@@ -19,7 +19,6 @@
         <attribute name="Build-Date" value="${DSTAMP}" />
         <attribute name="Class-Path" value="com4j.jar args4j-2.0.1.jar" />
       </manifest>
-      <metainf dir="../../www" includes="LICENSE.txt" />
       <fileset dir="build/classes" includes="**/*.class"/>
       <fileset dir="src" includes="**/*.properties"/>
     </jar>
