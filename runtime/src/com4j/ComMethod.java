@@ -218,6 +218,8 @@ abstract class ComMethod {
                 return NativeType.PVOID;
             if(Calendar.class.isAssignableFrom(c))
                 return NativeType.Date;
+            if(BigDecimal.class.isAssignableFrom(c))
+                return NativeType.Currency;
             if(c.isArray())
                 return NativeType.SafeArray;
         }
