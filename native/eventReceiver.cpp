@@ -14,8 +14,16 @@ STDMETHODIMP CEventReceiver::GetIDsOfNames( REFIID riid, LPOLESTR* rgszNames, UI
 	JNIEnv* pEnv = jniScope;
 
 	bool unknown = false;
+	
+	// Convert names to string array
+	jobjectArray ar = pEnv->NewObjectArray(cNames,javaLangString, NULL);
+	int len = cNames;
+	USES_CONVERSION;
+	for( int i=0; i < len; i++) {
+		pEnv->SetObjectArrayElement( ar, i, pEnv->NewStringUTF( OLE2A(rgszNames[i])));
+	}
 
-	LockedArray<jint> r(pEnv, com4jEventProxy_getDISPIDs( pEnv, eventProxy ));
+	LockedArray<jint> r(pEnv, com4jEventProxy_getDISPIDs( pEnv, eventProxy, ar));
 	for(unsigned int i=0; i<cNames; i++ ) {
 		*rgDispId++ = r[i];
 		if(r[i]==DISPID_UNKNOWN)
