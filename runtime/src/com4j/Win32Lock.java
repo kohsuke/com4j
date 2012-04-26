@@ -12,7 +12,7 @@ package com4j;
  * @author Michael Schnell (ScM, (C) 2009, Michael-Schnell@gmx.de)
  */
 final class Win32Lock {
-    private final int eventHandle;
+    private final long eventHandle;
 
     /**
      * Constructs a new native win32 lock object.
@@ -53,9 +53,9 @@ final class Win32Lock {
         closeHandle(eventHandle);
     }
 
-    private static native void closeHandle(int eventHandle);
+    private static native void closeHandle(long eventHandle);
     private static native int createEvent();
-    private static native void activate0(int handle);
-    private static native void suspend0(int handle);
-    private static native void suspend1(int handle, int timeoutMillis);
+    private static native void activate0(long handle);
+    private static native void suspend0(long handle);
+    private static native void suspend1(long handle, int timeoutMillis);
 }

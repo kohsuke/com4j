@@ -2,16 +2,16 @@
 #include "com4j.h"
 #include "com4j_Win32Lock.h"
 
-JNIEXPORT void JNICALL Java_com4j_Win32Lock_closeHandle( JNIEnv* env, jclass _, jint handle ) {
+JNIEXPORT void JNICALL Java_com4j_Win32Lock_closeHandle( JNIEnv* env, jclass _, jlong handle ) {
 	::CloseHandle(reinterpret_cast<HANDLE>(handle));
 }
 
 JNIEXPORT jint JNICALL Java_com4j_Win32Lock_createEvent( JNIEnv* env , jclass _) {
 	HANDLE h = ::CreateEvent(NULL,FALSE,FALSE,NULL);
-	return reinterpret_cast<jint>(h);
+	return reinterpret_cast<jlong>(h);
 }
 
-JNIEXPORT void JNICALL Java_com4j_Win32Lock_activate0( JNIEnv* env, jclass _, jint handle ) {
+JNIEXPORT void JNICALL Java_com4j_Win32Lock_activate0( JNIEnv* env, jclass _, jlong handle ) {
 	::SetEvent(reinterpret_cast<HANDLE>(handle));	
 }
 
@@ -39,12 +39,12 @@ void suspend00(JNIEnv* env, HANDLE h, DWORD timeoutMillis) {
 	}
 }
 
-JNIEXPORT void JNICALL Java_com4j_Win32Lock_suspend0(JNIEnv* env, jclass _, jint handle) {
+JNIEXPORT void JNICALL Java_com4j_Win32Lock_suspend0(JNIEnv* env, jclass _, jlong handle) {
 	HANDLE h = reinterpret_cast<HANDLE>(handle);
 	suspend00(env, h, INFINITE);
 }
 
-JNIEXPORT void JNICALL Java_com4j_Win32Lock_suspend1(JNIEnv* env, jclass _, jint handle, jint timeoutMillis) {
+JNIEXPORT void JNICALL Java_com4j_Win32Lock_suspend1(JNIEnv* env, jclass _, jlong handle, jint timeoutMillis) {
 	HANDLE h = reinterpret_cast<HANDLE>(handle);
 	suspend00(env, h, timeoutMillis);
 }
