@@ -26,8 +26,7 @@ extern CComModule _Module;
 #include <algorithm>
 using namespace std;
 
-// if the following line fails, you need to install JNITL from http://jnitl.dev.java.net/
-#include <jnitl.h>
+#include "../jnitl/include/jnitl.h"
 using namespace jnitl;
 extern JNIModule jniModule;
 
