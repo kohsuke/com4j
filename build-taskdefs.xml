@@ -21,7 +21,8 @@
         <arg value="deploy:deploy-file"/>
         <arg value="-Dfile=@{file}"/>
         <arg value="-DpomFile=pom.xml"/>
-        <arg value="-Durl=java-net:/maven2-repository~svn/trunk/repository/" />
+        <arg value="-DrepositoryId=maven.jenkins-ci.org"/>
+        <arg value="-Durl=http://maven.jenkins-ci.org:8081/content/repositories/releases" />
         <args />
       </exec>
     </sequential>
