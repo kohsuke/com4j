@@ -6,7 +6,7 @@ If you are only interested in hacking Java side of com4j, we made it so that you
 
 To build the native side of com4j, you need:
 
+ - checkout git submodules that are linked
  - Visual Studio 2008
    - From options menu, add JDK's JNI include/lib folders to your environment.
      (Do not add those to the project since these values aren't portable.)
-   - Check out http://jnitl.java.net/ inside the com4j folder
