@@ -1,0 +1,59 @@
+<html>
+<head>
+	<title>com4j garbage collection and reference counting</title>
+	<meta http-equiv="Content-type" value="text/html; charset=iso-8859-1" />
+	<style>
+		pre.cmd {
+			background-color: black;
+			color: white;
+			font-weight: bold;
+			margin-left: 2em;
+			padding: 0.5em;
+		}
+		
+		pre.code {
+			border: black solid 1px;
+			background-color: rgb(240,240,255);
+			color: navy;
+			font-weight: bold;
+			margin-left: 2em;
+			padding: 0.5em;
+		}
+		pre.code .annotation {
+			color: gray;
+		}
+		
+		pre.com {
+			border: black solid 1px;
+			background-color: rgb(240,255,240);
+			color: darkgreen;
+			font-weight: bold;
+			margin-left: 2em;
+			padding: 0.5em;
+		}
+	</style>
+</head>
+<body>
+<h1>com4j Garbage Collection and Reference Counting</h1>
+
+	<p>
+		A life cycle of a COM object is governed by reference counting, while that of a Java object is governed by the garbage collection. This document explains how com4j handles this difference.
+
+<h3>When does a COM object get released?</h3>
+	<p>
+		By default, a proxy object releases a reference to a COM object shortly after the JVM figures out that the proxy itself can be garbage collected. This hides the detail of the life-cycle management from user applications, but the downside is that you can't generally predict when a COM object will be deallocated.
+
+<h3>Releasing COM objects earlier</h3>
+	<p>
+		User applications can explicitly call <tt>Com4jObject.dispose</tt> method to release a reference to the COM object earlier. Once this method is called, the proxy object will become "diposed", and all successive calls to any of its COM methods will fail with <tt>IllegalStateException</tt>.
+
+<h3>Using ComObjectListener</h3>
+	<p>
+		Another way for applications to manage COM object life-cycle is to use <tt>ComObjectListener</tt>. A listener can be register to the current thread, and if registered, it will receive a callback each time a new com4j proxy is created.
+	<p>
+		This is useful when your application has a code block in which the COM access is confined. The idea is to keep track of all the COM objects and then dipose them all (except a few that outlive the scope) after the code block is done. See the javadoc of <tt>ComObjectCollector</tt> for more about this.
+	<p>
+		This is useful for larger applications where calling <tt>dispose</tt> method is too tedious.
+
+</body>
+</html>

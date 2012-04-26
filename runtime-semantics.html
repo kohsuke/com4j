@@ -1,0 +1,98 @@
+<html>
+<head>
+	<title>com4j runtime semantics</title>
+	<meta http-equiv="Content-type" value="text/html; charset=iso-8859-1" />
+	<style>
+		pre.cmd {
+			background-color: black;
+			color: white;
+			font-weight: bold;
+			margin-left: 2em;
+			padding: 0.5em;
+		}
+		
+		pre.code {
+			border: black solid 1px;
+			background-color: rgb(240,240,255);
+			color: navy;
+			font-weight: bold;
+			margin-left: 2em;
+			padding: 0.5em;
+		}
+		pre.code .annotation {
+			color: gray;
+		}
+		
+		pre.com {
+			border: black solid 1px;
+			background-color: rgb(240,255,240);
+			color: darkgreen;
+			font-weight: bold;
+			margin-left: 2em;
+			padding: 0.5em;
+		}
+	</style>
+</head>
+<body>
+<h1>com4j Runtime Semantics</h1>
+
+	<p>
+		This document explains things you should know when you use com4j.
+
+
+<h3>Who Implements Those Interfaces?</h3>
+	<p>
+		At runtime, com4j automatically generates the implementation code for interfaces with com4j annotations (see <a href="http://java.sun.com/j2se/1.5/docs/api/java/lang/reflect/Proxy.html">this</a> for more info). We call them "proxies" from now on. Each proxy holds a reference to a COM interface. As illustrated in the following picture, two proxies may have references to the same interface of the same object, or two may have different interfaces of the same object.
+	<p>
+		Because of this, you may not use an expression like <tt>proxy1==proxy2</tt> to check if two proxies refer to the same COM object. For that you have to write <tt>proxy1.equals(proxy2)</tt>.
+	<center>
+		<img src="proxies.png"/>
+	</center>
+	
+<h3>COM Error and Exception</h3>
+	<p>
+		Consider the following COM method:
+<pre class=com>
+[helpstring("get the child object.")]
+HRESULT GetItem( [int] int index, [out,retval] IFoo** ppItem );
+</pre>
+	<p>
+		A COM method not just returns a "conceptual" return value (<tt>IFoo*</tt>) but also returns a HRESULT. <tt>tlbimp</tt> always hide HRESULT from Java, thus the above method is bound to:
+<pre class=code>
+IFoo GetItem( int index );
+</pre>
+	<p>
+		When the COM method invocation returns a failure HRESULT, the com4j runtime throws unchecked ComException.
+	<p>
+		This makes it impossible for the caller to know the actual HRESULT success code returned from the method, whereas sometimes a COM method actually uses different success code (for example, use S_OK and S_FALSE as a boolean function). See <a href="annotations.html">this document</a> to learn how you can map the HRESULT as the return value from the Java method.
+
+
+<h3>Casting and QueryInterface</h3>
+<p>
+	When your Java code has a reference to <tt>IFoo</tt> and you need to get <tt>IBar</tt> of the same COM object, you have to use the <tt>queryInterface</tt> method as follows:
+<pre class=code>
+IBar bar = fooObject.queryInterface(IBar.class);
+</pre>
+<p>
+	In other words, you cannot use a normal cast operator like <tt>(IBar)fooObject</tt>
+
+
+<h3>Conclusion</h3>
+<p>
+	Other than those considerations listed above, you can pretty much use all those COM objects just like ordinary Java objects. Interested readers are encouraged to go to other available documents for a deeper understanding of how com4j works.
+
+<!--
+For example,
+<pre class=com>
+[helpstring("count the items and returns it, or return a failure code.")]
+HRESULT CountItems();
+</pre>
+	<p>
+		If you want to access the HRESULT return value, use <tt>NativeType.HRESULT</tt> as follows, which returns the HRESULT value as a Java int:
+<pre class=code>
+@ReturnValue(type=NativeType.HRESULT)
+int countItems();
+</pre>
+-->
+</body>
+</html>

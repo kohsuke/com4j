@@ -1,0 +1,88 @@
+<html>
+<head>
+	<title>com4j event handling</title>
+	<meta http-equiv="Content-type" value="text/html; charset=iso-8859-1" />
+	<style>
+		pre.cmd {
+			background-color: black;
+			color: white;
+			font-weight: bold;
+			margin-left: 2em;
+			padding: 0.5em;
+		}
+		
+		pre.code {
+			border: black solid 1px;
+			background-color: rgb(240,240,255);
+			color: navy;
+			font-weight: bold;
+			margin-left: 2em;
+			padding: 0.5em;
+		}
+		pre.code .annotation {
+			color: gray;
+		}
+		
+		pre.com {
+			border: black solid 1px;
+			background-color: rgb(240,255,240);
+			color: darkgreen;
+			font-weight: bold;
+			margin-left: 2em;
+			padding: 0.5em;
+		}
+	</style>
+</head>
+<body>
+<h1>com4j Event Handling</h1>
+
+	<p>
+		This document explains how you can subscribe to COM events.
+
+
+<h3>Event Interface Definition</h3>
+	<p>
+		To subscribe to COM events, you first need an interface that defines the IID of the event interface, plus event methods that you'd like to subscribe, such as this:
+<pre class=code>
+@IID("{5846EB78-317E-4B6F-B0C3-11EE8C8FEEF2}")
+public interface _IiTunesEvents {
+    /**
+     * Fired when a database change occurs.
+     */
+    @DISPID(1)
+    void onDatabaseChangedEvent(Object deletedObjectIDs, Object changedObjectIDs);
+
+    /**
+     * Fired when a track has started playing.
+     */
+    @DISPID(2)
+    void onPlayerPlayEvent(Object iTrack);
+}
+</pre>
+	<p>
+		An event interface does not have to list all the event methods; if you omit some methods, those events will be simply ignored. Also, technically the event interface can be a class ---the only thing required is the <tt>@IID</tt> annotation and <tt>@DISPID</tt> that designates which are event methods.
+	<p>
+		To make it easy to subscribe to COM events, tlbimp generate a class with empty methods. But you can also choose to write it manually.
+
+<h3>Subscribe/Unsubscribe to events</h3>
+	<p>
+		You can subscribe to a COM object by using the following code:
+<pre class=code>
+Com4jObject comObject = ...; // more likely it's an interface derived from Com4jObject
+EventCookie cookie = comObject.advise(_IiTunesEvents.class, new MyEventReceiver());
+
+...
+
+cookie.close(); // terminate subscription
+</pre>
+	<p>
+		Because of the reference counting in COM, you must explicitly perform unsubscription by using the <tt>close</tt> method, or otherwise both COM and Java objects will leak.
+
+
+<h3>Event and Thread</h3>
+<p>
+	If your thread X invokes a COM method, which in turn fires an event Y, then the thread that executes the event method Y will not be X, but a thread that com4j maintains internally. So the acess to thread local resources need to be done carefully. But note that there's no need of synchronization --- thread X blocks until your event code returns.
+<p>
+	For some other kinds of events (such as iTunes playerStart/playerStop events), they happen without you calling into COM first. Those events are delivered in truly asynchronous ways, so you will need synchronization.
+</body>
+</html>

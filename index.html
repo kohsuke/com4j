@@ -1,0 +1,83 @@
+<html>
+<head>
+	<title>com4j</title>
+	<style>
+		a.dynamic {
+			text-decoration: none;
+			color: black;
+		}
+		a.dynamic:visited {
+			color: black;
+		}
+		a.dynamic:hover {
+			text-decoration: underline;
+		}
+	</style>
+</head>
+<body>
+	<div style="display:none">
+		<div style="border: 1px solid black; padding: 1em; float: right; font-size: 1.5em; background-color: rgb(255, 255, 240);" id="downloadBox">
+		  <a href="/servlets/ProjectDocumentList" class=dynamic>
+		  <img src="folder.gif" style="vertical-align: middle;" border="0">Download
+		  </a>
+		  <center>
+			  <a href="whatsnew.html" style="font-size:0.5em" class=dynamic>(changelog)</a>
+			</center>
+		</div>
+	</div>
+	<script>
+	  var box = document.getElementById("projecthome");
+	  var div = document.getElementById("downloadBox");
+	  box.insertBefore(div,box.firstChild);
+	</script>
+	<p>
+		This project aims to develop:
+	<ol>
+		<li>
+			A Java library that allows Java applications to seemlessly interoperate with Microsoft Component Object Model.
+		<li>
+			A Java tool that imports a COM type library and generates the Java definitions of that library.
+	</ol>
+	<p>
+		The goal of the project is to provide a better integration of Java and COM.
+	
+<h3>Feature Highlights</h3>
+	<ol>
+		<li>
+			Takes advantages of J2SE 1.5 features to improve usability.
+		<li>
+			Binds directly to the vtable interface (not <tt>IDispatch</tt>) for improved performance and broeader support for more COM interfaces.
+	</ol>
+	
+<h3>Downloadables</h3>
+	<p>
+		Download the distribution from <a href="/servlets/ProjectDocumentList">here</a>.
+	
+<h3>Documentations</h3>
+<h4>Introductory</h4>
+	<ol>
+		<li>
+			<a href="tutorial.html">Quick Introduction</a>
+		<li>
+			<a href="runtime-semantics.html">User's Guide --- the runtime semantics of com4j</a>
+		<li>
+			<a href="deployment.html">Distributing your applications that use com4j</a>
+		<li>
+			<a href="event.html">Using COM events with com4j</a>
+		<li>
+			<a href="ant.html">Using tlbimp from Ant</a>
+	</ol>
+<h4>Advanced</h4>
+	<ol>
+		<li>
+			<a href="annotations.html">com4j annotation guide</a>
+		<li>
+			<a href="gc.html">Garbage collection and reference counting</a>
+	</ol>
+
+<h3>Status</h3>
+	<p>
+		The project is in active development. Help wanted! Contact the project owner if you are interested.
+	
+</body>
+</html>

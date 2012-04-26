@@ -1,0 +1,47 @@
+<html>
+<head>
+	<title>com4j deployment</title>
+	<meta http-equiv="Content-type" value="text/html; charset=iso-8859-1" />
+	<style>
+		pre.cmd {
+			background-color: black;
+			color: white;
+			font-weight: bold;
+			margin-left: 2em;
+			padding: 0.5em;
+		}
+		
+		pre.code {
+			border: black solid 1px;
+			background-color: rgb(240,240,255);
+			color: navy;
+			font-weight: bold;
+			margin-left: 2em;
+			padding: 0.5em;
+		}
+		pre.code .annotation {
+			color: gray;
+		}
+	</style>
+</head>
+<body>
+<h1>com4j deployment</h1>
+
+	<p>
+		<tt>com4j.jar</tt> includes <tt>com4j.dll</tt> inside, and at the runtime it does the right thing to load it. Because of this, you normally just have to bundle <tt>com4j.jar</tt> with your application. The only downside of this convenient approach is a sligh runtime performance hit.
+
+	<p>
+		Alternatively, you can either:
+	<ol>
+		<li>
+			Place <tt>com4j.dll</tt> in the same directory as <tt>com4j.jar</tt>.
+		<li>
+			Set the system property <tt>java.library.path</tt> to include the directory where <tt>com4j.dll</tt> resides. This needs to be done when you launch a JVM, because the value of the property is cached by class loaders.
+	</ol>
+		
+
+<h3>Java Web Start</h3>
+	<p>
+		Applications that use com4j can be deployed by using Java Web Start. See the jnlp sample in the distribution for details. If you have <a href="http://java.sun.com/products/javawebstart/">Java Web Start</a> software installed, you can try <a href="/nonav/demo/com4j-jnlp-demo.jnlp">this demo</a>.
+</body>
+</html>

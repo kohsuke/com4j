@@ -1,0 +1,105 @@
+<html>
+<head>
+	<title>com4j tutorial</title>
+	<meta http-equiv="Content-type" value="text/html; charset=iso-8859-1" />
+	<style>
+		pre.cmd {
+			background-color: black;
+			color: white;
+			font-weight: bold;
+			margin-left: 2em;
+			padding: 0.5em;
+		}
+		
+		pre.code {
+			border: black solid 1px;
+			background-color: rgb(240,240,255);
+			color: navy;
+			font-weight: bold;
+			margin-left: 2em;
+			padding: 0.5em;
+		}
+		pre.code .annotation {
+			color: gray;
+		}
+	</style>
+</head>
+<body>
+<h1>com4j tutorial</h1>
+
+
+
+<h3>Generate Type Definitions</h3>
+	<p>
+		Usually, the first step of using com4j is to generate Java type definitions from a COM type library.
+		COM type libraries are often found in .ocx, .dll, .exe, and/or .tlb files. I still don't know how to locate type libraries for a given COM library other than guessing the file by using <a href="http://www.microsoft.com/downloads/details.aspx?FamilyID=5233b70d-d9b2-4cb5-aeb6-45664be858b6&displaylang=en">OleView</a>.
+	<p>
+		In this tutorial, we use <tt>%WINDIR%\system32\wshom.ocx</tt>, which contains a type library for the <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/script56/html/wsoriWindowsScriptHost.asp">Windows Scripting Host</a>. This type library should be available in all the modern flavors of Windows.
+	<p>
+		To generate Java definitions from a type library, do as follows:
+<pre class="cmd">
+> java -jar tlbimp.jar -o wsh -p test.wsh %WINDIR%\system32\wshom.ocx
+</pre>
+	<p>
+		This should generate Java definitions in the <tt>test.wsh</tt> Java package and place all the files under the wsh directory.
+
+
+
+<h3>Learn What's Generated</h3>
+	<p>
+		First, take a look at the generated <tt>ClassFactory</tt> class. This class contains a series of <tt>create***</tt> methods that are used to create new instances of COM objects.
+<pre class=code>
+public abstract class ClassFactory {
+    public static IFileSystem3 createFileSystemObject() {
+        return COM4J.createInstance( IFileSystem3.class, "{0D43FE01-F093-11CF-8940-00A0C9054228}" );
+    }
+    ...
+}
+</pre>
+	<p>
+		Calling these methods causes an instanciation of a COM object, and returns a reference to its wrapper.
+	<p>
+		<tt>tlbimp</tt> also generates one Java interface for each interface definition found in a type library. Typically they look like the following:
+<pre class=code>
+<span class=annotation>@IID("{2A0B9D10-4B87-11D3-A97A-00104B365C9F}")</span>
+public interface IFileSystem3 extends IFileSystem {
+    <span class=annotation>@VTID(32)</span>
+    ITextStream getStandardStream(
+        StandardStreamTypes standardStreamType,
+        boolean unicode);
+
+    <span class=annotation>@VTID(33)</span>
+    java.lang.String getFileVersion(
+        java.lang.String fileName);
+}
+</pre>
+	<p>
+		When you are just trying to use definitions generated from <tt>tlbimp</tt>, you can ignore all those annotations. Those are used to configure the com4j runtime to do the bridging correctly.
+		
+		These interfaces are implemented by the com4j COM object wrapper, and calling a method on this interface causes the runtime to call the corresponding COM method.
+	<p>
+		Additionally, <tt>tlbimp</tt> generates enumerations when a type library defines them.
+<pre class=code>
+public enum StandardStreamTypes {
+    StdIn, // 0
+    StdOut, // 1
+    StdErr, // 2
+}
+</pre>
+
+
+
+<h3>Using Generated Code</h3>
+	<p>
+		Using the generated code is simple. The following code illustrates how you can use the <tt>IFileSystem3.getFileVersion</tt> method to obtain the version string of a file.
+<pre class=code>
+public class Main {
+  public static void main(String[] args) {
+    IFileSystem3 fs = ClassFactory.createFileSystemObject();
+    for( String file : args )
+      System.out.println(fs.getFileVersion(file));
+  }
+}
+</pre>
+</body>
+</html>
