@@ -6,7 +6,7 @@ JNIEXPORT void JNICALL Java_com4j_Win32Lock_closeHandle( JNIEnv* env, jclass _, 
 	::CloseHandle(reinterpret_cast<HANDLE>(handle));
 }
 
-JNIEXPORT jint JNICALL Java_com4j_Win32Lock_createEvent( JNIEnv* env , jclass _) {
+JNIEXPORT jlong JNICALL Java_com4j_Win32Lock_createEvent( JNIEnv* env , jclass _) {
 	HANDLE h = ::CreateEvent(NULL,FALSE,FALSE,NULL);
 	return reinterpret_cast<jlong>(h);
 }
