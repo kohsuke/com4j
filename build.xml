@@ -65,7 +65,7 @@
     <ant dir="build/dist/samples" target="compile"/>
     
     <zip file="build/com4j-${DSTAMP}.zip">
-      <fileset dir="../www" includes="LICENSE.txt" />
+      <fileset dir="." includes="LICENSE.txt" />
       <fileset dir="build" includes="javadoc/**/*"/>
       <fileset dir="build" includes="src.zip"/>
       <fileset dir="build/dist" includes="**/*"/>
