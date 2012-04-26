@@ -21,23 +21,40 @@ final class Wrapper implements InvocationHandler, Com4jObject {
      */
     private String name;
 
+    private static final Method[] DISPOSE_METHODS = new Method[2];
+    static {
+        try {
+            DISPOSE_METHODS[0] = Wrapper.class.getDeclaredMethod("dispose");
+            DISPOSE_METHODS[1] = Com4jObject.class.getDeclaredMethod("dispose");
+        } catch (SecurityException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     /**
      * interface pointer.
      */
     private final long ptr;
     
-    private boolean isDisposed = false;
+    private volatile boolean isDisposed = false;
 
     /**
      * Cached hash code. The value of {@code IUnknown*}.
      */
-    private long hashCode=0;
+    private volatile long hashCode=0;
 
     /**
      * All the invocation to the wrapper COM object must go through this thread.
      */
-    final ComThread thread;
+    private final ComThread thread;
+    
+    /**
+     * A phantom reference that owns the native pointer.  When this ref is enqueue,
+     * the com thread will release() the native pointer.
+     */
+    final NativePointerPhantomReference ref;
 
     /**
      * Cached of {@link ComMethod} keyed by the method declaration.
@@ -56,6 +73,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
 
         this.ptr = ptr;
         thread = ComThread.get();
+        ref = new NativePointerPhantomReference(this, thread.collectableObjects, ptr);
         thread.addLiveObject(this);
     }
 
@@ -111,18 +129,10 @@ final class Wrapper implements InvocationHandler, Com4jObject {
       return thread;
     }
 
-    /**
-     * Adds this wrapper to the freeList of the thread
-     */
-    protected void finalize() throws Throwable {
-        this.dispose();
-        super.finalize();
-    }
-
     private static final Object[] EMPTY_ARRAY = new Object[0];
 
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if(isDisposed)
+        if(isDisposed && method != DISPOSE_METHODS[0] && method != DISPOSE_METHODS[1])
             throw new IllegalStateException("COM object is already disposed");
         if(args==null)  // this makes the processing easier
             args = EMPTY_ARRAY;
@@ -201,24 +211,10 @@ final class Wrapper implements InvocationHandler, Com4jObject {
      */
     public void dispose() {
         if(!isDisposed) {
-            new Task<Void>() {
-                public Void call() {
-                    dispose0();
-                    return null;
-                }
-            }.execute(thread); // Issue 39 fixed.
-        }
-    }
-
-    /**
-     * Called from {@link ComThread} to actually call IUnknown::Release.
-     * If this Wrapper was already disposed no action is made.
-     */
-    void dispose0() {
-        if(!isDisposed){
-          Native.release(ptr);
-          isDisposed = true;
-          thread.removeLiveObject(this);
+            isDisposed = true;
+            ref.enqueue();
+            ref.clear();
+            thread.activate();
         }
     }
 
