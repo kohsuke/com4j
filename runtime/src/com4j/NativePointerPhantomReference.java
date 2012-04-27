@@ -11,7 +11,7 @@ import java.lang.ref.ReferenceQueue;
  *
  */
 public class NativePointerPhantomReference extends PhantomReference<Wrapper> {
-	private final long ptr;
+	private long ptr;
 	
 	public NativePointerPhantomReference(Wrapper wrapper, ReferenceQueue<Wrapper> queue, long ptr) {
 		super(wrapper, queue);
@@ -19,6 +19,9 @@ public class NativePointerPhantomReference extends PhantomReference<Wrapper> {
 	}
 	
 	void releaseNative() {
-		Native.release(ptr);
+        if (ptr!=0) {
+    		Native.release(ptr);
+            ptr = 0;
+        }
 	}
 }
