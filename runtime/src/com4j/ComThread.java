@@ -143,36 +143,30 @@ public final class ComThread extends Thread {
             lock.suspend(GARBAGE_COLLECTION_INTERVAL);
 
             synchronized(this) {
-            	// dispose unused objects if any
-            	NativePointerPhantomReference toCollect = null;
-                while((toCollect = (NativePointerPhantomReference)collectableObjects.poll()) != null) {
-                    liveComObjects.remove(toCollect);
-                    toCollect.releaseNative();
-                    toCollect.clear();
-                }
+            	//Clean up any com objects that need releasing
+            	collectGarbage();
+            	
                 // do any scheduled tasks that need to be done
                 while(taskListHead != null) {
                     Task<?> task = taskListHead;
                     taskListHead = task.next;
                     task.invoke();
+                    
+                    //Maybe the task produced some garbage...clean that up
+                    collectGarbage();
                 }
                 taskListTail = null; // taskListHead is null after the loop, so the tail should be null as well.
             }
         }
 
-        //Release any pending references (needed in the die()) case
-        NativePointerPhantomReference toCollect = null;
-        while((toCollect = (NativePointerPhantomReference)collectableObjects.poll()) != null) {
-            liveComObjects.remove(toCollect);
-            toCollect.releaseNative();
-            toCollect.clear();
-        }
-
+        //Clean up any left over references
+        collectGarbage();
+        
         //And clobber any live COM objects that have not been dispose()'d to avoid
         //leaking these objects on die
         for(NativePointerPhantomReference ref : liveComObjects) {
-        	ref.releaseNative();
         	ref.clear();
+        	ref.releaseNative();
         }
         liveComObjects.clear();
         
@@ -181,6 +175,16 @@ public final class ComThread extends Thread {
 
         Native.coUninitialize();
     }
+
+	private void collectGarbage() {
+		// dispose unused objects if any
+		NativePointerPhantomReference toCollect = null;
+		while((toCollect = (NativePointerPhantomReference)collectableObjects.poll()) != null) {
+		    liveComObjects.remove(toCollect);
+		    toCollect.clear();
+		    toCollect.releaseNative();
+		}
+	}
 
     /**
      * Executes a {@link Task} in a {@link ComThread}
@@ -245,15 +249,6 @@ public final class ComThread extends Thread {
             for( int i=listeners.size()-1; i>=0; i-- )
                 listeners.get(i).onNewObject(r);
         }
-    }
-
-    /**
-     * Decrements the live object count of this {@link ComThread}
-     */
-    synchronized void removeLiveObject(Com4jObject object){
-    	if(object instanceof Wrapper) {
-    		liveComObjects.remove(((Wrapper)object).ref);
-    	}
     }
     
     /**
@@ -320,18 +315,6 @@ public final class ComThread extends Thread {
 
     public static void flushFreeList() {
         System.gc();
-        new DummyTask().execute();
-    }
-
-    /**
-     * A task doing nothing.
-     * @author scm
-     */
-    private static class DummyTask extends Task<Void>
-    {
-        @Override
-        public Void call() {
-            return null;
-        }
+        ComThread.get().activate();
     }
 }
