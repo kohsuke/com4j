@@ -12,6 +12,17 @@ import java.util.WeakHashMap;
 /**
  * {@link InvocationHandler} that backs up a COM object.
  *
+ * <h2>Garbage Collection and IUnknown::Release</h2>
+ * <p>
+ * {@link Wrapper} holds on to a COM pointer, which needs to be released eventually, before the object
+ * gets recycled. We do this by using phantom references.
+ *
+ * <p>
+ * Every wrapper owns {@link NativePointerPhantomReference} to itself. We'll have this reference queued
+ * to {@link ComThread#collectableObjects} when GC determines that the object is no longer needed,
+ * or we'll explicitly enqueue it when {@link #dispose()} is called. {@link ComThread} will periodically
+ * wake up and go through the queue to release interface pointers.
+ *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  * @author Michael Schnell (ScM, (C) 2008, 2009, Michael-Schnell@gmx.de)
  */

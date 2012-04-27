@@ -6,9 +6,8 @@ import java.lang.ref.ReferenceQueue;
 /**
  * A phantom reference that owns the pointer to a native com object.  When this
  * reference is enqueued, the ComThread will release the native reference.
- * 
- * @author mpoindexter
  *
+ * @author mpoindexter
  */
 public class NativePointerPhantomReference extends PhantomReference<Wrapper> {
 	private long ptr;

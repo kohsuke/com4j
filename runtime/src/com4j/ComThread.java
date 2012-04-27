@@ -81,6 +81,10 @@ public final class ComThread extends Thread {
      * The set of live COM objects.
      */
     private Set<NativePointerPhantomReference> liveComObjects = new HashSet<NativePointerPhantomReference>();
+
+    /**
+     * Keeps track of wrappers that should be IUnknown::release-d.
+     */
     final ReferenceQueue<Wrapper> collectableObjects = new ReferenceQueue<Wrapper>();
     
     /**
@@ -159,7 +163,6 @@ public final class ComThread extends Thread {
             }
         }
 
-        //Clean up any left over references
         collectGarbage();
         
         //And clobber any live COM objects that have not been dispose()'d to avoid
@@ -176,9 +179,12 @@ public final class ComThread extends Thread {
         Native.coUninitialize();
     }
 
+    /**
+     * Cleans up any left over references
+     */
 	private void collectGarbage() {
 		// dispose unused objects if any
-		NativePointerPhantomReference toCollect = null;
+		NativePointerPhantomReference toCollect;
 		while((toCollect = (NativePointerPhantomReference)collectableObjects.poll()) != null) {
 		    liveComObjects.remove(toCollect);
 		    toCollect.clear();
