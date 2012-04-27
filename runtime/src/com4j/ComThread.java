@@ -164,6 +164,9 @@ public final class ComThread extends Thread {
           }
         }
 
+        //Kill the event handle we are holding in the lock.
+        lock.dispose();
+
         Native.coUninitialize();
     }
 
