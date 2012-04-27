@@ -1,98 +1,188 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
 <html>
-<head>
-	<title>com4j runtime semantics</title>
-	<meta http-equiv="Content-type" value="text/html; charset=iso-8859-1" />
-	<style>
-		pre.cmd {
-			background-color: black;
-			color: white;
-			font-weight: bold;
-			margin-left: 2em;
-			padding: 0.5em;
-		}
+  <head>
+    <title>com4j - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/1024px.css");
+      @import url("./css/site.css");
+    </style>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body>
+    <div id="wrap2"><div id="wrap">
+    <div id="header">
+      <p id="toplinks">Skip to: <a href="#content">Content</a> | <a href="#sidebar">Navigation</a> | <a href="#footer">Footer</a></p>
 		
-		pre.code {
-			border: black solid 1px;
-			background-color: rgb(240,240,255);
-			color: navy;
-			font-weight: bold;
-			margin-left: 2em;
-			padding: 0.5em;
-		}
-		pre.code .annotation {
-			color: gray;
-		}
-		
-		pre.com {
-			border: black solid 1px;
-			background-color: rgb(240,255,240);
-			color: darkgreen;
-			font-weight: bold;
-			margin-left: 2em;
-			padding: 0.5em;
-		}
-	</style>
-</head>
-<body>
-<h1>com4j Runtime Semantics</h1>
+            <h1 id="bannerLeft">
+          <a href="">
+    
+            com4j
+    
+            </a>
+        </h1>
+                
+      <p id="slogan">com4j</p>
+    </div>
+    <div id="breadcrumbs">
+      <div class="xright">  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
 
-	<p>
-		This document explains things you should know when you use com4j.
+    <div id="sidebar">
+      <div id="navcolumn">
+              <h2>
+          com4j
+        </h2><ul>
+              
+    <li class="none">
+              <a href="index.html">Introduction</a>
+        </li>
+              
+    <li class="none">
+              <a href="https://github.com/kohsuke/com4j/downloads">Download</a>
+        </li>
+              
+    <li class="none">
+              <a href="https://github.com/kohsuke/com4j">Source code</a>
+        </li>
+              
+    <li class="none">
+              <a href="http://java.net/jira/browse/COM4J">Bugs</a>
+        </li>
+          </ul>
+      <h2>
+          References
+        </h2><ul>
+              
+    <li class="none">
+              <a href="apidocs/index.html">Javadoc</a>
+        </li>
+          </ul>
+      <h2>
+          Project Documentation
+        </h2><ul>
+              
+                
+              
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+              
+        <li class="collapsed">
+              <a href="project-info.html">Project Information</a>
+              </li>
+          </ul>
+        </div>
+    </div>
+    <div id="content">
+      <div id="contentBox">
+        <h1>com4j Runtime Semantics</h1>
 
+<p>This document explains things you should know when you use com4j.</p>
 
-<h3>Who Implements Those Interfaces?</h3>
-	<p>
-		At runtime, com4j automatically generates the implementation code for interfaces with com4j annotations (see <a href="http://java.sun.com/j2se/1.5/docs/api/java/lang/reflect/Proxy.html">this</a> for more info). We call them "proxies" from now on. Each proxy holds a reference to a COM interface. As illustrated in the following picture, two proxies may have references to the same interface of the same object, or two may have different interfaces of the same object.
-	<p>
-		Because of this, you may not use an expression like <tt>proxy1==proxy2</tt> to check if two proxies refer to the same COM object. For that you have to write <tt>proxy1.equals(proxy2)</tt>.
-	<center>
-		<img src="proxies.png"/>
-	</center>
-	
-<h3>COM Error and Exception</h3>
-	<p>
-		Consider the following COM method:
-<pre class=com>
-[helpstring("get the child object.")]
+<h2>Who Implements Those Interfaces?</h2>
+
+<p>At runtime, com4j automatically generates the implementation code for
+interfaces with com4j annotations (see <a href="http://java.sun.com/j2se/1.5/docs/api/java/lang/reflect/Proxy.html">this</a> for more info).
+We call them "proxies" from now on. Each proxy holds a reference to a COM interface.
+As illustrated in the following picture, two proxies may have references to the same
+interface of the same object, or two may have different interfaces of the same object.</p>
+
+<p>Because of this, you may not use an expression like <code>proxy1==proxy2</code> to check
+if two proxies refer to the same COM object. For that you have to write <code>proxy1.equals(proxy2)</code>.</p>
+
+<p><img src="proxies.png" alt="proxies" title="COM4J Proxies" /></p>
+
+<h2>COM Error and Exception</h2>
+
+<p>Consider the following COM method:</p>
+
+<pre><code>[helpstring("get the child object.")]
 HRESULT GetItem( [int] int index, [out,retval] IFoo** ppItem );
-</pre>
-	<p>
-		A COM method not just returns a "conceptual" return value (<tt>IFoo*</tt>) but also returns a HRESULT. <tt>tlbimp</tt> always hide HRESULT from Java, thus the above method is bound to:
-<pre class=code>
-IFoo GetItem( int index );
-</pre>
-	<p>
-		When the COM method invocation returns a failure HRESULT, the com4j runtime throws unchecked ComException.
-	<p>
-		This makes it impossible for the caller to know the actual HRESULT success code returned from the method, whereas sometimes a COM method actually uses different success code (for example, use S_OK and S_FALSE as a boolean function). See <a href="annotations.html">this document</a> to learn how you can map the HRESULT as the return value from the Java method.
+</code></pre>
 
+<p>A COM method not just returns a "conceptual" return value (<code>IFoo*</code>) but also returns a <code>HRESULT</code>.
+<code>tlbimp</code> always hide HRESULT from Java, thus the above method is bound to:</p>
 
-<h3>Casting and QueryInterface</h3>
-<p>
-	When your Java code has a reference to <tt>IFoo</tt> and you need to get <tt>IBar</tt> of the same COM object, you have to use the <tt>queryInterface</tt> method as follows:
-<pre class=code>
-IBar bar = fooObject.queryInterface(IBar.class);
-</pre>
-<p>
-	In other words, you cannot use a normal cast operator like <tt>(IBar)fooObject</tt>
+<pre><code>IFoo GetItem( int index );
+</code></pre>
 
+<p>When the COM method invocation returns a failure <code>HRESULT</code>, the com4j runtime throws unchecked <code>ComException</code>.</p>
 
-<h3>Conclusion</h3>
-<p>
-	Other than those considerations listed above, you can pretty much use all those COM objects just like ordinary Java objects. Interested readers are encouraged to go to other available documents for a deeper understanding of how com4j works.
+<p>This makes it impossible for the caller to know the actual HRESULT success code
+returned from the method, whereas sometimes a COM method actually uses different success code
+(for example, use <code>S_OK</code> and <code>S_FALSE</code> as a boolean function). See <a href="annotations.html">this document</a> to
+learn how you can map the HRESULT as the return value from the Java method.</p>
 
-<!--
-For example,
-<pre class=com>
-[helpstring("count the items and returns it, or return a failure code.")]
-HRESULT CountItems();
-</pre>
-	<p>
-		If you want to access the HRESULT return value, use <tt>NativeType.HRESULT</tt> as follows, which returns the HRESULT value as a Java int:
-<pre class=code>
-@ReturnValue(type=NativeType.HRESULT)
-int countItems();
-</pre>
--->
-</body>
+<h2>Casting and QueryInterface</h2>
+
+<p>When your Java code has a reference to <code>IFoo</code> and you need to get <code>IBar</code> of the same COM object,
+you have to use the <code>queryInterface</code> method as follows:</p>
+
+<pre><code>IBar bar = fooObject.queryInterface(IBar.class);
+</code></pre>
+
+<p>In other words, you cannot use a normal cast operator like <code>(IBar)fooObject</code></p>
+
+<h2>Conclusion</h2>
+
+<p>Other than those considerations listed above, you can pretty much use all those
+COM objects just like ordinary Java objects. Interested readers are encouraged to
+go to other available documents for a deeper understanding of how com4j works.</p>
+
+      </div>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2012
+    
+          <a href="http://kohsuke.org/">Kohsuke Kawaguchi</a> and other contributors
+          
+  
+
+  
+  
+  &nbsp;| Last Published: 04/27/2012
+  &nbsp;| Version: 1.0-SNAPSHOT
+</div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    </div></div>
+  </body>
 </html>

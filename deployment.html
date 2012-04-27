@@ -1,47 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
 <html>
-<head>
-	<title>com4j deployment</title>
-	<meta http-equiv="Content-type" value="text/html; charset=iso-8859-1" />
-	<style>
-		pre.cmd {
-			background-color: black;
-			color: white;
-			font-weight: bold;
-			margin-left: 2em;
-			padding: 0.5em;
-		}
+  <head>
+    <title>com4j - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/1024px.css");
+      @import url("./css/site.css");
+    </style>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body>
+    <div id="wrap2"><div id="wrap">
+    <div id="header">
+      <p id="toplinks">Skip to: <a href="#content">Content</a> | <a href="#sidebar">Navigation</a> | <a href="#footer">Footer</a></p>
 		
-		pre.code {
-			border: black solid 1px;
-			background-color: rgb(240,240,255);
-			color: navy;
-			font-weight: bold;
-			margin-left: 2em;
-			padding: 0.5em;
-		}
-		pre.code .annotation {
-			color: gray;
-		}
-	</style>
-</head>
-<body>
-<h1>com4j deployment</h1>
+            <h1 id="bannerLeft">
+          <a href="">
+    
+            com4j
+    
+            </a>
+        </h1>
+                
+      <p id="slogan">com4j</p>
+    </div>
+    <div id="breadcrumbs">
+      <div class="xright">  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
 
-	<p>
-		<tt>com4j.jar</tt> includes <tt>com4j.dll</tt> inside, and at the runtime it does the right thing to load it. Because of this, you normally just have to bundle <tt>com4j.jar</tt> with your application. The only downside of this convenient approach is a sligh runtime performance hit.
+    <div id="sidebar">
+      <div id="navcolumn">
+              <h2>
+          com4j
+        </h2><ul>
+              
+    <li class="none">
+              <a href="index.html">Introduction</a>
+        </li>
+              
+    <li class="none">
+              <a href="https://github.com/kohsuke/com4j/downloads">Download</a>
+        </li>
+              
+    <li class="none">
+              <a href="https://github.com/kohsuke/com4j">Source code</a>
+        </li>
+              
+    <li class="none">
+              <a href="http://java.net/jira/browse/COM4J">Bugs</a>
+        </li>
+          </ul>
+      <h2>
+          References
+        </h2><ul>
+              
+    <li class="none">
+              <a href="apidocs/index.html">Javadoc</a>
+        </li>
+          </ul>
+      <h2>
+          Project Documentation
+        </h2><ul>
+              
+                
+              
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+              
+        <li class="collapsed">
+              <a href="project-info.html">Project Information</a>
+              </li>
+          </ul>
+        </div>
+    </div>
+    <div id="content">
+      <div id="contentBox">
+        <h1>com4j deployment</h1>
 
-	<p>
-		Alternatively, you can either:
-	<ol>
-		<li>
-			Place <tt>com4j.dll</tt> in the same directory as <tt>com4j.jar</tt>.
-		<li>
-			Set the system property <tt>java.library.path</tt> to include the directory where <tt>com4j.dll</tt> resides. This needs to be done when you launch a JVM, because the value of the property is cached by class loaders.
-	</ol>
-		
+<p><code>com4j.jar</code> includes <code>com4j-x86.dll</code> and <code>com4j-x64.jar</code> inside,
+and at the runtime it does the right thing to load it.
+Because of this, you normally just have to bundle <code>com4j.jar</code> with your application.
+The only downside of this convenient approach is a sligh runtime performance hit.</p>
 
-<h3>Java Web Start</h3>
-	<p>
-		Applications that use com4j can be deployed by using Java Web Start. See the jnlp sample in the distribution for details. If you have <a href="http://java.sun.com/products/javawebstart/">Java Web Start</a> software installed, you can try <a href="/nonav/demo/com4j-jnlp-demo.jnlp">this demo</a>.
-</body>
+<p>Alternatively, you can either:</p>
+
+<ol>
+<li>Place <code>com4j*.dll</code> in the same directory as <code>com4j.jar</code>.</li>
+<li>Set the system property <code>java.library.path</code> to include the directory
+where <code>com4j*.dll</code> resides. This needs to be done when you launch a JVM,
+because the value of the property is cached by class loaders.</li>
+</ol>
+
+<p>Java Web Start##</p>
+
+<p>Applications that use com4j can be deployed by using Java Web Start.
+See the jnlp sample in the distribution for details.
+If you have <a href="http://java.sun.com/products/javawebstart/">Java Web Start</a> software installed,
+you can try <a href="demo/com4j-jnlp-demo.jnlp">this demo</a>.</p>
+
+      </div>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2012
+    
+          <a href="http://kohsuke.org/">Kohsuke Kawaguchi</a> and other contributors
+          
+  
+
+  
+  
+  &nbsp;| Last Published: 04/27/2012
+  &nbsp;| Version: 1.0-SNAPSHOT
+</div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    </div></div>
+  </body>
 </html>

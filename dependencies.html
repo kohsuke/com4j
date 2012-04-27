@@ -11,7 +11,7 @@
 
 <html>
   <head>
-    <title>com4j - </title>
+    <title>com4j - Project Dependencies</title>
     <style type="text/css" media="all">
       @import url("./css/maven-base.css");
       @import url("./css/maven-theme.css");
@@ -82,7 +82,7 @@
             
       
             
-      
+            
             
       
             
@@ -102,72 +102,65 @@
             
       
               
-        <li class="collapsed">
+            <li class="expanded">
               <a href="project-info.html">Project Information</a>
-              </li>
+                <ul>
+                  
+    <li class="none">
+              <a href="index.html">About</a>
+        </li>
+                  
+    <li class="none">
+              <a href="integration.html">Continuous Integration</a>
+        </li>
+                  
+    <li class="none">
+              <strong>Dependencies</strong>
+        </li>
+                  
+    <li class="none">
+              <a href="distribution-management.html">Distribution Management</a>
+        </li>
+                  
+    <li class="none">
+              <a href="issue-tracking.html">Issue Tracking</a>
+        </li>
+                  
+    <li class="none">
+              <a href="mail-lists.html">Mailing Lists</a>
+        </li>
+                  
+    <li class="none">
+              <a href="plugin-management.html">Plugin Management</a>
+        </li>
+                  
+    <li class="none">
+              <a href="license.html">Project License</a>
+        </li>
+                  
+    <li class="none">
+              <a href="plugins.html">Project Plugins</a>
+        </li>
+                  
+    <li class="none">
+              <a href="project-summary.html">Project Summary</a>
+        </li>
+                  
+    <li class="none">
+              <a href="team-list.html">Project Team</a>
+        </li>
+                  
+    <li class="none">
+              <a href="source-repository.html">Source Repository</a>
+        </li>
+              </ul>
+        </li>
           </ul>
         </div>
     </div>
     <div id="content">
       <div id="contentBox">
-        <h1>com4j Event Handling</h1>
-
-<p>This document explains how you can subscribe to COM events.</p>
-
-<h2>Event Interface Definition</h2>
-
-<p>To subscribe to COM events, you first need an interface that defines the IID of the event interface,
-plus event methods that you'd like to subscribe, such as this:</p>
-
-<pre><code>@IID("{5846EB78-317E-4B6F-B0C3-11EE8C8FEEF2}")
-public interface _IiTunesEvents {
-    /**
-     * Fired when a database change occurs.
-     */
-    @DISPID(1)
-    void onDatabaseChangedEvent(Object deletedObjectIDs, Object changedObjectIDs);
-
-    /**
-     * Fired when a track has started playing.
-     */
-    @DISPID(2)
-    void onPlayerPlayEvent(Object iTrack);
-}
-</code></pre>
-
-<p>An event interface does not have to list all the event methods; if you omit some methods, those events
-will be simply ignored. Also, technically the event interface can be a class &mdash; the only thing
-required is the <code>@IID</code> annotation and <code>@DISPID</code> that designates which are event methods.</p>
-
-<p>To make it easy to subscribe to COM events, tlbimp generate a class with empty methods.
-But you can also choose to write it manually.</p>
-
-<h2>Subscribe/Unsubscribe to events</h2>
-
-<p>You can subscribe to a COM object by using the following code:</p>
-
-<pre><code>Com4jObject comObject = ...; // more likely it's an interface derived from Com4jObject
-EventCookie cookie = comObject.advise(_IiTunesEvents.class, new MyEventReceiver());
-
-...
-
-cookie.close(); // terminate subscription
-</code></pre>
-
-<p>Because of the reference counting in COM, you must explicitly perform unsubscription
-by using the <code>close</code> method, or otherwise both COM and Java objects will leak.</p>
-
-<h2>Event and Thread</h2>
-
-<p>If your thread X invokes a COM method, which in turn fires an event Y, then the thread
-that executes the event method Y will not be X, but a thread that com4j maintains internally.
-So the acess to thread local resources need to be done carefully.
-But note that there's no need of synchronization --- thread X blocks until your event code returns.</p>
-
-<p>For some other kinds of events (such as iTunes playerStart/playerStop events), they
-happen without you calling into COM first. Those events are delivered in
-truly asynchronous ways, so you will need synchronization.</p>
-
+        <a name="Project_Dependencies"></a><div class="section"><h2>Project Dependencies<a name="Project_Dependencies"></a></h2><p>There are no dependencies for this project. It is a standalone application that does not depend on any other project.</p></div>
       </div>
     </div>
     <div id="footer">

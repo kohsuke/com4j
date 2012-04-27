@@ -1,157 +1,257 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
 <html>
-<head>
-	<title>com4j annotation guide</title>
-	<meta http-equiv="Content-type" value="text/html; charset=iso-8859-1" />
-	<style>
-		pre.cmd {
-			background-color: black;
-			color: white;
-			font-weight: bold;
-			margin-left: 2em;
-			padding: 0.5em;
-		}
+  <head>
+    <title>com4j - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/1024px.css");
+      @import url("./css/site.css");
+    </style>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body>
+    <div id="wrap2"><div id="wrap">
+    <div id="header">
+      <p id="toplinks">Skip to: <a href="#content">Content</a> | <a href="#sidebar">Navigation</a> | <a href="#footer">Footer</a></p>
 		
-		pre.code {
-			border: black solid 1px;
-			background-color: rgb(240,240,255);
-			color: navy;
-			font-weight: bold;
-			margin-left: 2em;
-			padding: 0.5em;
-		}
-		pre.code .annotation {
-			color: gray;
-		}
-		
-		pre.com {
-			border: black solid 1px;
-			background-color: rgb(240,255,240);
-			color: darkgreen;
-			font-weight: bold;
-			margin-left: 2em;
-			padding: 0.5em;
-		}
-	</style>
-</head>
-<body>
-<h1>com4j Annotation Guide</h1>
+            <h1 id="bannerLeft">
+          <a href="">
+    
+            com4j
+    
+            </a>
+        </h1>
+                
+      <p id="slogan">com4j</p>
+    </div>
+    <div id="breadcrumbs">
+      <div class="xright">  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
 
-	<p>
-		This document explains the details of how the runtime bridges a Java method invocation into a COM method invocation, and how one can use annotations to control this process.
-	
-	<p>
-		In the most general form, a Java method can be annotated as follows:
+    <div id="sidebar">
+      <div id="navcolumn">
+              <h2>
+          com4j
+        </h2><ul>
+              
+    <li class="none">
+              <a href="index.html">Introduction</a>
+        </li>
+              
+    <li class="none">
+              <a href="https://github.com/kohsuke/com4j/downloads">Download</a>
+        </li>
+              
+    <li class="none">
+              <a href="https://github.com/kohsuke/com4j">Source code</a>
+        </li>
+              
+    <li class="none">
+              <a href="http://java.net/jira/browse/COM4J">Bugs</a>
+        </li>
+          </ul>
+      <h2>
+          References
+        </h2><ul>
+              
+    <li class="none">
+              <a href="apidocs/index.html">Javadoc</a>
+        </li>
+          </ul>
+      <h2>
+          Project Documentation
+        </h2><ul>
+              
+                
+              
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+              
+        <li class="collapsed">
+              <a href="project-info.html">Project Information</a>
+              </li>
+          </ul>
+        </div>
+    </div>
+    <div id="content">
+      <div id="contentBox">
+        <h1>com4j Annotation Guide</h1>
 
-<pre class=code>
-@IID(<i>iid</i>)
+<p>This document explains the details of how the runtime bridges a Java method invocation into a COM method invocation, and how one can use annotations to control this process.</p>
+
+<p>In the most general form, a Java method can be annotated as follows:</p>
+
+<pre><code>@IID(iid)
 public interface INTERFACE {
-  @VTID(<i>vtid</i>)
-  @ReturnValue(index=<i>rindex</i>,inout=<i>rio</i>,type=<i>rt</i>)
+  @VTID(vtid)
+  @ReturnValue(index=rindex,inout=rio,type=rt)
   T foo(
-    @MarshalAs(<i>t1</i>) T1 param1,
-    @MarshalAs(<i>t2</i>) T2 param2,
+    @MarshalAs(t1) T1 param1,
+    @MarshalAs(t2) T2 param2,
     ... );
 }
-</pre>
-<h4>IID</h4>
-	<p>
-		The <i>iid</i> parameter of the surrounding interface designates the IID of the COM interface. The method invocation is done against this interface of a COM object.
-	
-<h4>VTID</h4>
-	<p>
-		The mandatory <i>vtid</i> parameter describes the index of the method in the given interface. The com4j runtime never uses the method name information to decide which COM method to invoke.
-		
-		You can deteminer the virtual-table index by counting methods defined on that interface. For example, <tt>IUnknown</tt> has 3 methods, so <tt>@VTID(3)</tt> would designate the first method on an interface derived from <tt>IUnknown</tt>. <tt>IDispatch</tt> defines 4 additional methods, so the first method on an interface derived from <tt>IDispatch</tt> would have <tt>@VITD(7)</tt>.
-	<p>
-		Using the wrong VTID often causes the JVM to crash, because you end up calling a wrong method (or non-existent method) with a wrong set of parameters. So be careful when you manually tweak this.
+</code></pre>
 
-<h4>rindex</h4>
-	<p>
-		In COM, a return value is usually passed as a parameter by reference. Therefore, when a Java method has a return value, com4j bridges it as a parameter.
-		
-		The optional <i>rindex</i> specifies where this parameter is passed among the real parameters. For example, the following Java method:
-		
-<pre class=code>
-@ReturnValue(index=0) Tr foo( T1 t1, T2 t2 )
-</pre>
-	<p>
-		would be bridged to the following COM method invocation:
-<pre class=com>
-HRESULT Foo( [out,retval] Tr* r, T1 t1, T2 t2 );
-</pre>
-	<p>
-		Similarly, the following Java method:
-		
-<pre class=code>
-@ReturnValue(index=1) Tr foo( T1 t1, T2 t2 )
-</pre>
-	<p>
-		would be bridged to the following COM method invocation:
-<pre class=com>
-HRESULT Foo( T1 t1, [out,retval] Tr* r, T2 t2 );
-</pre>
-	<p>
-		When <i>rindex</i> is omitted, it means that the return value is passed after the last parameter, which is what most COM methods do.
+<h3>IID</h3>
 
-<h4>rio</h4>
-	<p>
-		Although rare, a COM method parameter can have <tt>[in,out,retval]</tt> semantics, which means it takes a value from the caller, modifies it, and returns it as the return value of the method.
-	<p>
-		Specifying <tt>true</tt> for <i>rio</i> would achieve this semantics. With this switch turned on, instead of inserting a return value among the parameters, the com4j runtime overloads the designated parameter both as a parameter and a return value. Thus the following Java method:
-		
-<pre class=code>
-@ReturnValue(index=1,inout=true) T2 foo( T1 t1, T2 t2 )
-</pre>
-	<p>
-		would be bridged to the following COM method invocation:
-<pre class=com>
-HRESULT Foo( T1 t1, [int,out,retval] T2* t2 );
-</pre>
+<p>The <code>iid</code> parameter of the surrounding interface designates the IID of the COM interface. The method invocation is done against this interface of a COM object.</p>
 
+<h3>VTID</h3>
 
-<h4>rt</h4>
-	<p>
-		The optional <tt>rt</tt> parameter specifies the native return type for this method and the semantics of how the return value is mapped to Java. When omitted, <a href="/nonav/javadoc/com4j/NativeType.html#Default">a pre-defined table</a> is used to decide which native type to use from the Java return type.
-	
-	<p>
-		For possible values, their semantics, and allowed Java types, see the <a href="/nonav/javadoc/com4j/NativeType.html">javadoc of <tt>NativeType</tt></a>.
+<p>The mandatory <code>vtid</code> parameter describes the index of the method in the given interface.
+The com4j runtime never uses the method name information to decide which COM method to invoke.
+You can deteminer the virtual-table index by counting methods defined on that interface.
+For example, <code>IUnknown</code> has 3 methods, so <code>@VTID(3)</code> would designate the first method
+on an interface derived from <code>IUnknown</code>. <code>IDispatch</code> defines 4 additional methods,
+so the first method on an interface derived from <code>IDispatch</code> would have <code>@VITD(7)</code>.</p>
 
+<p>Using the wrong VTID often causes the JVM to crash, because you end up calling a wrong method (or non-existent method) with a wrong set of parameters. So be careful when you manually tweak this.</p>
 
-<h4>t1,t2,...</h4>
-	<p>
-		Parameters can be optionally annotated by the <tt>MarshalAs</tt> attribute to control how a Java parameter is bound to a parameter of a native type. When omitted, the same <a href="/nonav/javadoc/com4j/NativeType.html#Default">pre-defined table</a> is used to decide which native type to use.
-	
-	<p>
-		<tt>NativeType</tt> specified for the return type and <tt>NativeType</tt> specified for parameters sometimes have slightly different semantics. See the <a href="/nonav/javadoc/com4j/NativeType.html">javadoc</a> for details.
+<h3>rindex</h3>
 
+<p>In COM, a return value is usually passed as a parameter by reference.
+Therefore, when a Java method has a return value, com4j bridges it as a parameter.
+The optional <code>rindex</code> specifies where this parameter is passed among the real parameters.
+For example, the following Java method:</p>
 
+<pre><code>@ReturnValue(index=0) Tr foo( T1 t1, T2 t2 )
+</code></pre>
 
+<p>would be bridged to the following COM method invocation:</p>
 
-<h3>COM Error and Exception</h3>
-	<p>
-		Consider the following COM method:
-<pre class=com>
-[helpstring("get the child object.")]
+<pre><code>HRESULT Foo( [out,retval] Tr* r, T1 t1, T2 t2 );
+</code></pre>
+
+<p>Similarly, the following Java method:</p>
+
+<pre><code>@ReturnValue(index=1) Tr foo( T1 t1, T2 t2 )
+</code></pre>
+
+<p>would be bridged to the following COM method invocation:</p>
+
+<pre><code>HRESULT Foo( T1 t1, [out,retval] Tr* r, T2 t2 );
+</code></pre>
+
+<p>When <code>rindex</code> is omitted, it means that the return value is passed after the last parameter,
+which is what most COM methods do.</p>
+
+<h3>rio</h3>
+
+<p>Although rare, a COM method parameter can have <code>[in,out,retval]</code> semantics,
+which means it takes a value from the caller, modifies it, and returns it as the return value of the method.</p>
+
+<p>Specifying <code>true</code> for <code>rio</code> would achieve this semantics.
+With this switch turned on, instead of inserting a return value among the parameters,
+the com4j runtime overloads the designated parameter both as a parameter and a return value.
+Thus the following Java method:</p>
+
+<pre><code>@ReturnValue(index=1,inout=true) T2 foo( T1 t1, T2 t2 )
+</code></pre>
+
+<p>would be bridged to the following COM method invocation:</p>
+
+<pre><code>HRESULT Foo( T1 t1, [int,out,retval] T2* t2 );
+</code></pre>
+
+<h3>rt</h3>
+
+<p>The optional <code>rt</code> parameter specifies the native return type for this method and the semantics of
+how the return value is mapped to Java. When omitted, <a href="/javadoc/com4j/NativeType.html#Default">a pre-defined table</a> is used
+to decide which native type to use from the Java return type.</p>
+
+<p>For possible values, their semantics, and allowed Java types, see <a href="/javadoc/com4j/NativeType.html">the javadoc of NativeType</a>.</p>
+
+<h3>t1,t2,...</h3>
+
+<p>Parameters can be optionally annotated by the <code>MarshalAs</code> attribute to control how
+a Java parameter is bound to a parameter of a native type.
+When omitted, the same <a href="/javadoc/com4j/NativeType.html#Default">pre-defined table</a> is used to decide which native type to use.</p>
+
+<p><code>NativeType</code> specified for the return type and <code>NativeType</code> specified for parameters sometimes have slightly different semantics.
+See <a href="/javadoc/com4j/NativeType.html">the javadoc</a> for details.</p>
+
+<h2>COM Error and Exception</h2>
+
+<p>Consider the following COM method:</p>
+
+<pre><code>[helpstring("get the child object.")]
 HRESULT GetItem( [int] int index, [out,retval] IFoo** ppItem );
-</pre>
-	<p>
-		A COM method not just returns a "conceptual" return value (<tt>IFoo*</tt>) but also returns a HRESULT. <tt>tlbimp</tt> always hide HRESULT from Java, thus the above method is bound to:
-<pre class=code>
-IFoo GetItem( int index );
-</pre>
-	<p>
-		When the COM method invocation returns a failure HRESULT, the com4j runtime throws unchecked ComException.
-	<p>
-		Sometimes a COM method actually uses this HRESULT to return a meaningful value. For example,
-<pre class=com>
-[helpstring("count the items and returns it, or return a failure code.")]
+</code></pre>
+
+<p>A COM method not just returns a "conceptual" return value (<code>IFoo*</code>) but also returns a HRESULT. <code>tlbimp</code> always hides
+<code>HRESULT</code> from Java, thus the above method is bound to:</p>
+
+<pre><code>IFoo GetItem( int index );
+</code></pre>
+
+<p>When the COM method invocation returns a failure <code>HRESULT</code>, the com4j runtime throws unchecked <code>ComException</code>.</p>
+
+<p>Sometimes a COM method actually uses this HRESULT to return a meaningful value. For example,</p>
+
+<pre><code>[helpstring("count the items and returns it, or return a failure code.")]
 HRESULT CountItems();
-</pre>
-	<p>
-		If you want to access the HRESULT return value, use <tt>NativeType.HRESULT</tt> as follows, which returns the HRESULT value as a Java int:
-<pre class=code>
-@ReturnValue(type=NativeType.HRESULT)
+</code></pre>
+
+<p>If you want to access the HRESULT return value, use <code>NativeType.HRESULT</code> as follows, which returns the <code>HRESULT</code> value as a Java <code>int</code>:</p>
+
+<pre><code>@ReturnValue(type=NativeType.HRESULT)
 int countItems();
-</pre>
-</body>
+</code></pre>
+
+      </div>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2012
+    
+          <a href="http://kohsuke.org/">Kohsuke Kawaguchi</a> and other contributors
+          
+  
+
+  
+  
+  &nbsp;| Last Published: 04/27/2012
+  &nbsp;| Version: 1.0-SNAPSHOT
+</div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    </div></div>
+  </body>
 </html>

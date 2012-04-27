@@ -1,59 +1,154 @@
-<html>
-<head>
-	<title>com4j garbage collection and reference counting</title>
-	<meta http-equiv="Content-type" value="text/html; charset=iso-8859-1" />
-	<style>
-		pre.cmd {
-			background-color: black;
-			color: white;
-			font-weight: bold;
-			margin-left: 2em;
-			padding: 0.5em;
-		}
-		
-		pre.code {
-			border: black solid 1px;
-			background-color: rgb(240,240,255);
-			color: navy;
-			font-weight: bold;
-			margin-left: 2em;
-			padding: 0.5em;
-		}
-		pre.code .annotation {
-			color: gray;
-		}
-		
-		pre.com {
-			border: black solid 1px;
-			background-color: rgb(240,255,240);
-			color: darkgreen;
-			font-weight: bold;
-			margin-left: 2em;
-			padding: 0.5em;
-		}
-	</style>
-</head>
-<body>
-<h1>com4j Garbage Collection and Reference Counting</h1>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-	<p>
-		A life cycle of a COM object is governed by reference counting, while that of a Java object is governed by the garbage collection. This document explains how com4j handles this difference.
+
+
+
+
+
+
+
+
+
+<html>
+  <head>
+    <title>com4j - </title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/1024px.css");
+      @import url("./css/site.css");
+    </style>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body>
+    <div id="wrap2"><div id="wrap">
+    <div id="header">
+      <p id="toplinks">Skip to: <a href="#content">Content</a> | <a href="#sidebar">Navigation</a> | <a href="#footer">Footer</a></p>
+		
+            <h1 id="bannerLeft">
+          <a href="">
+    
+            com4j
+    
+            </a>
+        </h1>
+                
+      <p id="slogan">com4j</p>
+    </div>
+    <div id="breadcrumbs">
+      <div class="xright">  </div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+
+    <div id="sidebar">
+      <div id="navcolumn">
+              <h2>
+          com4j
+        </h2><ul>
+              
+    <li class="none">
+              <a href="index.html">Introduction</a>
+        </li>
+              
+    <li class="none">
+              <a href="https://github.com/kohsuke/com4j/downloads">Download</a>
+        </li>
+              
+    <li class="none">
+              <a href="https://github.com/kohsuke/com4j">Source code</a>
+        </li>
+              
+    <li class="none">
+              <a href="http://java.net/jira/browse/COM4J">Bugs</a>
+        </li>
+          </ul>
+      <h2>
+          References
+        </h2><ul>
+              
+    <li class="none">
+              <a href="apidocs/index.html">Javadoc</a>
+        </li>
+          </ul>
+      <h2>
+          Project Documentation
+        </h2><ul>
+              
+                
+              
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+              
+        <li class="collapsed">
+              <a href="project-info.html">Project Information</a>
+              </li>
+          </ul>
+        </div>
+    </div>
+    <div id="content">
+      <div id="contentBox">
+        <h1>com4j Garbage Collection and Reference Counting</h1>
+
+<p>A life cycle of a COM object is governed by reference counting, while that of a Java object is governed by the garbage collection. This document explains how com4j handles this difference.</p>
 
 <h3>When does a COM object get released?</h3>
-	<p>
-		By default, a proxy object releases a reference to a COM object shortly after the JVM figures out that the proxy itself can be garbage collected. This hides the detail of the life-cycle management from user applications, but the downside is that you can't generally predict when a COM object will be deallocated.
+
+<p>By default, a proxy object releases a reference to a COM object shortly after the JVM figures out that the proxy itself can be garbage collected. This hides the detail of the life-cycle management from user applications, but the downside is that you can't generally predict when a COM object will be deallocated.</p>
 
 <h3>Releasing COM objects earlier</h3>
-	<p>
-		User applications can explicitly call <tt>Com4jObject.dispose</tt> method to release a reference to the COM object earlier. Once this method is called, the proxy object will become "diposed", and all successive calls to any of its COM methods will fail with <tt>IllegalStateException</tt>.
+
+<p>User applications can explicitly call <code>Com4jObject.dispose</code> method to release a reference to the COM object earlier. Once this method is called, the proxy object will become "diposed", and all successive calls to any of its COM methods will fail with <code>IllegalStateException</code>.</p>
 
 <h3>Using ComObjectListener</h3>
-	<p>
-		Another way for applications to manage COM object life-cycle is to use <tt>ComObjectListener</tt>. A listener can be register to the current thread, and if registered, it will receive a callback each time a new com4j proxy is created.
-	<p>
-		This is useful when your application has a code block in which the COM access is confined. The idea is to keep track of all the COM objects and then dipose them all (except a few that outlive the scope) after the code block is done. See the javadoc of <tt>ComObjectCollector</tt> for more about this.
-	<p>
-		This is useful for larger applications where calling <tt>dispose</tt> method is too tedious.
 
-</body>
+<p>Another way for applications to manage COM object life-cycle is to use <code>ComObjectListener</code>. A listener can be register to the current thread, and if registered, it will receive a callback each time a new com4j proxy is created.</p>
+
+<p>This is useful when your application has a code block in which the COM access is confined. The idea is to keep track of all the COM objects and then dipose them all (except a few that outlive the scope) after the code block is done. See the javadoc of <code>ComObjectCollector</code> for more about this.</p>
+
+<p>This is useful for larger applications where calling <code>dispose</code> method on individual objects is too tedious.</p>
+
+      </div>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2012
+    
+          <a href="http://kohsuke.org/">Kohsuke Kawaguchi</a> and other contributors
+          
+  
+
+  
+  
+  &nbsp;| Last Published: 04/27/2012
+  &nbsp;| Version: 1.0-SNAPSHOT
+</div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+    </div></div>
+  </body>
 </html>
