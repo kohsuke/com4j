@@ -14,5 +14,5 @@ cp tlbimp/build/tlbimp.jar  bootstrap/com4j.jar
 ant clean dist deploy -lib ./bootstrap
 
 # done
-dt=$(date +%Y%m%d)
-jnupload com4j "/$(date +%Y-%m-%d) release" "$(date +%Y/%m/%d) release" stable build/com4j-$dt.zip
+#dt=$(date +%Y%m%d)
+#jnupload com4j "/$(date +%Y-%m-%d) release" "$(date +%Y/%m/%d) release" stable build/com4j-$dt.zip
