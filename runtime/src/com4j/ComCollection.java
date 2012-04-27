@@ -41,39 +41,29 @@ final class ComCollection<T> implements Iterator<T> {
         fetch();
     }
 
-
-    /* (non-Javadoc)
-     * @see java.util.Iterator#hasNext()
-     */
     public boolean hasNext() {
         return next!=null;
     }
 
-    /* (non-Javadoc)
-     * @see java.util.Iterator#next()
-     */
     @SuppressWarnings("unchecked")
     public T next() {
         if(next==null)
             throw new NoSuchElementException();
 
-        Object r;
         try {
             // ideally we'd like to use ChangeVariantType to do the conversion
             // but for now let's just support interface types
             if(Com4jObject.class.isAssignableFrom(type)) {
-                r = next.object((Class<? extends Com4jObject>)type);
+                return (T)next.object((Class<? extends Com4jObject>)type);
             } else
                 throw new UnsupportedOperationException("I don't know how to handle "+type);
         } finally {
             fetch();
         }
-        return (T)r;
     }
 
     /**
-     * Throws {@link UnsupportedOperationException}
-     * @throws UnsupportedOperationException Removing an element from the iterator is not supported
+     * Removing an element from the iterator is not supported
      */
     public void remove() throws UnsupportedOperationException {
         throw new UnsupportedOperationException("Removing an element from a ComCollection iterator is not supported.");
