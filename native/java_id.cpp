@@ -26,6 +26,7 @@ JStaticMethodID<jdouble> com4j_Variant_fromDate(com4j_Variant,"fromDate","(Ljava
 JClassID com4jWrapper("com4j/Wrapper");
 JConstructorID com4jWrapper_new(com4jWrapper,"(J)V");
 JMethodID<jobject> com4jWrapper_queryInterface(com4jWrapper,"queryInterface","(Ljava/lang/Class;)Lcom4j/Com4jObject;");
+JMethodID<void> com4jWrapper_dispose0(com4jWrapper,"dispose0","()V");
 
 JClassID com4j_ComEnum("com4j/ComEnum");
 JMethodID<jint> com4j_ComEnum_comEnumValue(com4j_ComEnum,"comEnumValue","()I");
