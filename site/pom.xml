@@ -12,6 +12,7 @@
   <version>1.0-SNAPSHOT</version>
 
   <name>com4j</name>
+  <description>Type-safe Java/COM bridge</description>
   <url>http://com4j.kohsuke.org/</url>
 
   <build>
