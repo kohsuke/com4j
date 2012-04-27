@@ -174,9 +174,9 @@ public final class ComThread extends Thread {
      * @param <T> The type of the return value.
      * @return The result of the Task
      */
-    public <T> T execute(Task<T> task) {
-        synchronized(task) {
-            synchronized(this) {
+    public <T> T execute(final Task<T> task) {
+        synchronized(this) {
+            synchronized(task) {
                 // add it to the tail
                 if(taskListTail != null){
                     taskListTail.next = task;
