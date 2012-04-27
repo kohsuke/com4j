@@ -127,15 +127,11 @@ public final class ComThread extends Thread {
     }
 
     public void run() {
-        synchronized (threads) {
-          threads.add(this);
-        }
+        threads.add(this);
         try {
             run0();
         } finally {
-          synchronized (threads) {
             threads.remove(this);
-          }
         }
     }
 
