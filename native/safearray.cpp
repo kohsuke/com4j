@@ -11,25 +11,29 @@ using namespace safearray;
 struct Entry {
 	JClassID* clazz;
 	VARTYPE vt;
-	SAFEARRAY* (* handler)( JNIEnv* env, jarray javaArray );
+	SAFEARRAY* (* toNative)( JNIEnv* env, jarray javaArray );
+	jarray (* toJava)( JNIEnv* env, SAFEARRAY* nativeArray );
 };
 
 JClassID variantArray("[Lcom4j/Variant;");
 
+#define TABLE_ENTRY_PRIMITIVE(type, VariantType, NativeType) \
+{  &type##Array, VariantType, PrimitiveArrayXducer<VariantType,NativeType,j##type>::toNative, PrimitiveArrayXducer<VariantType,NativeType,j##type>::toJava }
+
 // conversion table
 static Entry entries[] = {
-	{ &booleanArray,VT_BOOL,	PrimitiveArrayXducer<VT_BOOL,VARIANT_BOOL,jboolean>::toNative },
-	{ &byteArray,	VT_UI1,		 PrimitiveArrayXducer<VT_UI1,byte,jbyte>::toNative },
-	{ &charArray,	VT_UI2,		PrimitiveArrayXducer<VT_UI2,unsigned short,jchar>::toNative },
-	{ &doubleArray,	VT_R8,		PrimitiveArrayXducer<VT_R8,double,jdouble>::toNative },
-	{ &floatArray,	VT_R4,		PrimitiveArrayXducer<VT_R4,float,jfloat>::toNative },
-	{ &intArray,	VT_I4,		PrimitiveArrayXducer<VT_I4,INT32,jint>::toNative },
-	{ &longArray,	VT_I8,		PrimitiveArrayXducer<VT_I8,INT64,jlong>::toNative },
-	{ &shortArray,	VT_I2,		PrimitiveArrayXducer<VT_I2,short,jshort>::toNative },
-	{ &stringArray,	VT_BSTR,	BasicArrayXducer<VT_BSTR,xducer::StringXducer>::toNative },
-	{ &objectArray,	VT_VARIANT,	BasicArrayXducer<VT_VARIANT,xducer::VariantXducer>::toNative },
-	{ &variantArray,	VT_VARIANT,	BasicArrayXducer<VT_VARIANT,xducer::VariantXducer>::toNative },
-	{ NULL, NULL }
+	TABLE_ENTRY_PRIMITIVE(boolean,	VT_BOOL,	VARIANT_BOOL),
+	TABLE_ENTRY_PRIMITIVE(byte,		VT_UI1,		byte),
+	TABLE_ENTRY_PRIMITIVE(char,		VT_UI2,		unsigned short),
+	TABLE_ENTRY_PRIMITIVE(double,	VT_R8,		double),
+	TABLE_ENTRY_PRIMITIVE(float,	VT_R4,		float),
+	TABLE_ENTRY_PRIMITIVE(int,		VT_I4,		INT32),
+	TABLE_ENTRY_PRIMITIVE(long,		VT_I8,		INT64),
+	TABLE_ENTRY_PRIMITIVE(short,	VT_I2,		short),
+	{ &stringArray,		VT_BSTR,	BasicArrayXducer<VT_BSTR,xducer::StringXducer>::toNative,		BasicArrayXducer<VT_BSTR,xducer::StringXducer>::toJava},
+	{ &objectArray,		VT_VARIANT,	BasicArrayXducer<VT_VARIANT,xducer::VariantXducer>::toNative,	BasicArrayXducer<VT_VARIANT,xducer::VariantXducer>::toJava},
+	{ &variantArray,	VT_VARIANT,	BasicArrayXducer<VT_VARIANT,xducer::VariantXducer>::toNative,	BasicArrayXducer<VT_VARIANT,xducer::VariantXducer>::toJava},
+	{ NULL, NULL, NULL }
 };
 
 
@@ -41,7 +45,7 @@ pair<SafeArrayXducer::NativeType,VARTYPE> SafeArrayXducer::toNative2(
 
 	for( Entry* e=entries; e->clazz!=NULL; e++ ) {
 		if(env->IsSameObject(clz,*(e->clazz)))
-			return pair<SAFEARRAY*,VARTYPE>( (e->handler)(env,a), e->vt );
+			return pair<SAFEARRAY*,VARTYPE>( (e->toNative)(env,a), e->vt );
 	}
 	return pair<SAFEARRAY*,VARTYPE>(NULL,VT_EMPTY);
 }
@@ -55,6 +59,13 @@ SafeArrayXducer::JavaType SafeArrayXducer::toJava( JNIEnv* env, SAFEARRAY* value
 		return BasicArrayXducer<VT_UNKNOWN,xducer::Com4jObjectXducer>::toJava(env,value);
 	if((feature&FADF_VARIANT)!=0)
 		return BasicArrayXducer<VT_VARIANT,xducer::VariantXducer>::toJava(env,value);
-
+	if((feature&FADF_HAVEVARTYPE) != 0)
+	{
+	    VARTYPE elemType = HIWORD(value->cLocks)&VT_TYPEMASK;
+		for( Entry* e=entries; e->clazz!=NULL; e++ ) {
+			if(elemType==e->vt)
+				return e->toJava(env,value);
+		}
+	}
 	return NULL;
 }
