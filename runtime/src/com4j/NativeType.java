@@ -446,6 +446,15 @@ public enum NativeType {
             Native.release( disp );
             return r;
         }
+        
+        void cleanupNative(Object pDisp) {
+        	if(pDisp != null) {
+        		Long l = (Long)pDisp;
+        		if(l.longValue() != 0) {
+        			Native.release(l);
+        		}
+        	}
+        }
     },
 
     /**
@@ -630,6 +639,12 @@ public enum NativeType {
      */
     Object toJava(Class<?> signature, Type genericSignature, Object param) {
         return param;
+    }
+    
+    void cleanupNative(Object nativeValue) {
+    	//By default do nothing.  Some subclasses will use 
+    	//this hook to clean up any resources they allocated
+    	//in their toNative() call.
     }
 
     /**

@@ -53,6 +53,8 @@ final class StandardComMethod extends ComMethod {
                     Holder h = (Holder)args[i];
                     Type holderParamType = getTypeParameter(genericParamTypes[i], 0);
                     h.value = params[i].getNoByRef().toJava(erasure(holderParamType), holderParamType, h.value);
+                } else {
+                	params[i].cleanupNative(args[i]);
                 }
             }
         }
