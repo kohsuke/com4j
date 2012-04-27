@@ -647,20 +647,6 @@
 					RelativePath="..\libffi\src\x86\win32.asm"
 					>
 					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="MASM"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="MASM"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
 						Name="Debug|x64"
 						ExcludedFromBuild="true"
 						>
@@ -691,20 +677,6 @@
 					<FileConfiguration
 						Name="Release|Win32"
 						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="MASM64"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|x64"
-						>
-						<Tool
-							Name="MASM64"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|x64"
 						>
 						<Tool
 							Name="MASM64"
@@ -814,6 +786,42 @@
 				</File>
 				<File
 					RelativePath="..\libffi\include\ffitarget.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="jnitl"
+				>
+				<File
+					RelativePath="..\jnitl\include\jnitl.h"
+					>
+				</File>
+				<File
+					RelativePath="..\jnitl\include\jnitl_accessor.h"
+					>
+				</File>
+				<File
+					RelativePath="..\jnitl\include\jnitl_array.h"
+					>
+				</File>
+				<File
+					RelativePath="..\jnitl\include\jnitl_globalref.h"
+					>
+				</File>
+				<File
+					RelativePath="..\jnitl\include\jnitl_module.h"
+					>
+				</File>
+				<File
+					RelativePath="..\jnitl\include\jnitl_op.h"
+					>
+				</File>
+				<File
+					RelativePath="..\jnitl\include\jnitl_string.h"
+					>
+				</File>
+				<File
+					RelativePath="..\jnitl\include\jnitl_thread.h"
 					>
 				</File>
 			</Filter>
