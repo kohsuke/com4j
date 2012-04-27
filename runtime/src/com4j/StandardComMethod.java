@@ -1,19 +1,12 @@
 package com4j;
 
-import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.lang.reflect.WildcardType;
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.Array;
 import java.lang.reflect.TypeVariable;
-import java.nio.Buffer;
-import java.util.Iterator;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Map;
-import java.util.HashMap;
+import java.lang.reflect.WildcardType;
 
 /**
  * {@link ComMethod} that represents a single method invocation
@@ -59,9 +52,7 @@ final class StandardComMethod extends ComMethod {
                 if(args[i] instanceof Holder && params[i].getNoByRef()!=null) {
                     Holder h = (Holder)args[i];
                     Type holderParamType = getTypeParameter(genericParamTypes[i], 0);
-                    h.value = params[i].getNoByRef().toJava( erasure(holderParamType), holderParamType, h.value );
-                } else {
-                    args[i] = params[i].toJava(paramTypes[i], genericParamTypes[i], args[i]);
+                    h.value = params[i].getNoByRef().toJava(erasure(holderParamType), holderParamType, h.value);
                 }
             }
         }

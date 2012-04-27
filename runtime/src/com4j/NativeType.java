@@ -274,14 +274,8 @@ public enum NativeType {
                 base.dispose();
                 return new ComCollection(itemType,enumVar);
             }
-            // TODO: Do we always need to call addRef here?
-            // If we call a COM method like Application.doStuff(IDocumentPointer p);
-            // then toNative will be called and we pass an int (pointer) to the native part of com4j
-            // And then, after the call, this method (toJava) gets called from com4j.StandardComMethod.invoke(int, Object[])
-            // So we create a new Wrapper object for an interface pointer. But we can not assume, that the native code of the third party
-            // software called addRef for a pointer we passed in! So we call addRef ourself. (see issues 25 and 36)
-            Native.addRef((Long) param);
-
+            // interface pointers we get from out parameters are owned by the caller,
+            // so there's no need to do addRef
             return Wrapper.create( (Class<? extends Com4jObject>)type, (Long)param );
         }
     },
