@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="com4j">
+  <bannerLeft>
+    <name>com4j</name>
+    <href>http://com4j.kohsuke.org/</href>
+  </bannerLeft>
+  <skin>
+    <groupId>org.kohsuke</groupId>
+    <artifactId>maven-skin</artifactId>
+    <version>1.2</version>
+  </skin>
+
+  <body>
+    <menu name="com4j">
+      <item name="Introduction" href="/index.html"/>
+      <item name="Download"     href="https://github.com/kohsuke/com4j/downloads"/>
+      <item name="Source code"  href="https://github.com/kohsuke/com4j"/>
+      <item name="Bugs"         href="http://java.net/jira/browse/COM4J"/>
+    </menu>
+
+    <!--<menu name="References">-->
+      <!--<item name="Javadoc" href="apidocs/index.html"/>-->
+    <!--</menu>-->
+
+    <menu ref="reports"/>
+  </body>
+</project>
