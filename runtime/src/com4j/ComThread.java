@@ -234,10 +234,6 @@ public final class ComThread extends Thread {
         }
     }
 
-    void activate() {
-    	lock.activate();
-    }
-
     /**
      * Adds a {@link Com4jObject} to the live objects of this {@link ComThread}
      * <p>
@@ -246,7 +242,7 @@ public final class ComThread extends Thread {
      * </p>
      * @param r The new {@link Com4jObject}
      */
-    public synchronized void addLiveObject( Com4jObject r ) {
+    public synchronized void addLiveObject( Com4jObject r ) {// TODO: why is this public?
     	if(r instanceof Wrapper) {
     		liveComObjects.add(((Wrapper)r).ref);
     	}
@@ -318,9 +314,8 @@ public final class ComThread extends Thread {
      *
      * This method is mainly for debug purposes.
      */
-
     public static void flushFreeList() {
         System.gc();
-        ComThread.get().activate();
+        ComThread.get().lock.activate();
     }
 }

@@ -222,10 +222,19 @@ final class Wrapper implements InvocationHandler, Com4jObject {
      */
     public void dispose() {
         if(!isDisposed) {
+            new Task<Void>() {
+                public Void call() {
+                    dispose0();
+                    return null;
+                }
+            }.execute(thread); // Issue 39 fixed.
+        }
+    }
+
+    private void dispose0() {
+        if (!isDisposed) {
+            ref.releaseNative();
             isDisposed = true;
-            ref.enqueue();
-            ref.clear();
-            thread.activate();
         }
     }
 
