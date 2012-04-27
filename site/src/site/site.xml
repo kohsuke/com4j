@@ -18,9 +18,9 @@
       <item name="Bugs"         href="http://java.net/jira/browse/COM4J"/>
     </menu>
 
-    <!--<menu name="References">-->
-      <!--<item name="Javadoc" href="apidocs/index.html"/>-->
-    <!--</menu>-->
+    <menu name="References">
+      <item name="Javadoc" href="/apidocs/index.html"/>
+    </menu>
 
     <menu ref="reports"/>
   </body>
