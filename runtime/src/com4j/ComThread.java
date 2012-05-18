@@ -4,6 +4,7 @@ import java.lang.ref.ReferenceQueue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -74,8 +75,7 @@ public final class ComThread extends Thread {
     /**
      * Tasks that need to be processed.
      */
-    private Task<?> taskListHead; // com4j issue 40
-    private Task<?> taskListTail;
+    private final List<Task<?>> taskList = Collections.synchronizedList((new LinkedList<Task<?>>()));// com4j issue 70
 
     /**
      * The set of live COM objects.
@@ -146,20 +146,17 @@ public final class ComThread extends Thread {
         while(!canExit()) {
             lock.suspend(GARBAGE_COLLECTION_INTERVAL);
 
-            synchronized(this) {
-            	//Clean up any com objects that need releasing
-            	collectGarbage();
-            	
-                // do any scheduled tasks that need to be done
-                while(taskListHead != null) {
-                    Task<?> task = taskListHead;
-                    taskListHead = task.next;
-                    task.invoke();
-                    
-                    //Maybe the task produced some garbage...clean that up
-                    collectGarbage();
-                }
-                taskListTail = null; // taskListHead is null after the loop, so the tail should be null as well.
+            //Clean up any com objects that need releasing
+            collectGarbage();
+
+            // do any scheduled tasks that need to be done
+            while (!taskList.isEmpty()) {
+                Task<?> task = taskList.get(0);
+                taskList.remove(0);
+                task.invoke();
+                
+                //Maybe the task produced some garbage...clean that up
+                collectGarbage();
             }
         }
 
@@ -199,18 +196,10 @@ public final class ComThread extends Thread {
      * @param <T> The type of the return value.
      * @return The result of the Task
      */
-    public <T> T execute(final Task<T> task) {
-        synchronized(this) {
-            synchronized(task) {
-                // add it to the tail
-                if(taskListTail != null){
-                    taskListTail.next = task;
-                }
-                taskListTail = task;
-                if(taskListHead == null){
-                    taskListHead = task;
-                }
-            }
+    public <T> T execute(Task<T> task) {
+        synchronized(task) {
+            // add it to the tail
+            taskList.add(task);
 
             // invoke the execution
             lock.activate();
