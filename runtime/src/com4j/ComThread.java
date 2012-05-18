@@ -4,8 +4,11 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+
+import com4j.Task;
 
 
 /**
@@ -71,8 +74,7 @@ public final class ComThread extends Thread {
     /**
      * Tasks that need to be processed.
      */
-    private Task<?> taskListHead; // com4j issue 40
-    private Task<?> taskListTail;
+    private final List<Task<?>> taskList = Collections.synchronizedList((new LinkedList<Task<?>>()));// com4j issue 70
 
     /**
      * Collection of {@link Com4jObject}s that are managed by this thread.
@@ -145,14 +147,11 @@ public final class ComThread extends Thread {
         while(!canExit()) {
             lock.suspend();
 
-            synchronized(this) {
-                // do any scheduled tasks that need to be done
-                while(taskListHead != null) {
-                    Task<?> task = taskListHead;
-                    taskListHead = task.next;
-                    task.invoke();
-                }
-                taskListTail = null; // taskListHead is null after the loop, so the tail should be null as well.
+            // do any scheduled tasks that need to be done
+            while (!taskList.isEmpty()) {
+                Task<?> task = taskList.get(0);
+                taskList.remove(0);
+                task.invoke();
             }
         }
 
@@ -176,16 +175,8 @@ public final class ComThread extends Thread {
      */
     public <T> T execute(Task<T> task) {
         synchronized(task) {
-            synchronized(this) {
-                // add it to the tail
-                if(taskListTail != null){
-                    taskListTail.next = task;
-                }
-                taskListTail = task;
-                if(taskListHead == null){
-                    taskListHead = task;
-                }
-            }
+            // add it to the tail
+            taskList.add(task);
 
             // invoke the execution
             lock.activate();
