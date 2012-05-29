@@ -18,9 +18,8 @@ STDMETHODIMP CEventReceiver::GetIDsOfNames( REFIID riid, LPOLESTR* rgszNames, UI
 	// Convert names to string array
 	jobjectArray ar = pEnv->NewObjectArray(cNames,javaLangString, NULL);
 	int len = cNames;
-	USES_CONVERSION;
 	for( int i=0; i < len; i++) {
-		pEnv->SetObjectArrayElement( ar, i, pEnv->NewStringUTF( OLE2A(rgszNames[i])));
+		pEnv->SetObjectArrayElement( ar, i, pEnv->NewString( (jchar*)rgszNames[i], wcslen( rgszNames[i])));
 	}
 
 	LockedArray<jint> r(pEnv, com4jEventProxy_getDISPIDs( pEnv, eventProxy, ar));
