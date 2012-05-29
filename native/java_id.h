@@ -22,6 +22,7 @@ extern JStaticMethodID<jdouble> com4j_Variant_fromDate;
 extern JClassID com4jWrapper;
 extern JConstructorID com4jWrapper_new;
 extern JMethodID<jobject> com4jWrapper_queryInterface;
+extern JMethodID<void> com4jWrapper_dispose0;
 
 extern JClassID javaLangClass;
 extern JMethodID<jstring> javaLangClass_getName;

@@ -31,6 +31,20 @@
   
   <import file="../build-taskdefs.xml" />
   
+  <target name="install" description="release to the maven repository">
+    <prepare-pom />
+    <install file="com4j.jar">
+      <args>
+        <arg value="-DupdateReleaseInfo=true"/>
+      </args>
+    </install>
+    <install file="com4j-src.zip">
+      <args>
+        <arg value="-Dclassifier=sources"/>
+      </args>
+    </install>
+  </target>
+  
   <target name="deploy" description="release to the maven repository">
     <prepare-pom />
     <deploy file="com4j.jar">

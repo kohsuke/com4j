@@ -155,10 +155,13 @@ JNIEXPORT jlong JNICALL Java_com4j_Native_createInstance(
 		}
 		hr = OleRun(pUnk);
 		if(FAILED(hr)) {
+			pUnk->Release();
 			error(env,__FILE__,__LINE__,hr,"OleRun failed");
 			return 0;
 		}
 		hr = pUnk->QueryInterface(iid,&p);
+		pUnk->Release();
+
 		if(FAILED(hr)) {
 			error(env,__FILE__,__LINE__,hr,"QueryInterface failed");
 			return 0;

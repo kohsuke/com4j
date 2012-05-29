@@ -1,0 +1,12 @@
+*.obj
+*.ncb
+*.sln
+*.suo
+*.tlb
+*.user
+*.pch
+*.res
+*.tlh
+*.tli
+vc90.idb
+vc90.pdb

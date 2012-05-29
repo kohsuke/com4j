@@ -742,11 +742,14 @@ public final class Variant extends Number {
         ComThread t = thread != null ? thread : ComThread.get();
         return t.execute(new Task<T>() {
             public T call() {
-                changeType(Type.VT_UNKNOWN);
-                int ptr = image.getInt(8);
-                if(ptr==0)  return null;
-                Native.addRef(ptr);
-                return Wrapper.create(type,ptr);
+                Com4jObject wrapper = convertTo(Com4jObject.class);
+                if(null == wrapper) {
+                	return null;
+                }
+                
+                T ret = wrapper.queryInterface(type);
+                wrapper.dispose();
+                return ret;
             }
         });
     }

@@ -9,7 +9,7 @@
 			DisplayName="Microsoft Macro Assembler(64 bit)"
 			CommandLine="ml64.exe /c [AllOptions] [AdditionalOptions] /Ta[inputs]"
 			Outputs="[$ObjectFileName]"
-			FileExtensions="*.asm"
+			FileExtensions="*.asm64"
 			ExecutionDescription="Assembling..."
 			>
 			<Properties>

@@ -1,6 +1,6 @@
 package com4j;
 
-import java.lang.ref.WeakReference;
+import java.lang.ref.ReferenceQueue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -17,10 +17,13 @@ import java.util.Set;
  *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  * @author Michael Schnell (ScM, (C) 2008, 2009, Michael-Schnell@gmx.de)
+ * @author mpoindexter (staticsnow@gmail.com)
  */
 public final class ComThread extends Thread {
 
-    /**
+	public static int GARBAGE_COLLECTION_INTERVAL = 10;
+    
+	/**
      * Used to associate a {@link ComThread} for every thread.
      */
     private static final ThreadLocal<ComThread> map = new ThreadLocal<ComThread>() {
@@ -75,12 +78,14 @@ public final class ComThread extends Thread {
     private Task<?> taskListTail;
 
     /**
-     * Collection of {@link Com4jObject}s that are managed by this thread.
-     * <p>
-     * This collection keeps track of all "living" COM objects. This is necessary to release all COM resources when the java process terminates.
-     * </p>
+     * The set of live COM objects.
      */
-    private LiveObjectCollection liveObjects = new LiveObjectCollection();
+    private Set<NativePointerPhantomReference> liveComObjects = new HashSet<NativePointerPhantomReference>();
+
+    /**
+     * Keeps track of wrappers that should be IUnknown::release-d.
+     */
+    final ReferenceQueue<Wrapper> collectableObjects = new ReferenceQueue<Wrapper>();
     
     /**
      * Listeners attached to this thread.
@@ -107,7 +112,7 @@ public final class ComThread extends Thread {
      */
     private boolean canExit() {
         // lhs:forcible death <->  rhs:natural death
-        return die || (!peer.isAlive() && liveObjects.isEmpty());
+        return die || (!peer.isAlive() && liveComObjects.isEmpty());
     }
 
     /**
@@ -127,15 +132,11 @@ public final class ComThread extends Thread {
     }
 
     public void run() {
-        synchronized (threads) {
-          threads.add(this);
-        }
+        threads.add(this);
         try {
             run0();
         } finally {
-          synchronized (threads) {
             threads.remove(this);
-          }
         }
     }
 
@@ -143,29 +144,53 @@ public final class ComThread extends Thread {
         Native.coInitialize();
 
         while(!canExit()) {
-            lock.suspend();
+            lock.suspend(GARBAGE_COLLECTION_INTERVAL);
 
             synchronized(this) {
+            	//Clean up any com objects that need releasing
+            	collectGarbage();
+            	
                 // do any scheduled tasks that need to be done
                 while(taskListHead != null) {
                     Task<?> task = taskListHead;
                     taskListHead = task.next;
                     task.invoke();
+                    
+                    //Maybe the task produced some garbage...clean that up
+                    collectGarbage();
                 }
                 taskListTail = null; // taskListHead is null after the loop, so the tail should be null as well.
             }
         }
 
-        // dispose all the live objects before we leave
-        for (WeakReference<Com4jObject> object : liveObjects.getSnapshot()) {
-          Com4jObject liveObject = object.get();
-          if(liveObject != null) {
-            liveObject.dispose();
-          }
+        collectGarbage();
+        
+        //And clobber any live COM objects that have not been dispose()'d to avoid
+        //leaking these objects on die
+        for(NativePointerPhantomReference ref : liveComObjects) {
+        	ref.clear();
+        	ref.releaseNative();
         }
+        liveComObjects.clear();
+        
+        //Kill the event handle we are holding in the lock.
+        lock.dispose();
 
         Native.coUninitialize();
     }
+
+    /**
+     * Cleans up any left over references
+     */
+	private void collectGarbage() {
+		// dispose unused objects if any
+		NativePointerPhantomReference toCollect;
+		while((toCollect = (NativePointerPhantomReference)collectableObjects.poll()) != null) {
+		    liveComObjects.remove(toCollect);
+		    toCollect.clear();
+		    toCollect.releaseNative();
+		}
+	}
 
     /**
      * Executes a {@link Task} in a {@link ComThread}
@@ -174,9 +199,9 @@ public final class ComThread extends Thread {
      * @param <T> The type of the return value.
      * @return The result of the Task
      */
-    public <T> T execute(Task<T> task) {
-        synchronized(task) {
-            synchronized(this) {
+    public <T> T execute(final Task<T> task) {
+        synchronized(this) {
+            synchronized(task) {
                 // add it to the tail
                 if(taskListTail != null){
                     taskListTail.next = task;
@@ -217,19 +242,15 @@ public final class ComThread extends Thread {
      * </p>
      * @param r The new {@link Com4jObject}
      */
-    public synchronized void addLiveObject( Com4jObject r ) {
-        liveObjects.add(r);
+    public synchronized void addLiveObject( Com4jObject r ) {// TODO: why is this public?
+    	if(r instanceof Wrapper) {
+    		liveComObjects.add(((Wrapper)r).ref);
+    	}
+        
         if(!listeners.isEmpty()) {
             for( int i=listeners.size()-1; i>=0; i-- )
                 listeners.get(i).onNewObject(r);
         }
-    }
-
-    /**
-     * Decrements the live object count of this {@link ComThread}
-     */
-    synchronized void removeLiveObject(Com4jObject object){
-        liveObjects.remove(object);
     }
     
     /**
@@ -293,21 +314,8 @@ public final class ComThread extends Thread {
      *
      * This method is mainly for debug purposes.
      */
-
     public static void flushFreeList() {
         System.gc();
-        new DummyTask().execute();
-    }
-
-    /**
-     * A task doing nothing.
-     * @author scm
-     */
-    private static class DummyTask extends Task<Void>
-    {
-        @Override
-        public Void call() {
-            return null;
-        }
+        ComThread.get().lock.activate();
     }
 }

@@ -10,42 +10,42 @@ extern "C" {
 /*
  * Class:     com4j_Win32Lock
  * Method:    closeHandle
- * Signature: (I)V
+ * Signature: (J)V
  */
 JNIEXPORT void JNICALL Java_com4j_Win32Lock_closeHandle
-  (JNIEnv *, jclass, jint);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     com4j_Win32Lock
  * Method:    createEvent
- * Signature: ()I
+ * Signature: ()J
  */
-JNIEXPORT jint JNICALL Java_com4j_Win32Lock_createEvent
+JNIEXPORT jlong JNICALL Java_com4j_Win32Lock_createEvent
   (JNIEnv *, jclass);
 
 /*
  * Class:     com4j_Win32Lock
  * Method:    activate0
- * Signature: (I)V
+ * Signature: (J)V
  */
 JNIEXPORT void JNICALL Java_com4j_Win32Lock_activate0
-  (JNIEnv *, jclass, jint);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     com4j_Win32Lock
  * Method:    suspend0
- * Signature: (I)V
+ * Signature: (J)V
  */
 JNIEXPORT void JNICALL Java_com4j_Win32Lock_suspend0
-  (JNIEnv *, jclass, jint);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     com4j_Win32Lock
  * Method:    suspend1
- * Signature: (II)V
+ * Signature: (JI)V
  */
 JNIEXPORT void JNICALL Java_com4j_Win32Lock_suspend1
-  (JNIEnv *, jclass, jint, jint);
+  (JNIEnv *, jclass, jlong, jint);
 
 #ifdef __cplusplus
 }

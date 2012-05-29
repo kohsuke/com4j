@@ -323,18 +323,21 @@
   </component>
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file:$TEMPLATE$/$PROJECT_DIR$/com4j.iml" filepath="$PROJECT_DIR$/com4j.iml" />
-      <module fileurl="file:$TEMPLATE$/$PROJECT_DIR$/samples/excel/excel.iml" filepath="$PROJECT_DIR$/samples/excel/excel.iml" />
-      <module fileurl="file:$TEMPLATE$/$PROJECT_DIR$/samples/iTunes/iTunes.iml" filepath="$PROJECT_DIR$/samples/iTunes/iTunes.iml" />
-      <module fileurl="file:$TEMPLATE$/$PROJECT_DIR$/samples/jnlp/jnlp.iml" filepath="$PROJECT_DIR$/samples/jnlp/jnlp.iml" />
-      <module fileurl="file:$TEMPLATE$/$PROJECT_DIR$/samples/powerPoint/powerPoint.iml" filepath="$PROJECT_DIR$/samples/powerPoint/powerPoint.iml" />
-      <module fileurl="file:$TEMPLATE$/$PROJECT_DIR$/runtime/runtime.iml" filepath="$PROJECT_DIR$/runtime/runtime.iml" />
-      <module fileurl="file:$TEMPLATE$/$PROJECT_DIR$/samples/speech/speech.iml" filepath="$PROJECT_DIR$/samples/speech/speech.iml" />
-      <module fileurl="file:$TEMPLATE$/$PROJECT_DIR$/test/test.iml" filepath="$PROJECT_DIR$/test/test.iml" />
-      <module fileurl="file:$TEMPLATE$/$PROJECT_DIR$/tlbimp/tlbimp.iml" filepath="$PROJECT_DIR$/tlbimp/tlbimp.iml" />
-      <module fileurl="file:$TEMPLATE$/$PROJECT_DIR$/samples/wmi/wmi.iml" filepath="$PROJECT_DIR$/samples/wmi/wmi.iml" />
-      <module fileurl="file:$TEMPLATE$/$PROJECT_DIR$/samples/word/word.iml" filepath="$PROJECT_DIR$/samples/word/word.iml" />
-      <module fileurl="file:$TEMPLATE$/$PROJECT_DIR$/samples/wsh/wsh.iml" filepath="$PROJECT_DIR$/samples/wsh/wsh.iml" />
+      <module fileurl="file://$PROJECT_DIR$/com4j.iml" filepath="$PROJECT_DIR$/com4j.iml" />
+      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/com4j.iml" filepath="file:$TEMPLATE$//home/kohsuke/ws/com4j/com4j.iml" />
+      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/samples/excel/excel.iml" filepath="file:$TEMPLATE$//home/kohsuke/ws/com4j/samples/excel/excel.iml" />
+      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/samples/iTunes/iTunes.iml" filepath="file:$TEMPLATE$//home/kohsuke/ws/com4j/samples/iTunes/iTunes.iml" />
+      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/samples/jnlp/jnlp.iml" filepath="file:$TEMPLATE$//home/kohsuke/ws/com4j/samples/jnlp/jnlp.iml" />
+      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/samples/powerPoint/powerPoint.iml" filepath="file:$TEMPLATE$//home/kohsuke/ws/com4j/samples/powerPoint/powerPoint.iml" />
+      <module fileurl="file://$PROJECT_DIR$/runtime/runtime.iml" filepath="$PROJECT_DIR$/runtime/runtime.iml" />
+      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/runtime/runtime.iml" filepath="file:$TEMPLATE$//home/kohsuke/ws/com4j/runtime/runtime.iml" />
+      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/samples/speech/speech.iml" filepath="file:$TEMPLATE$//home/kohsuke/ws/com4j/samples/speech/speech.iml" />
+      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/test/test.iml" filepath="file:$TEMPLATE$//home/kohsuke/ws/com4j/test/test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tlbimp/tlbimp.iml" filepath="$PROJECT_DIR$/tlbimp/tlbimp.iml" />
+      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/tlbimp/tlbimp.iml" filepath="file:$TEMPLATE$//home/kohsuke/ws/com4j/tlbimp/tlbimp.iml" />
+      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/samples/wmi/wmi.iml" filepath="file:$TEMPLATE$//home/kohsuke/ws/com4j/samples/wmi/wmi.iml" />
+      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/samples/word/word.iml" filepath="file:$TEMPLATE$//home/kohsuke/ws/com4j/samples/word/word.iml" />
+      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/samples/wsh/wsh.iml" filepath="file:$TEMPLATE$//home/kohsuke/ws/com4j/samples/wsh/wsh.iml" />
     </modules>
   </component>
   <component name="ProjectResources">
@@ -352,7 +355,7 @@
     <option name="mySupportsUserInfoFilter" value="true" />
   </component>
   <component name="VcsDirectoryMappings">
-    <mapping directory="" vcs="svn" />
+    <mapping directory="" vcs="Git" />
   </component>
   <component name="WebServicesPlugin" addRequiredLibraries="true" />
   <component name="com.intellij.jsf.UserDefinedFacesConfigs">
@@ -365,11 +368,11 @@
   <component name="libraryTable">
     <library name="JUnit">
       <CLASSES>
-        <root url="jar:$TEMPLATE$/$PROJECT_DIR$/lib/junit.jar!/" />
+        <root url="jar:$TEMPLATE$/home/kohsuke/ws/com4j/lib/junit.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="jar:$TEMPLATE$/$PROJECT_DIR$/lib/junit-src.zip!/" />
+        <root url="jar:$TEMPLATE$/home/kohsuke/ws/com4j/lib/junit-src.zip!/" />
       </SOURCES>
     </library>
   </component>
