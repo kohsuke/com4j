@@ -11,6 +11,8 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -420,12 +422,12 @@ public abstract class COM4J {
     /**
      * List of application defined task, they are executed _before_ com4j shuts down.
      */
-    protected static ArrayList<Runnable> applicationShutdownTasks = new ArrayList<Runnable>();
+    protected static final List<Runnable> applicationShutdownTasks = Collections.synchronizedList( new ArrayList<Runnable>());
 
     /**
      * List of shutdown task defined by Com4J itself.
      */
-    protected static ArrayList<Runnable> com4JShutdownTasks = new ArrayList<Runnable>();
+    protected static final List<Runnable> com4JShutdownTasks = Collections.synchronizedList( new ArrayList<Runnable>());
 
     /**
      * Add a shutdown task.
@@ -473,12 +475,18 @@ public abstract class COM4J {
             @Override
             public void run() {
                 // first execute the application defined shutdown tasks in LIFO order
-                for(int i = applicationShutdownTasks.size()-1 ; i>=0; i--){
-                    applicationShutdownTasks.get(i).run();
+                synchronized( applicationShutdownTasks)
+                {
+                    for(int i = applicationShutdownTasks.size()-1 ; i>=0; i--){
+                        applicationShutdownTasks.get(i).run();
+                    }
                 }
                 // then execute the shutdown tasks defined by com4j itself in LIFO order
-                for(int i = com4JShutdownTasks.size()-1 ; i>=0; i--){
-                    com4JShutdownTasks.get(i).run();
+                synchronized( com4JShutdownTasks)
+                {
+                    for(int i = com4JShutdownTasks.size()-1 ; i>=0; i--){
+                        com4JShutdownTasks.get(i).run();
+                    }
                 }
             }
         });
