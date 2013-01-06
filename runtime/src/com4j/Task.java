@@ -43,8 +43,6 @@ abstract class Task<T> implements Callable<T> {
      * Called from {@link ComThread} to run the task.
      */
     final synchronized void invoke() {
-        next = null;
-
         result = null;
         exception = null;
         try {
@@ -56,12 +54,6 @@ abstract class Task<T> implements Callable<T> {
         // let the calling thread know that we are done.
         notify();
     }
-
-    /**
-     * Managed by {@link ComThread} to form a linked list from
-     * {@link ComThread#taskListHead}.
-     */
-    Task<?> next;
 
     /**
      * Managed by {@link ComThread} to pass the return value
