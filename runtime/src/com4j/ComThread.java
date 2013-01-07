@@ -242,7 +242,7 @@ public final class ComThread extends Thread {
         }
     }
     
-    synchronized void addLiveObject( SafeArray r ) {// TODO: why is this public?
+    synchronized void addLiveObject( SafeArray r ) {
     	liveComObjects.add(r.ref);
     }
     
