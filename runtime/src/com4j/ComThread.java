@@ -80,12 +80,12 @@ public final class ComThread extends Thread {
     /**
      * The set of live COM objects.
      */
-    private Set<NativePointerPhantomReference> liveComObjects = new HashSet<NativePointerPhantomReference>();
+    private Set<NativeResourceReference> liveComObjects = new HashSet<NativeResourceReference>();
 
     /**
      * Keeps track of wrappers that should be IUnknown::release-d.
      */
-    final ReferenceQueue<Wrapper> collectableObjects = new ReferenceQueue<Wrapper>();
+    final ReferenceQueue<Object> collectableObjects = new ReferenceQueue<Object>();
     
     /**
      * Listeners attached to this thread.
@@ -164,7 +164,7 @@ public final class ComThread extends Thread {
         
         //And clobber any live COM objects that have not been dispose()'d to avoid
         //leaking these objects on die
-        for(NativePointerPhantomReference ref : liveComObjects) {
+        for(NativeResourceReference ref : liveComObjects) {
         	ref.clear();
         	ref.releaseNative();
         }
@@ -240,6 +240,10 @@ public final class ComThread extends Thread {
             for( int i=listeners.size()-1; i>=0; i-- )
                 listeners.get(i).onNewObject(r);
         }
+    }
+    
+    synchronized void addLiveObject( SafeArray r ) {// TODO: why is this public?
+    	liveComObjects.add(r.ref);
     }
     
     /**
