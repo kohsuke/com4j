@@ -171,3 +171,40 @@ public:
 		return &v;
 	}
 };
+
+class SafeArrayUnmarshaller : public Unmarshaller {
+	SAFEARRAY* pOriginalSA;
+	SAFEARRAY* pNewSA;
+	jobject originalJSA;
+public:
+	SafeArrayUnmarshaller(SAFEARRAY* pOriginalSA, jobject originalJSA) {
+		this->pOriginalSA = pOriginalSA;
+		this->originalJSA = originalJSA;
+		this->pNewSA = pOriginalSA;
+	}
+	virtual jobject unmarshal( JNIEnv* env ) {
+		//The method did not change the value of the out param.  In this
+		//case we can return the original wrapper
+		if(pOriginalSA == pNewSA) {
+			return originalJSA;
+		}
+
+		//The value of the out param changed.  Tell the managed side
+		//that it's underlying SAFEARRAY was deleted natively by the
+		//callee.
+		if(originalJSA) {
+			com4jSafeArray_markNativeDestroyed(env, originalJSA);
+		}
+
+		if(pNewSA == NULL)
+			return NULL;
+
+		//Turn the native SAFEARRAY into a Java wrapper object.  From there the java side
+		//can unmarshall the array components.
+		jobject sa = com4jSafeArray_new(env, reinterpret_cast<jlong>(pNewSA));
+		return sa;
+	}
+	virtual void* addr() {
+		return &pNewSA;
+	}
+};

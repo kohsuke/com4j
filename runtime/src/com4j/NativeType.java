@@ -1,9 +1,11 @@
 package com4j;
 
+import com4j.SafeArray.Bound;
 import com4j.stdole.IEnumVARIANT;
 
 import static com4j.Const.BYREF;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Calendar;
@@ -579,14 +581,77 @@ public enum NativeType {
      *  <li>double[] -> SAFEARRAY(VT_R8)
      *
      *  <li>Object[] -> SAFEARRAY(VT_VARIANT)
+     *  <li>Variant[] -> SAFEARRAY(VT_VARIANT)
      *  <li>String[] -> SAFEARRAY(VT_BSTR)
+     *  <li>Com4jObject[] -> SAFEARRAY(VT_UNKNOWN)
      * </ul>
      */
-    SafeArray(500,24),
+    SafeArray(500,24) {
+    	@Override
+    	Object toJava(Class<?> signature, Type genericSignature, Object param) {
+    		SafeArray sa = (SafeArray)param;
+    		if(null == sa) {
+    			return null;
+    		}
+    		if(signature.isAssignableFrom(SafeArray.class)) {
+    			return param;
+    		} else if(signature.isArray()) {
+    			Bound[] bounds = sa.getBounds();
+    			if(bounds.length != 1) {
+    				throw new IllegalArgumentException("Cannot convert a SAFEARRAY with " + bounds.length + " bounds");
+    			}
+    			
+    			int aryIdx = 0;
+    			Object ary = Array.newInstance(signature.getComponentType(), bounds[0].ubound - bounds[0].lbound + 1);
+    			for(int i = bounds[0].lbound; i <= bounds[0].ubound; i++) {
+    				Object val = sa.get(i);
+    				if(sa.getVarType() == Variant.Type.VT_UNKNOWN && signature.getComponentType() != Com4jObject.class) {
+    					val = ((Com4jObject)val).queryInterface((Class<? extends Com4jObject>)signature.getComponentType());
+    				} else if(sa.getVarType() == Variant.Type.VT_VARIANT && signature.getComponentType() != Com4jObject.class) {
+    					val = ((Variant)val).convertTo(signature.getComponentType());
+    				}
+    				Array.set(ary, aryIdx++, val);
+    			}
+    			
+    			//We've now copied the data into java objects.  We can destroy the original
+    			//SAFEARRAY to release resources.
+    			sa.destroy();
+    			return ary;
+    		} else {
+    			throw new IllegalArgumentException("Cannot convert a SAFEARRAY to a non-array type");
+    		}
+    	}
+    	
+    	@Override
+    	Object toNative(Object param) {
+    		if(null == param) {
+    			return null;
+    		}
+    		
+    		if(param instanceof SafeArray) {
+    			return param;
+    		}
+    		
+    		if(!param.getClass().isArray()) {
+    			throw new IllegalArgumentException("Cannot construct a SAFEARRAY from a non-array type");
+    		}
+    		
+    		SafeArray sa = new SafeArray(param);
+    		sa.isTemporary = true;	//If the SafeArray is created from a Java array
+    								//it needs to be destroyed at the end of the call
+    		return sa;
+    	}
+    	
+    	@Override
+    	void cleanupNative(Object nativeValue) {
+    		SafeArray sa = (SafeArray)nativeValue;
+    		if(sa.isTemporary) {
+    			((SafeArray)nativeValue).destroy();
+    		}
+    	}
+    },
 
-    // TODO: Not supported yet: SafeArray_ByRef(500|BYREF, 4)
-
-    ;
+    SafeArray_ByRef(500|BYREF, 4);
 
 
 

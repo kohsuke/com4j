@@ -157,6 +157,10 @@ final class TypeBinding {
             if(tb.nativeType == NativeType.VARIANT){
               return new TypeBinding("Object[]", NativeType.SafeArray, true);
             }
+            
+            if(tb.nativeType == NativeType.ComObject || tb.nativeType == NativeType.Dispatch){
+              return new TypeBinding(tb.javaType + "[]", NativeType.SafeArray, true);
+            }
         }
 
         // T = typedef
@@ -225,7 +229,7 @@ final class TypeBinding {
 
         ISafeArrayType sa = t.queryInterface(ISafeArrayType.class);
         if (sa != null) {
-          return "SAVEARRAY(" + getTypeString(sa.getComponentType()) + ")";
+          return "SAFEARRAY(" + getTypeString(sa.getComponentType()) + ")";
         }
 
         return "N/A";

@@ -9,15 +9,15 @@ import java.lang.ref.ReferenceQueue;
  *
  * @author mpoindexter
  */
-public class NativePointerPhantomReference extends PhantomReference<Wrapper> {
+public class NativePointerPhantomReference extends PhantomReference<Wrapper> implements NativeResourceReference {
 	private long ptr;
 	
-	public NativePointerPhantomReference(Wrapper wrapper, ReferenceQueue<Wrapper> queue, long ptr) {
+	public NativePointerPhantomReference(Wrapper wrapper, ReferenceQueue<Object> queue, long ptr) {
 		super(wrapper, queue);
 		this.ptr = ptr;
 	}
 	
-	void releaseNative() {
+	public void releaseNative() {
         if (ptr!=0) {
     		Native.release(ptr);
             ptr = 0;

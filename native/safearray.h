@@ -4,6 +4,7 @@
 	SafeArrayXducer::toNative is probably the most useful public entry point.
 */
 #pragma once
+#include "xducer.h"
 #include "xducer2.h"
 
 namespace safearray {
@@ -28,7 +29,7 @@ namespace safearray {
 	//
 	// itemType : array item type
 	// XDUCER : converter for each array item
-	template < VARTYPE itemType, class XDUCER >
+	template < VARTYPE itemType, class XDUCER, class BOXEDXDUCER = XDUCER >
 	class BasicArrayXducer {
 	public:
 		typedef array::Array<typename XDUCER::JavaType> JARRAY;
@@ -59,6 +60,34 @@ namespace safearray {
 			return psa;
 		}
 
+		static void setNativeElement( JNIEnv* env, NativeType psa, jintArray jindices, jobject jdata )
+		{
+			HRESULT hr;
+			jint* indices = env->GetIntArrayElements(jindices, NULL);
+			BOXEDXDUCER::NativeType* data;
+
+			hr = SafeArrayLock(psa);
+			if(FAILED(hr)) {
+				error(env, __FILE__, __LINE__, "Cannot lock array");
+				return;
+			}
+
+			hr = SafeArrayPtrOfIndex(psa, indices, (void**)&data);
+			if(FAILED(hr)) {
+				error(env, __FILE__, __LINE__, "Cannot get array element");
+				return;
+			}
+
+			hr = SafeArrayUnlock(psa);
+			if(FAILED(hr)) {
+				error(env, __FILE__, __LINE__, "Cannot unlock array");
+				return;
+			}
+			
+			*data = BOXEDXDUCER::toNative(env, static_cast<BOXEDXDUCER::JavaType>(jdata));
+			env->ReleaseIntArrayElements(jindices, indices, JNI_ABORT);
+		}
+
 		static JavaType toJava( JNIEnv* env, NativeType psa ) {
 			XDUCER::NativeType* pSrc;
 
@@ -81,10 +110,39 @@ namespace safearray {
 
 			return a;
 		}
+
+		static jobject getJavaElement( JNIEnv* env, NativeType psa, jintArray jindices )
+		{
+			HRESULT hr;
+			jint* indices = env->GetIntArrayElements(jindices, NULL);
+			BOXEDXDUCER::NativeType* data;
+
+			hr = SafeArrayLock(psa);
+			if(FAILED(hr)) {
+				error(env, __FILE__, __LINE__, "Cannot lock array");
+				return NULL;
+			}
+
+			hr = SafeArrayPtrOfIndex(psa, indices, (void**)&data);
+			if(FAILED(hr)) {
+				error(env, __FILE__, __LINE__, "Cannot get array element");
+				return NULL;
+			}
+
+			hr = SafeArrayUnlock(psa);
+			if(FAILED(hr)) {
+				error(env, __FILE__, __LINE__, "Cannot unlock array");
+				return NULL;
+			}
+
+			jobject r = BOXEDXDUCER::toJava(env, *data);
+			env->ReleaseIntArrayElements(jindices, indices, JNI_ABORT);
+			return r;
+		}
 	};
 
 	// convert between SAFEARRAY and Java primitive array
-	template < VARTYPE vt, class NT, class JT >
-	class PrimitiveArrayXducer : public BasicArrayXducer< vt, xducer::IdentityXducer<NT,JT> > {
+	template < VARTYPE vt, class NT, class JT, class BOXXDUCER >
+	class PrimitiveArrayXducer : public BasicArrayXducer< vt, xducer::IdentityXducer<NT,JT>, BOXXDUCER > {
 	};
 }

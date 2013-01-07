@@ -28,6 +28,11 @@ JConstructorID com4jWrapper_new(com4jWrapper,"(J)V");
 JMethodID<jobject> com4jWrapper_queryInterface(com4jWrapper,"queryInterface","(Ljava/lang/Class;)Lcom4j/Com4jObject;");
 JMethodID<void> com4jWrapper_dispose0(com4jWrapper,"dispose0","()V");
 
+JClassID com4jSafeArray("com4j/SafeArray");
+JConstructorID com4jSafeArray_new(com4jSafeArray,"(J)V");
+JFieldID<jlong> com4jSafeArray_ptr(com4jSafeArray,"ptr","J");
+JMethodID<void> com4jSafeArray_markNativeDestroyed(com4jSafeArray,"markNativeDestroyed","()V");
+
 JClassID com4j_ComEnum("com4j/ComEnum");
 JMethodID<jint> com4j_ComEnum_comEnumValue(com4j_ComEnum,"comEnumValue","()I");
 

@@ -383,13 +383,30 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				break;
 
 			case cvSAFEARRAY:
-				psa = safearray::SafeArrayXducer::toNative(env,(jarray)arg);
-				if(psa==NULL) {
-					error(env,__FILE__,__LINE__,"unable to convert the given array to SAFEARRAY");
-					return NULL;
+				if(arg == NULL) {
+					psa = NULL;
+				} else {
+					psa = reinterpret_cast<SAFEARRAY*>(env->GetLongField(arg, com4jSafeArray_ptr));
 				}
-				add( new SAFEARRAYCleanUp(psa) );
 				c_args[i].v_ptr = psa;
+				ffi_types[i + 1] = &ffi_type_pointer;
+				ffi_values[i + 1] = &c_args[i].v_ptr;
+				break;
+
+			case cvSAFEARRAY_byRef:
+				if(arg == NULL) {
+					c_args[i].v_ptr = NULL;
+				} else {
+					jobject jsa = jholder(arg)->get(env);
+					if(jsa == NULL) {
+						psa = NULL;
+					} else {
+						psa = reinterpret_cast<SAFEARRAY*>(env->GetLongField(jsa, com4jSafeArray_ptr));
+					}
+					unm = new SafeArrayUnmarshaller(psa, jsa);
+					add(new OutParamHandler( jholder(arg), unm ));
+					c_args[i].v_ptr = unm->addr();
+				}
 				ffi_types[i + 1] = &ffi_type_pointer;
 				ffi_values[i + 1] = &c_args[i].v_ptr;
 				break;
@@ -464,6 +481,10 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 
 				case cvVARIANT:
 					retUnm = new VariantUnmarshaller();
+					break;
+
+				case cvSAFEARRAY:
+					retUnm = new SafeArrayUnmarshaller(NULL, NULL);
 					break;
 
 				default:

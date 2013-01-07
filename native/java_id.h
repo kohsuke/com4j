@@ -24,6 +24,11 @@ extern JConstructorID com4jWrapper_new;
 extern JMethodID<jobject> com4jWrapper_queryInterface;
 extern JMethodID<void> com4jWrapper_dispose0;
 
+extern JClassID com4jSafeArray;
+extern JConstructorID com4jSafeArray_new;
+extern JFieldID<jlong> com4jSafeArray_ptr;
+extern JMethodID<void> com4jSafeArray_markNativeDestroyed;
+
 extern JClassID javaLangClass;
 extern JMethodID<jstring> javaLangClass_getName;
 

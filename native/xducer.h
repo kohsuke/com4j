@@ -127,6 +127,9 @@ namespace xducer {
 	typedef BoxXducer<byte,jbyte,&javaLangByte_valueOf, &javaLangNumber_byteValue >
 		BoxedByteXducer;
 
+	typedef BoxXducer<unsigned short,jchar,&javaLangCharacter_valueOf, &javaLangCharacter_charValue >
+		BoxedCharXducer;
+
 	typedef BoxXducer<float,jfloat,&javaLangFloat_valueOf, &javaLangNumber_floatValue >
 		BoxedFloatXducer;
 
