@@ -61,7 +61,8 @@ SafeArrayXducer::JavaType SafeArrayXducer::toJava( JNIEnv* env, SAFEARRAY* value
 		return BasicArrayXducer<VT_VARIANT,xducer::VariantXducer>::toJava(env,value);
 	if((feature&FADF_HAVEVARTYPE) != 0)
 	{
-	    VARTYPE elemType = HIWORD(value->cLocks)&VT_TYPEMASK;
+		VARTYPE elemType;
+		SafeArrayGetVartype(value, &elemType);
 		for( Entry* e=entries; e->clazz!=NULL; e++ ) {
 			if(elemType==e->vt)
 				return e->toJava(env,value);
