@@ -16,6 +16,21 @@ import java.util.Set;
  * For each user thread that works with COM objects,
  * one {@link ComThread} is created to manage those objects.
  *
+ * <p>
+ * This is because COM objects are inherently tied to the thread that created it,
+ * and therefore all the invocations must be routed through the creator thread.
+ * See http://msdn.microsoft.com/en-us/library/ms809971.aspx for more discussions.
+ *
+ * <p>
+ * This model is rather alien to Java developers, where objects can be passed between
+ * threads more freely. (This is a separate issue from whether those objects can be
+ * safely accessed concurrently.)
+ *
+ * <p>
+ * To bridge these gaps, we don't let application threads touch COM objects at all,
+ * and instead create {@link ComThread} as a shadow thread for each application thread who wants to
+ * create a COM object.
+ *
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  * @author Michael Schnell (ScM, (C) 2008, 2009, Michael-Schnell@gmx.de)
  * @author mpoindexter (staticsnow@gmail.com)
