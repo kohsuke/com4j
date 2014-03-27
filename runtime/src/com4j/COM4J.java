@@ -526,6 +526,7 @@ public abstract class COM4J {
         return obj.getPointer();
     }
 
+    private static final Logger LOGGER = Logger.getLogger(COM4J.class.getName());
     static {
         loadNativeLibrary();
     }
@@ -551,9 +552,12 @@ public abstract class COM4J {
                 filePortion = filePortion.substring(1);
 
             if(filePortion.startsWith("file:/")) {
-                filePortion = filePortion.substring(6);
-                if(filePortion.startsWith("//"))
-                    filePortion = filePortion.substring(2);
+                // Replaced file URL processing with recommended approach:
+                // http://wiki.eclipse.org/Eclipse/UNC_Paths
+                // to support UNC paths
+                File newFile = new File(filePortion.substring(5));
+                filePortion = newFile.toString();
+                LOGGER.fine("COM4J JAR filePortion: " + newFile);
                 try{
                   // this is the same as the deprecated URLDecoder.decode(String) would do.
                   filePortion = URLDecoder.decode(filePortion,  System.getProperty("file.encoding"));
@@ -596,6 +600,4 @@ public abstract class COM4J {
             out.close();
         }
     }
-
-    private static final Logger LOGGER = Logger.getLogger(COM4J.class.getName());
 }
