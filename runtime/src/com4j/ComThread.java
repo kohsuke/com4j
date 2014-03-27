@@ -93,7 +93,8 @@ public final class ComThread extends Thread {
     private final List<Task<?>> taskList = Collections.synchronizedList((new LinkedList<Task<?>>()));// com4j issue 70
 
     /**
-     * The set of live COM objects.
+     * COM objects that this thread is managing. This thread needs to stick around until they are all gone,
+     * even when the peer is dead, because other threads might still want to talk to these objects.
      */
     private Set<NativePointerPhantomReference> liveComObjects = new HashSet<NativePointerPhantomReference>();
 
