@@ -198,6 +198,7 @@ public final class ComThread extends Thread {
      */
     public <T> T execute(Task<T> task) {
         synchronized(task) {
+            task.reset();
             // add it to the tail
             taskList.add(task);
 

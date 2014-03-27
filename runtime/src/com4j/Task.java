@@ -9,7 +9,7 @@ import java.util.concurrent.Callable;
  * @author Kohsuke Kawaguchi (kk@kohsuke.org)
  */
 abstract class Task<T> implements Callable<T> {
-	private volatile boolean doneExecuting = false;
+	private volatile boolean done = false;
     public abstract T call();
 
 
@@ -51,7 +51,7 @@ abstract class Task<T> implements Callable<T> {
         } catch( Throwable e ) {
             exception = e;
         } finally {
-        	doneExecuting = true;
+        	done = true;
         }
 
         // let the calling thread know that we are done.
@@ -62,8 +62,15 @@ abstract class Task<T> implements Callable<T> {
      * Indicates whether this task is done executing
      * @return {@literal true} if execution of the task is finished
      */
-    public final boolean isDone() {
-    	return doneExecuting;
+    final boolean isDone() {
+    	return done;
+    }
+
+    /**
+     * Prepare for invocation.
+     */
+    final void reset() {
+        done = false;
     }
 
     /**
