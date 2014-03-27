@@ -234,7 +234,6 @@ final class Wrapper implements InvocationHandler, Com4jObject {
     private void dispose0() {
         if (!isDisposed) {
             ref.releaseNative();
-            ref.clear();
             isDisposed = true;
         }
     }
