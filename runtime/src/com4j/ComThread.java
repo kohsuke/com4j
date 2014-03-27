@@ -198,6 +198,7 @@ public final class ComThread extends Thread {
      */
     public <T> T execute(Task<T> task) {
         synchronized(task) {
+            task.reset();
             // add it to the tail
             taskList.add(task);
 
@@ -206,7 +207,9 @@ public final class ComThread extends Thread {
 
             // wait for the completion
             try {
-                task.wait();
+            	while (!task.isDone()) {
+            		task.wait();
+            	}
             } catch (InterruptedException e) {
                 task.exception = e; // we got interrupted, so task.result will be invalid! 
             }
