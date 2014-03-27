@@ -262,6 +262,17 @@ public final class ComThread extends Thread {
     }
     
     /**
+     * Removes a {@link Com4jObject} from the live objects of this {@link ComThread}
+     * 
+     * @param r The {@link Com4jObject}
+     */
+    public synchronized void removeLiveObject( Com4jObject r ) {
+    	if (r instanceof Wrapper) {
+    		liveComObjects.remove(((Wrapper)r).ref);
+    	}
+    }
+    
+    /**
      * Checks if the current thread is a {@link ComThread}.
      */
     static boolean isComThread() {
