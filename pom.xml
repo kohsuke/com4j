@@ -9,7 +9,7 @@
 
   <groupId>org.jvnet.com4j</groupId>
   <artifactId>com4j-parent</artifactId>
-  <version>2.1</version>
+  <version>2.2-SNAPSHOT</version>
 
   <name>com4j Parent</name>
   <packaging>pom</packaging>
