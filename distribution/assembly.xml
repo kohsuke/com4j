@@ -12,6 +12,7 @@
       <useDefaultExcludes>true</useDefaultExcludes>
       <excludes>
         <exclude>.git/</exclude>
+        <exclude>**/*.ncb</exclude>
         <exclude>target/</exclude>
         <exclude>**/target/classes</exclude>
         <exclude>**/target/test-classes</exclude>
