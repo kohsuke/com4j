@@ -15,23 +15,42 @@
     <style type="text/css" media="all">
       @import url("./css/maven-base.css");
       @import url("./css/maven-theme.css");
+      @import url("./css/1024px.css");
       @import url("./css/site.css");
     </style>
-    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
       </head>
-  <body class="composite">
-    <!-- TODO: move this into JavaScript to patch the skin
-      <div class="xright">      <a href="https://com4j.dev.java.net/">com4j</a>
+  <body>
+    <div id="wrap2"><div id="wrap">
+    <div id="header">
+      <p id="toplinks">Skip to: <a href="#content">Content</a> | <a href="#sidebar">Navigation</a> | <a href="#footer">Footer</a></p>
+		
+            <h1 id="bannerLeft">
+          <a href="http://com4j.kohsuke.org/">
+    
+            com4j
+    
+            </a>
+        </h1>
+                
+      <p id="slogan">Maven2 Plugin for Java->COM Bridge using com4j. This plugin will
+		create .java files for a Microsoft COM interface on Windows systems.</p>
+    </div>
+    <div id="breadcrumbs">
+      <div class="xright">      <a href="http://com4j.kohsuke.org/">com4j</a>
           |
           <a href="http://maven.apache.org/">Maven</a>
       </div>
-    -->
-    <div id="leftColumn">
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+
+    <div id="sidebar">
       <div id="navcolumn">
-             <dl class=navgroup>
-        <dt>Overview</dt>
-        <dd><ul>
+              <h2>
+          Overview
+        </h2><ul>
               
     <li class="none">
               <a href="index.html">Introduction</a>
@@ -52,11 +71,10 @@
     <li class="none">
               <a href="override.html">Specifying tlbimp version</a>
         </li>
-          </ul></dd>
-    </dl>
-      <dl class=navgroup>
-        <dt>Examples</dt>
-        <dd><ul>
+          </ul>
+      <h2>
+          Examples
+        </h2><ul>
               
     <li class="none">
               <a href="simple.html">Simple</a>
@@ -65,24 +83,22 @@
     <li class="none">
               <a href="complex.html">Complex</a>
         </li>
-          </ul></dd>
-    </dl>
-      <dl class=navgroup>
-        <dt>References</dt>
-        <dd><ul>
+          </ul>
+      <h2>
+          References
+        </h2><ul>
               
     <li class="none">
-              <a href="https://com4j.dev.java.net/">com4j</a>
+              <a href="http://com4j.kohsuke.org/">com4j</a>
         </li>
               
     <li class="none">
               <a href="http://maven.apache.org/">Maven</a>
         </li>
-          </ul></dd>
-    </dl>
-      <dl class=navgroup>
-        <dt>Project Documentation</dt>
-        <dd><ul>
+          </ul>
+      <h2>
+          Project Documentation
+        </h2><ul>
               
                 
               
@@ -137,35 +153,10 @@
         </li>
               </ul>
         </li>
-          </ul></dd>
-    </dl>
+          </ul>
         </div>
-      <script>
-        // replace the java.net project tools with the navigation bar from Maven.
-        // also get rid of "Get Involved" thingie too, while we are at it
-        var pt = document.getElementById("projecttools");
-        var nv = document.getElementById("navcolumn");
-        
-        while(pt.previousSibling!=null)
-          pt.parentNode.removeChild(pt.previousSibling);
-        
-        pt.parentNode.insertBefore(nv,pt);
-        pt.parentNode.removeChild(pt);
-      </script>
-      <script>
-        // kill "description" h3 bar
-        var ld = document.getElementById("longdescription");
-        if(ld!=null) {
-          for( n=ld.firstChild; n!=null; n=n.nextSibling ) {
-            if(n.nodeType==1 && n.innerHTML=="Description" ) {
-              n.parentNode.removeChild(n);
-              break;
-            }
-          }
-        }
-      </script>
     </div>
-    <div id="bodyColumn">
+    <div id="content">
       <div id="contentBox">
         <a name="Plugin_Documentation"></a><div class="section"><h2>Plugin Documentation<a name="Plugin_Documentation"></a></h2><p>Goals available for this plugin:</p><table border="0" class="bodyTable"><tr class="a"><th>Goal</th><th>Description</th></tr><tr class="b"><td><a href="gen-mojo.html">com4j:gen</a></td><td>Maven2 mojo for running the com4j process to produce .java files
 for the Java-COM bridge. No required parameters are mentioned
@@ -206,13 +197,11 @@ setup.</td></tr></table><a name="System_Requirements"></a><div class="section"><
 </pre></div><p>For more information, see <a class="externalLink" href="http://maven.apache.org/guides/mini/guide-configuring-plugins.html">&quot;Guide to Configuring Plug-ins&quot;</a></p></div></div>
       </div>
     </div>
-    <div class="clear">
-      <hr/>
-    </div>
     <div id="footer">
       <div class="xright">&#169;  
           2007-2014
     
+          <a href="http://kohsuke.org/">Kohsuke Kawaguchi</a> and other contributors
           
   
 
@@ -225,5 +214,6 @@ setup.</td></tr></table><a name="System_Requirements"></a><div class="section"><
         <hr/>
       </div>
     </div>
+    </div></div>
   </body>
 </html>
