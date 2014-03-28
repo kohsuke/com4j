@@ -109,4 +109,9 @@
       </modules>
     </profile>
   </profiles>
+
+  <issueManagement>
+    <system>GitHub Issues</system>
+    <url>https://github.com/kohsuke/com4j/issues</url>
+  </issueManagement>
 </project>
