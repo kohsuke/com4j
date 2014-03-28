@@ -27,12 +27,12 @@
         <version>${project.version}</version>
         <executions>
           <execution>
-            <id>iTunes</id>
             <goals>
               <goal>gen</goal>
             </goals>
             <configuration>
-              <libid>AEDD2B06-81EF-499d-A9D6-E32B3188B61A</libid>
+              <!-- run regsvr32 Debug/com4j.dll to get this type library -->
+              <libId>AEDD2B06-81EF-499d-A9D6-E32B3188B61A</libId>
               <package>com4j_idl</package>
             </configuration>
           </execution>
