@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="AntConfiguration">
-    <defaultAnt bundledAnt="true" />
-  </component>
   <component name="BSFConsole">
     <sendcommandbycontrolenter>false</sendcommandbycontrolenter>
     <restoresystemstreams>false</restoresystemstreams>
@@ -65,11 +62,13 @@
       <entry name="?*.dtd" />
       <entry name="?*.tld" />
     </wildcardResourcePatterns>
-    <annotationProcessing enabled="false" useClasspath="true" />
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="false">
+        <processorPath useClasspath="true" />
+      </profile>
+    </annotationProcessing>
   </component>
-  <component name="CopyrightManager" default="">
-    <module2copyright />
-  </component>
+  <component name="CopyrightManager" default="" />
   <component name="DependenciesAnalyzeManager">
     <option name="myForwardDirection" value="false" />
   </component>
@@ -324,20 +323,20 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/com4j.iml" filepath="$PROJECT_DIR$/com4j.iml" />
-      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/com4j.iml" filepath="file:$TEMPLATE$//home/kohsuke/ws/com4j/com4j.iml" />
-      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/samples/excel/excel.iml" filepath="file:$TEMPLATE$//home/kohsuke/ws/com4j/samples/excel/excel.iml" />
-      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/samples/iTunes/iTunes.iml" filepath="file:$TEMPLATE$//home/kohsuke/ws/com4j/samples/iTunes/iTunes.iml" />
-      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/samples/jnlp/jnlp.iml" filepath="file:$TEMPLATE$//home/kohsuke/ws/com4j/samples/jnlp/jnlp.iml" />
-      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/samples/powerPoint/powerPoint.iml" filepath="file:$TEMPLATE$//home/kohsuke/ws/com4j/samples/powerPoint/powerPoint.iml" />
+      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/com4j.iml" filepath="file:/no-such-dir//home/kohsuke/ws/com4j/com4j.iml" />
+      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/samples/excel/excel.iml" filepath="file:/no-such-dir//home/kohsuke/ws/com4j/samples/excel/excel.iml" />
+      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/samples/iTunes/iTunes.iml" filepath="file:/no-such-dir//home/kohsuke/ws/com4j/samples/iTunes/iTunes.iml" />
+      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/samples/jnlp/jnlp.iml" filepath="file:/no-such-dir//home/kohsuke/ws/com4j/samples/jnlp/jnlp.iml" />
+      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/samples/powerPoint/powerPoint.iml" filepath="file:/no-such-dir//home/kohsuke/ws/com4j/samples/powerPoint/powerPoint.iml" />
       <module fileurl="file://$PROJECT_DIR$/runtime/runtime.iml" filepath="$PROJECT_DIR$/runtime/runtime.iml" />
-      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/runtime/runtime.iml" filepath="file:$TEMPLATE$//home/kohsuke/ws/com4j/runtime/runtime.iml" />
-      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/samples/speech/speech.iml" filepath="file:$TEMPLATE$//home/kohsuke/ws/com4j/samples/speech/speech.iml" />
-      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/test/test.iml" filepath="file:$TEMPLATE$//home/kohsuke/ws/com4j/test/test.iml" />
+      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/runtime/runtime.iml" filepath="file:/no-such-dir//home/kohsuke/ws/com4j/runtime/runtime.iml" />
+      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/samples/speech/speech.iml" filepath="file:/no-such-dir//home/kohsuke/ws/com4j/samples/speech/speech.iml" />
+      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/test/test.iml" filepath="file:/no-such-dir//home/kohsuke/ws/com4j/test/test.iml" />
       <module fileurl="file://$PROJECT_DIR$/tlbimp/tlbimp.iml" filepath="$PROJECT_DIR$/tlbimp/tlbimp.iml" />
-      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/tlbimp/tlbimp.iml" filepath="file:$TEMPLATE$//home/kohsuke/ws/com4j/tlbimp/tlbimp.iml" />
-      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/samples/wmi/wmi.iml" filepath="file:$TEMPLATE$//home/kohsuke/ws/com4j/samples/wmi/wmi.iml" />
-      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/samples/word/word.iml" filepath="file:$TEMPLATE$//home/kohsuke/ws/com4j/samples/word/word.iml" />
-      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/samples/wsh/wsh.iml" filepath="file:$TEMPLATE$//home/kohsuke/ws/com4j/samples/wsh/wsh.iml" />
+      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/tlbimp/tlbimp.iml" filepath="file:/no-such-dir//home/kohsuke/ws/com4j/tlbimp/tlbimp.iml" />
+      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/samples/wmi/wmi.iml" filepath="file:/no-such-dir//home/kohsuke/ws/com4j/samples/wmi/wmi.iml" />
+      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/samples/word/word.iml" filepath="file:/no-such-dir//home/kohsuke/ws/com4j/samples/word/word.iml" />
+      <module fileurl="file://file:/no-such-dir//home/kohsuke/ws/com4j/samples/wsh/wsh.iml" filepath="file:/no-such-dir//home/kohsuke/ws/com4j/samples/wsh/wsh.iml" />
     </modules>
   </component>
   <component name="ProjectResources">
