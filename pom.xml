@@ -13,7 +13,8 @@
   <packaging>pom</packaging>
 
   <modules>
-    <module>site</module>
+    <module>runtime</module>
+    <module>tlbimp</module>
   </modules>
 
   <name>com4j</name>

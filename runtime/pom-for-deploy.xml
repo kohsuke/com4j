@@ -1,7 +1,0 @@
-<project>
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>org.jvnet.com4j</groupId>
-  <artifactId>com4j</artifactId>
-  <version>@VERSION@</version>
-  <name>com4j runtime</name>
-</project>
