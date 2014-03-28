@@ -1,0 +1,202 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+
+
+
+
+
+
+
+<html>
+  <head>
+    <title>maven-com4j-plugin - Usage</title>
+    <style type="text/css" media="all">
+      @import url("./css/maven-base.css");
+      @import url("./css/maven-theme.css");
+      @import url("./css/site.css");
+    </style>
+    <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+  <body class="composite">
+    <!-- TODO: move this into JavaScript to patch the skin
+      <div class="xright">      <a href="https://com4j.dev.java.net/">com4j</a>
+          |
+          <a href="http://maven.apache.org/">Maven</a>
+      </div>
+    -->
+    <div id="leftColumn">
+      <div id="navcolumn">
+             <dl class=navgroup>
+        <dt>Overview</dt>
+        <dd><ul>
+              
+    <li class="none">
+              <a href="index.html">Introduction</a>
+        </li>
+              
+    <li class="none">
+              <a href="setup.html">Setup</a>
+        </li>
+              
+    <li class="none">
+              <a href="plugin-info.html">Goals</a>
+        </li>
+              
+    <li class="none">
+              <strong>Usage</strong>
+        </li>
+              
+    <li class="none">
+              <a href="override.html">Specifying tlbimp version</a>
+        </li>
+          </ul></dd>
+    </dl>
+      <dl class=navgroup>
+        <dt>Examples</dt>
+        <dd><ul>
+              
+    <li class="none">
+              <a href="simple.html">Simple</a>
+        </li>
+              
+    <li class="none">
+              <a href="complex.html">Complex</a>
+        </li>
+          </ul></dd>
+    </dl>
+      <dl class=navgroup>
+        <dt>References</dt>
+        <dd><ul>
+              
+    <li class="none">
+              <a href="https://com4j.dev.java.net/">com4j</a>
+        </li>
+              
+    <li class="none">
+              <a href="http://maven.apache.org/">Maven</a>
+        </li>
+          </ul></dd>
+    </dl>
+      <dl class=navgroup>
+        <dt>Project Documentation</dt>
+        <dd><ul>
+              
+                
+              
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+            
+      
+              
+        <li class="collapsed">
+              <a href="project-info.html">Project Information</a>
+              </li>
+              
+                
+              
+      
+            
+      
+            
+      
+              
+        <li class="collapsed">
+              <a href="project-reports.html">Project Reports</a>
+              </li>
+          </ul></dd>
+    </dl>
+        </div>
+      <script>
+        // replace the java.net project tools with the navigation bar from Maven.
+        // also get rid of "Get Involved" thingie too, while we are at it
+        var pt = document.getElementById("projecttools");
+        var nv = document.getElementById("navcolumn");
+        
+        while(pt.previousSibling!=null)
+          pt.parentNode.removeChild(pt.previousSibling);
+        
+        pt.parentNode.insertBefore(nv,pt);
+        pt.parentNode.removeChild(pt);
+      </script>
+      <script>
+        // kill "description" h3 bar
+        var ld = document.getElementById("longdescription");
+        if(ld!=null) {
+          for( n=ld.firstChild; n!=null; n=n.nextSibling ) {
+            if(n.nodeType==1 && n.innerHTML=="Description" ) {
+              n.parentNode.removeChild(n);
+              break;
+            }
+          }
+        }
+      </script>
+    </div>
+    <div id="bodyColumn">
+      <div id="contentBox">
+        <div class="section"><h2>Usage<a name="Usage"></a></h2><p>This plugin is bound to the &quot;generate-sources&quot; phase by default. It will run whenever the generate-sources phase runs as:</p><div class="source"><pre>mvn generate-sources</pre></div><p>It will naturally run when you compile all of your classes as well:</p><div class="source"><pre>mvn compile</pre></div><p>Direct invocation is also possible. However, this the <i>configuration</i> must live at the top level of the plugin, so only one COM target can be handled this way within the plugin definition.</p><div class="source"><pre>mvn com4j:gen</pre></div><p>Notice where the <i>configuration</i> was moved to in the pom.xml:</p><div class="source"><pre>&lt;plugin&gt;
+  &lt;groupId&gt;org.jvnet.com4j&lt;/groupId&gt;
+  &lt;artifactId&gt;maven-com4j-plugin&lt;/artifactId&gt;
+
+  &lt;configuration&gt;
+    &lt;file&gt;C:\Program Files\iTunes\iTunes.exe&lt;/file&gt;
+    &lt;package&gt;com.mycompany.com4j.itunes&lt;/package&gt;
+  &lt;/configuration&gt;
+
+  &lt;executions&gt;
+    &lt;execution&gt;
+      &lt;id&gt;iTunes&lt;/id&gt;
+      &lt;goals&gt;
+        &lt;goal&gt;gen&lt;/goal&gt;
+      &lt;/goals&gt;
+    &lt;/execution&gt;
+  &lt;/executions&gt;
+&lt;/plugin&gt;</pre></div></div>
+      </div>
+    </div>
+    <div class="clear">
+      <hr/>
+    </div>
+    <div id="footer">
+      <div class="xright">&#169;  
+          2007-2014
+    
+          
+  
+
+  
+  
+  &nbsp;| Last Published: 27 Mar 2014
+  &nbsp;| Version: 2.0-SNAPSHOT
+</div>
+      <div class="clear">
+        <hr/>
+      </div>
+    </div>
+  </body>
+</html>
