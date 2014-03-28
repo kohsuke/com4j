@@ -15,8 +15,7 @@ public class LongTest extends TestCase {
             t.testInt64(1);
             fail();
         } catch(ComException e) {
-            // expected
-            e.printStackTrace();
+            assertEquals(0x80004005, e.getHRESULT());
         }
     }
 }
