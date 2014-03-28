@@ -3,11 +3,11 @@
   <parent>
     <groupId>org.jvnet.com4j</groupId>
     <artifactId>com4j-parent</artifactId>
-    <version>2.0-SNAPSHOT</version>
+    <version>2.0</version>
   </parent>
 
   <artifactId>com4j</artifactId>
-  <version>2.0-SNAPSHOT</version>
+  <version>2.0</version>
 
   <name>com4j</name>
 
@@ -21,8 +21,8 @@
             <phase>generate-resources</phase>
             <configuration>
               <target>
-                <copy file="../native/${mode}/com4j.dll"     tofile="target/classes/com4j/com4j-x86.dll"/>
-                <copy file="../native/x64/${mode}/com4j.dll" tofile="target/classes/com4j/com4j-amd64.dll"/>
+                <copy file="../native/${mode}/com4j.dll" tofile="target/classes/com4j/com4j-x86.dll" />
+                <copy file="../native/x64/${mode}/com4j.dll" tofile="target/classes/com4j/com4j-amd64.dll" />
               </target>
             </configuration>
             <goals>
