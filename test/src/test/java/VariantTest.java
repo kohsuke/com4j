@@ -65,9 +65,6 @@ public class VariantTest extends TestCase {
      * Tests the currency type conversion.
      */
     public void testCurrency() throws Exception {
-        System.out.println("Waiting");
-        new BufferedReader(new InputStreamReader(System.in)).readLine();
-
         ITestObject t = ClassFactory.createTestObject();
 
         BigDecimal const199 = new BigDecimal("1.99");
