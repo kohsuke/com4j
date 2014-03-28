@@ -77,7 +77,7 @@
 		<dependency>
 			<groupId>org.jvnet.com4j</groupId>
 			<artifactId>tlbimp</artifactId>
-			<version>20080105</version>
+			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 
