@@ -15,6 +15,6 @@ public class Main {
 //        wsh.ExpandEnvironmentStrings("%WinDir%",h);
 //        String s = h.value;
         System.out.println(s);
-        COM4J.dispose(wsh);
+        wsh.dispose();
     }
 }
