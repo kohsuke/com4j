@@ -26,6 +26,7 @@ Download the distribution from [here](https://github.com/kohsuke/com4j/downloads
 - [Distributing your applications that use com4j](deployment.html)
 - [Using COM events with com4j](event.html)
 - [Using tlbimp from Ant](ant.html)
+- [Using tlbimp from Maven](maven-com4j-plugin/index.html)
 
 ### Advanced
 
