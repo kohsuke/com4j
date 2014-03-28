@@ -22,10 +22,27 @@
       <artifactId>args4j</artifactId>
       <version>2.0.8</version>
     </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.11</version>
+    <dependency><!-- for optional Ant task -->
+      <groupId>ant</groupId>
+      <artifactId>ant</artifactId>
+      <version>1.6.5</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+         <artifactId>maven-jar-plugin</artifactId>
+         <configuration>
+           <archive>
+             <manifest>
+               <mainClass>com4j.tlbimp.driver.Main</mainClass>
+               <addClasspath>true</addClasspath>
+             </manifest>
+           </archive>
+         </configuration>
+       </plugin>
+    </plugins>
+  </build>
 </project>
