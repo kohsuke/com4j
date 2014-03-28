@@ -18,7 +18,6 @@
     <module>runtime</module>
     <module>tlbimp</module>
     <module>maven-com4j-plugin</module>
-    <module>test</module>
   </modules>
 
   <description>Type-safe Java/COM bridge</description>
@@ -92,4 +91,18 @@
    			</plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>windows</id>
+      <activation>
+        <os>
+          <family>Windows</family>
+        </os>
+      </activation>
+      <modules>
+        <module>test</module>
+      </modules>
+    </profile>
+  </profiles>
 </project>
