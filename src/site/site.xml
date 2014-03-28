@@ -15,7 +15,7 @@
       <item name="Introduction" href="/index.html"/>
       <item name="Download"     href="https://github.com/kohsuke/com4j/downloads"/>
       <item name="Source code"  href="https://github.com/kohsuke/com4j"/>
-      <item name="Bugs"         href="http://java.net/jira/browse/COM4J"/>
+      <item name="Bugs"         href="https://github.com/kohsuke/com4j/issues"/>
     </menu>
 
     <menu name="References">
