@@ -12,7 +12,17 @@
       <useDefaultExcludes>true</useDefaultExcludes>
       <excludes>
         <exclude>.git/</exclude>
+        <exclude>**/*.obj</exclude>
         <exclude>**/*.ncb</exclude>
+        <exclude>**/*.sln</exclude>
+        <exclude>**/*.suo</exclude>
+        <exclude>**/*.tlb</exclude>
+        <exclude>**/*.user</exclude>
+        <exclude>**/*.pch</exclude>
+        <exclude>**/*.res</exclude>
+        <exclude>**/*.tlh</exclude>
+        <exclude>**/*.tli</exclude>
+        <exclude>**/vc90.*</exclude>
         <exclude>target/</exclude>
         <exclude>**/target/classes</exclude>
         <exclude>**/target/test-classes</exclude>
