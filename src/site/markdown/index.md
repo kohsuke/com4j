@@ -8,7 +8,7 @@ The goal of the project is to provide a better integration of Java and COM.
 
 ## Feature Highlights
 
-- Takes advantages of J2SE 1.5 features to improve usability.
+- Takes advantages of Java5 features to improve usability.
 - Binds directly to the vtable interface (not IDispatch) for improved performance and broeader support for more COM interfaces.
 - Supports event callback
 - Works on 32bit and 64bit JVM
