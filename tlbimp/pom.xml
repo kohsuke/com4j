@@ -6,10 +6,22 @@
     <version>2.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>com4j</artifactId>
+  <artifactId>tlbimp</artifactId>
   <version>2.0-SNAPSHOT</version>
 
+  <name>com4j type library importer</name>
+
   <dependencies>
+    <dependency>
+      <groupId>org.jvnet.com4j</groupId>
+      <artifactId>com4j</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>args4j</groupId>
+      <artifactId>args4j</artifactId>
+      <version>2.0.8</version>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

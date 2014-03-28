@@ -1,11 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.jvnet.com4j</groupId>
+    <artifactId>com4j-parent</artifactId>
+    <version>2.0-SNAPSHOT</version>
+  </parent>
 
-	<groupId>org.jvnet.com4j</groupId>
 	<artifactId>maven-com4j-plugin</artifactId>
 	<packaging>maven-plugin</packaging>
-	<version>1.1-SNAPSHOT</version>
+	<version>2.0-SNAPSHOT</version>
 
 	<name>COM4J Code Generation Plugin</name>
 	<inceptionYear>2007</inceptionYear>
@@ -16,11 +20,6 @@
 		create .java files for a Microsoft COM interface on Windows systems.
 	</description>
 	
-	<organization>
-		<name>The COM4J Project</name>
-		<url>https://com4j.dev.java.net/</url>
-	</organization>
-
 	<developers>
 		<developer>
 			<name>Jason Thrasher</name>
@@ -42,62 +41,8 @@
 		</developer>
 	</developers>
 	
-	<mailingLists>
-		<mailingList>
-			<name>com4j User List</name>
-			<subscribe>users-subscribe@com4j.dev.java.net</subscribe>
-			<unsubscribe>users-unsubscribe@com4j.dev.java.net</unsubscribe>
-			<post>users@com4j.dev.java.net</post>
-			<archive>https://com4j.dev.java.net/servlets/SummarizeList?listName=users</archive>
-		</mailingList>
-		<mailingList>
-			<name>com4j Issues List</name>
-			<subscribe>issues-subscribe@com4j.dev.java.net</subscribe>
-			<unsubscribe>issues-unsubscribe@com4j.dev.java.net</unsubscribe>
-			<post>issues@com4j.dev.java.net</post>
-			<archive>https://com4j.dev.java.net/servlets/SummarizeList?listName=issues</archive>
-		</mailingList>
-		<mailingList>
-			<name>com4j Issues List</name>
-			<subscribe>cvs-subscribe@com4j.dev.java.net</subscribe>
-			<unsubscribe>cvs-unsubscribe@com4j.dev.java.net</unsubscribe>
-			<post>cvs@com4j.dev.java.net</post>
-			<archive>https://com4j.dev.java.net/servlets/SummarizeList?listName=cvs</archive>
-		</mailingList>
-	</mailingLists>
-	
-	<licenses>
-		<license>
-			<name>MIT</name>
-			<url>https://com4j.dev.java.net/source/browse/*checkout*/com4j/com4j/maven-com4j-plugin/license.txt?content-type=text%2Fplain</url>
-			<distribution>repo</distribution>
-			<comments>The MIT License is used for the maven plugin, and com4j in general.</comments>
-		</license>
-	</licenses>
-
-	<scm>
-		<connection>scm:cvs:pserver:guest@cvs.dev.java.net:/cvs:com4j/com4j/maven-com4j-plugin</connection>
-		<developerConnection>scm:cvs:pserver:kohsuke@cvs.dev.java.net:/cvs:com4j/com4j/maven-com4j-plugin</developerConnection>
-		<url>https://com4j.dev.java.net/source/browse/com4j/com4j/maven-com4j-plugin</url>
-  </scm>
-
-  <distributionManagement>
-    <repository>
-      <uniqueVersion>false</uniqueVersion>
-      <id>java.net-maven2-repository</id>
-      <url>java-net:/maven2-repository/trunk/www/repository/</url>
-    </repository>
-    <site>
-      <id>xyz-www</id>
-      <url>file:../../www/maven-com4j-plugin</url>
-    </site>
-  </distributionManagement>
-  
   <reporting>
 		<plugins>
-			<plugin>
-				<artifactId>maven-javadoc-plugin</artifactId>
-			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>taglist-maven-plugin</artifactId>
@@ -139,13 +84,6 @@
 	<build>
 		<defaultGoal>install</defaultGoal>
 		<plugins>
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.5</source>
-					<target>1.5</target>
-				</configuration>
-			</plugin>
       <plugin>
         <artifactId>maven-plugin-plugin</artifactId>
         <configuration>
@@ -153,26 +91,5 @@
         </configuration>
       </plugin>
 		</plugins>
-    <extensions>
-      <extension>
-        <groupId>org.jvnet.wagon-svn</groupId>
-        <artifactId>wagon-svn</artifactId>
-        <version>1.6</version>
-      </extension>
-    </extensions>
 	</build>
-
-  <repositories>
-    <repository>
-      <id>maven2-repository.dev.java.net</id>
-      <name>Java.net Repository for Maven</name>
-      <url>http://download.java.net/maven/2/</url>
-    </repository>
-    <repository>
-      <id>maven-repository.dev.java.net</id>
-      <name>Java.net Repository for Maven</name>
-      <url>http://download.java.net/maven/1/</url>
-      <layout>legacy</layout>
-    </repository>
-  </repositories>
 </project>
