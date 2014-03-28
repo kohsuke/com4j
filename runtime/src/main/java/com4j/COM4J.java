@@ -542,6 +542,8 @@ public abstract class COM4J {
             cause = t;
         }
 
+        final String fileName = "com4j-" + System.getProperty("os.arch") + ".dll";
+
         // try loading com4j.dll in the same directory as com4j.jar
         URL res = COM4J.class.getClassLoader().getResource("com4j/COM4J.class");
         String url = res.toExternalForm();
@@ -567,7 +569,6 @@ public abstract class COM4J {
                   e.printStackTrace();
                 }
                 File jarFile = new File(filePortion);
-                String fileName = "com4j-" + System.getProperty("os.arch") + ".dll";
                 File dllFile = new File(jarFile.getParentFile(), fileName);
                 if(!dllFile.exists()) {
                     // try to extract from within the jar
@@ -582,7 +583,14 @@ public abstract class COM4J {
                 System.load(dllFile.getPath());
                 return;
             }
+        } else
+        if(url.startsWith("file:")) {
+            File classFile = new File(url.substring(5));
+            File dllFile = new File(classFile.getParentFile(),fileName);
+            System.load(dllFile.getPath());
+            return;
         }
+
 
         UnsatisfiedLinkError error = new UnsatisfiedLinkError("Unable to load com4j.dll");
         error.initCause(cause);
