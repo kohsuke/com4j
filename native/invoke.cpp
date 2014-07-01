@@ -393,7 +393,28 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				ffi_types[i + 1] = &ffi_type_pointer;
 				ffi_values[i + 1] = &c_args[i].v_ptr;
 				break;
-				
+
+			case cvSAFEARRAY_byRef:
+				SAFEARRAY** ppsa = NULL;
+				if(arg==NULL) {
+					c_args[i].v_ptr = NULL;
+				} else if(env->IsSameObject(env->GetObjectClass(arg),com4j_Holder)) {
+					// if it's a holder, convert its value, and prepare the unmarshaller
+					// we don't know the inner type of array,
+					// if we know that by add a paramemnt to the function, we could use
+					// umn = new SafeArrayUnmarshaller<safearray::BasicArrayXducer<short>>(env, NULL);
+					jobject o = jholder(arg)->get(env);
+					unm = new SafeArrayUnmarshaller<safearray::SafeArrayXducer>(env, static_cast<jarray>(o));
+					add( new OutParamHandler( jholder(arg), unm ) );	// after the method call unmarshal it back to SAFEARRAY
+					ppsa = static_cast<SAFEARRAY**>(unm->addr());
+				} else {
+					error(env,__FILE__,__LINE__,"unable to convert the given object to SAFEARRAY*");
+					return NULL;
+				}
+				c_args[i].v_ptr = ppsa;
+				ffi_types[i + 1] = &ffi_type_pointer;
+				ffi_values[i + 1] = &c_args[i].v_ptr;
+				break;
 
 			default:
 				error(env,__FILE__,__LINE__,"unexpected conversion type: %d",convs[i]);
@@ -464,6 +485,10 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 
 				case cvVARIANT:
 					retUnm = new VariantUnmarshaller();
+					break;
+
+				case cvSAFEARRAY:
+					retUnm = new SafeArrayUnmarshaller<safearray::SafeArrayXducer>(env,NULL);
 					break;
 
 				default:

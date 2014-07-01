@@ -171,3 +171,26 @@ public:
 		return &v;
 	}
 };
+
+template < class XDUCER >
+class SafeArrayUnmarshaller : public Unmarshaller {
+	SAFEARRAY* psa;
+public:
+	SafeArrayUnmarshaller( JNIEnv* env, jarray i ) {
+		psa = NULL;
+		if(i!=NULL)
+			psa = XDUCER::toNative(env,i);
+	}
+
+	virtual void* addr() {
+		return &psa;
+	}
+
+	virtual jarray unmarshal( JNIEnv* env ) {
+		return XDUCER::toJava(env,psa);
+	}
+
+	virtual ~SafeArrayUnmarshaller() {
+		SafeArrayDestroy(psa);
+	}
+};

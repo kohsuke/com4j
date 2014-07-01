@@ -125,6 +125,24 @@ final class TypeBinding {
                 }
             }
 
+            ISafeArrayType at = comp.queryInterface(ISafeArrayType.class);
+            if(at!=null) {
+                // T=SAFEARRAY(...)
+                IType comp2 = at.getComponentType();
+
+                IPrimitiveType compPrim2 = comp2.queryInterface(IPrimitiveType.class);
+                if( compPrim2!=null ) {
+                    TypeBinding r = primitiveTypeBindings.get(compPrim2.getVarType());
+                    if(r!=null) {
+                        return new TypeBinding("Holder<"+r.javaType+"[]>", NativeType.SafeArray, true );
+                    }
+                }
+                TypeBinding tb = TypeBinding.bind(g, comp2, null);
+                if(tb.nativeType == NativeType.VARIANT){
+                  return new TypeBinding("Holder<Object[]>", NativeType.SafeArray, true);
+                }
+            }
+
             // a few other random checks
             String name = getTypeString(ptrt);
             if( name.equals("_RemotableHandle*") ) {
@@ -225,7 +243,7 @@ final class TypeBinding {
 
         ISafeArrayType sa = t.queryInterface(ISafeArrayType.class);
         if (sa != null) {
-          return "SAVEARRAY(" + getTypeString(sa.getComponentType()) + ")";
+          return "SAFEARRAY(" + getTypeString(sa.getComponentType()) + ")";
         }
 
         return "N/A";

@@ -242,9 +242,9 @@ abstract class ComMethod {
                   if(Buffer.class.isAssignableFrom(c))
                     return NativeType.PVOID_ByRef;
                 }
-//                if(v instanceof GenericArrayType){
-//                  return NativeType.SafeArray_ByRef;
-//                }
+                if(v instanceof GenericArrayType){
+                  return NativeType.SafeArray_ByRef;
+                }
             }
             if( p.getRawType()==Iterator.class ) {
                 return NativeType.ComObject;
