@@ -1,6 +1,7 @@
 package com4j;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -241,6 +242,8 @@ abstract class ComMethod {
                     return NativeType.VariantBool_ByRef;
                   if(Buffer.class.isAssignableFrom(c))
                     return NativeType.PVOID_ByRef;
+                  if(c.isArray())
+                    return NativeType.SafeArray_ByRef;
                 }
                 if(v instanceof GenericArrayType){
                   return NativeType.SafeArray_ByRef;

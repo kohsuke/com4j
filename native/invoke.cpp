@@ -395,7 +395,6 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 				break;
 
 			case cvSAFEARRAY_byRef:
-				SAFEARRAY** ppsa = NULL;
 				if(arg==NULL) {
 					c_args[i].v_ptr = NULL;
 				} else if(env->IsSameObject(env->GetObjectClass(arg),com4j_Holder)) {
@@ -406,12 +405,12 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 					jobject o = jholder(arg)->get(env);
 					unm = new SafeArrayUnmarshaller<safearray::SafeArrayXducer>(env, static_cast<jarray>(o));
 					add( new OutParamHandler( jholder(arg), unm ) );	// after the method call unmarshal it back to SAFEARRAY
-					ppsa = static_cast<SAFEARRAY**>(unm->addr());
+					SAFEARRAY** ppsa = static_cast<SAFEARRAY**>(unm->addr());
+					c_args[i].v_ptr = ppsa;
 				} else {
 					error(env,__FILE__,__LINE__,"unable to convert the given object to SAFEARRAY*");
 					return NULL;
 				}
-				c_args[i].v_ptr = ppsa;
 				ffi_types[i + 1] = &ffi_type_pointer;
 				ffi_values[i + 1] = &c_args[i].v_ptr;
 				break;

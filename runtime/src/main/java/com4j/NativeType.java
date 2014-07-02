@@ -583,13 +583,7 @@ public enum NativeType {
      * </ul>
      */
     SafeArray(500,24),
-
-    // TODO: Not supported yet: SafeArray_ByRef(500|BYREF, 4)
-
-    ;
-
-
-
+    SafeArray_ByRef(500|BYREF,4);
 
 
     /**
