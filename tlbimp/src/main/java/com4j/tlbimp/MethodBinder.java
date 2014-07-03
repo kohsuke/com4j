@@ -65,7 +65,12 @@ abstract class MethodBinder
     if (retParam == -1) {
       return null;
     }
-    IPtrType pt = params[retParam].getType().queryInterface(IPtrType.class);
+    IParam p = params[retParam];
+    IType t = p.getType();
+    if (t == null) {
+      throw new BindingException(Messages.UNSUPPORTED_TYPE.format());
+    }
+    IPtrType pt = t.queryInterface(IPtrType.class);
     if (pt == null) {
       throw new BindingException(Messages.RETVAL_MUST_BY_REFERENCE.format());
     }
