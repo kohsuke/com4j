@@ -187,10 +187,12 @@ public:
 	}
 
 	virtual jarray unmarshal( JNIEnv* env ) {
+		if(psa==NULL) return NULL;
 		return XDUCER::toJava(env,psa);
 	}
 
 	virtual ~SafeArrayUnmarshaller() {
+		if(psa==NULL) return;
 		SafeArrayDestroy(psa);
 	}
 };
