@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/com.github.com4j.feature_2.2.0.qualifier.jar" id="com.github.com4j.feature" version="0.0.0">
+      <category name="Com4j"/>
+   </feature>
+   <feature url="features/com.github.com4j.feature.source_2.2.0.qualifier.jar" id="com.github.com4j.feature.source" version="0.0.0">
+      <category name="Com4j"/>
+   </feature>
+   <category-def name="Com4j" label="Com4j"/>
+</site>
