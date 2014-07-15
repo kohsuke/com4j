@@ -10,10 +10,24 @@
 	<modules>
 		<module>runtime</module>
 		<module>tlbimp</module>
-		<!--<module>com4j-maven-plugin</module>
-		<module>distribution</module>-->
+		<module>com4j-maven-plugin</module>
+		<module>distribution</module>
 	</modules>
 
+	<profiles>
+		<profile>
+			<id>windows</id>
+			<activation>
+				<os>
+					<family>Windows</family>
+				</os>
+			</activation>
+			<modules>
+				<module>test</module>
+			</modules>
+		</profile>
+	</profiles>
+	
 	<description>Type-safe Java/COM bridge</description>
 	<url>http://com4j.kohsuke.org/</url>
 
@@ -23,13 +37,6 @@
     <url>http://com4j.kohsuke.org/</url>
     <tag>HEAD</tag>
   </scm>
-
-  <distributionManagement>
-    <site>
-      <id>github-pages</id>
-      <url>gitsite:git@github.com/kohsuke/com4j.git</url>
-    </site>
-  </distributionManagement>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -71,26 +78,12 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
+          <source>1.6</source>
+          <target>1.6</target>
         </configuration>
       </plugin>
     </plugins>
   </build>
-
-  <profiles>
-    <profile>
-      <id>windows</id>
-      <activation>
-        <os>
-          <family>Windows</family>
-        </os>
-      </activation>
-      <modules>
-        <module>test</module>
-      </modules>
-    </profile>
-  </profiles>
 
   <issueManagement>
     <system>GitHub Issues</system>
