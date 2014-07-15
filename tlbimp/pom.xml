@@ -1,33 +1,36 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.jvnet.com4j</groupId>
-    <artifactId>com4j-parent</artifactId>
-    <version>2.2-SNAPSHOT</version>
-  </parent>
+	<modelVersion>4.0.0</modelVersion>
 
-  <artifactId>tlbimp</artifactId>
-  <version>2.2-SNAPSHOT</version>
+	<packaging>jar</packaging>
+    <artifactId>com4j.tlbimp</artifactId>
+  
+	<parent>
+		<groupId>com.github.com4j</groupId>
+		<artifactId>com4j.parent</artifactId>
+		<version>2.2-SNAPSHOT</version>
+	</parent>
 
-  <name>com4j type library importer</name>
+	<name>${project.artifactId}: com4j type library importer</name>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.jvnet.com4j</groupId>
-      <artifactId>com4j</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>args4j</groupId>
-      <artifactId>args4j</artifactId>
-      <version>2.0.8</version>
-    </dependency>
-    <dependency><!-- for optional Ant task -->
-      <groupId>ant</groupId>
-      <artifactId>ant</artifactId>
-      <version>1.6.5</version>
-      <scope>provided</scope>
-    </dependency>
+	<dependencies>
+  
+		<dependency>
+			<groupId>com.github.com4j</groupId>
+			<artifactId>com4j.runtime</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	
+		<dependency>
+			<groupId>args4j</groupId>
+			<artifactId>args4j</artifactId>
+			<version>2.0.8</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.ant</groupId>
+			<artifactId>ant</artifactId>
+			<version>1.9.4</version>
+		</dependency>
   </dependencies>
 
   <build>

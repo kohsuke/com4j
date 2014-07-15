@@ -1,24 +1,21 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
 	<modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.jvnet.com4j</groupId>
-    <artifactId>com4j-parent</artifactId>
-    <version>2.2-SNAPSHOT</version>
-  </parent>
-
-	<artifactId>com4j-dist</artifactId>
+	
 	<packaging>pom</packaging>
-	<version>2.2-SNAPSHOT</version>
-
-	<name>com4j distribution</name>
+	<artifactId>com4j.distribution</artifactId>
+	
+	<parent>
+		<groupId>com.github.com4j</groupId>
+		<artifactId>com4j.parent</artifactId>
+		<version>2.2-SNAPSHOT</version>
+	</parent>
 
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-      <artifactId>maven-com4j-plugin</artifactId>
-     	<version>2.2-SNAPSHOT</version>
-    </dependency>
+			<artifactId>maven-com4j-plugin</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 
   <build>
@@ -41,4 +38,5 @@
       </plugin>
     </plugins>
   </build>
+  
 </project>

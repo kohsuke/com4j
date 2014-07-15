@@ -66,6 +66,7 @@ final class TypeBinding {
      *      like declaring LPWSTR as "ushort*", etc.
      */
     public static TypeBinding bind( Generator g, IType t, String nameHint ) throws BindingException {
+	//try {
         IPrimitiveType pt = t.queryInterface(IPrimitiveType.class);
         if(pt!=null) {
             // primitive
@@ -197,7 +198,10 @@ final class TypeBinding {
             // TODO: not clear how we should handle this
             throw new BindingException(Messages.UNSUPPORTED_TYPE.format(getTypeString(t)));
         }
-
+ //} catch(java.lang.NullPointerException ex) {
+ //           // TODO: not clear how we should handle this
+ //           throw new BindingException("NullPointerException");
+ //       }
         throw new BindingException(Messages.UNSUPPORTED_TYPE.format(getTypeString(t)));
     }
 
