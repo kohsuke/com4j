@@ -12,7 +12,7 @@
 
 	<modules>
 		<module>com.github.com4j.runtime</module>
-		<module>com.github.com4j.feature</module>
+		<module>com.github.com4j.runtime.feature</module>
 		<module>com.github.com4j.repository</module>
 	</modules>
 	
