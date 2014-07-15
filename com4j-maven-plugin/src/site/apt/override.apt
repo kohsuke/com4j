@@ -1,0 +1,27 @@
+ -----
+ Using specific version of com4j
+ -----
+ -----
+ -----
+
+    This maven plugin by default uses a fixed version of com4j (which is normally the latest
+    when the plugin was released.) To use a newer version of com4j (for example perhaps you'd
+    need to do this to pick up a bug fix), change your POM and add the following text:
+
+------------------
+      <plugin>
+        <groupId>org.jvnet.com4j</groupId>
+        <artifactId>maven-com4j-plugin</artifactId>
+        <executions>
+          ...
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.jvnet.com4j</groupId>
+            <artifactId>tlbimp</artifactId>
+            <version>20080105</version>  <!-- version of your choice -->
+          </dependency>
+        </dependencies>
+      </plugin>
+
+------------------

@@ -1,0 +1,38 @@
+ -----
+ Simple Example
+ -----
+ -----
+ -----
+
+Simple Example
+
+	Here is the simplest configuration for the plugin.  The "file" configuration parameter specifies the COM target file, and is required.  The remaining configuration parameters can be configured, but are otherwise set to reasonable defaults.
+
++------------------------------------------------------------------------+
+<build>
+...
+<plugins>
+...
+<plugin>
+  <groupId>org.jvnet.com4j</groupId>
+  <artifactId>maven-com4j-plugin</artifactId>
+  <executions>
+    <execution>
+      <id>gen-java-bridge</id>
+      <goals>
+        <goal>gen</goal>
+      </goals>
+      <configuration>
+        <file>C:\Program Files\iTunes\iTunes.exe</file>
+      </configuration>
+    </execution>
+    <!-- more executions with different "id"s -->
+  </executions>
+</plugin>
+...
+</plugins>
+...
+</build>
++------------------------------------------------------------------------+
+
+  This will create the classes required to connect to the "C:\Program Files\iTunes\iTunes.exe" program via Windows COM.

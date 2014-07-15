@@ -1,0 +1,92 @@
+ -----
+ Complex Example
+ -----
+ -----
+ -----
+
+Complex Example
+
+	Here is a complex configuration example for the plugin which shows how to set all configuration parameters.
+	Note how the plugin can be invoked multiple times, with different configuration parameters for each execution.
+	Note that not every libId or file can be used to generate Java COM interface files without generation errors.
+
++------------------------------------------------------------------------+
+<plugin>
+  <groupId>org.jvnet.com4j</groupId>
+  <artifactId>maven-com4j-plugin</artifactId>
+  <executions>
+	
+    <execution>
+      <id>iTunes</id>
+      <goals>
+        <goal>gen</goal>
+      </goals>
+      <configuration>
+        <file>C:\Program Files\iTunes\iTunes.exe</file>
+        <package>com.mycompany.com4j.itunes</package>
+      </configuration>
+    </execution>
+    
+    <!-- this will generate a warning because both "file" and "libId" are specified -->
+    <execution>
+      <id>Skype for COM</id>
+      <goals>
+        <goal>gen</goal>
+      </goals>
+      <configuration>
+        <file>C:\Program Files\Common Files\Skype\Skype4COM.dll</file>
+        <libId>03282B5D-B38F-469D-849A-09B0A7F4881B</libId>
+        <package>com.mycompany.com4j.skype.com</package>
+      </configuration>
+    </execution>
+    
+    <execution>
+      <id>Quicken Billpay</id>
+      <goals>
+        <goal>gen</goal>
+      </goals>
+      <configuration>
+        <file>C:\Program Files\Quicken\bpbox.ocx</file>
+        <package>com.mycompany.com4j.quicken.billpay</package>
+      </configuration>
+    </execution>
+
+    <execution>
+      <id>Acrobat Reader</id>
+      <goals>
+        <goal>gen</goal>
+      </goals>
+      <configuration>
+        <file>C:\Program Files\Adobe\Acrobat 7.0\ActiveX\AcroPDF.dll</file>
+        <package>com.mycompany.com4j.adobe.acrobat</package>
+      </configuration>
+    </execution>
+
+    <execution>
+      <id>Acrobat Detect</id>
+      <goals>
+        <goal>gen</goal>
+      </goals>
+      <configuration>
+        <file>C:\Program Files\Adobe\Acrobat 7.0\ActiveX\GbDetect.dll</file>
+        <package>com.mycompany.com4j.adobe.acrobat.detect</package>
+      </configuration>
+    </execution>
+
+    <execution>
+      <id>Acrobat IE Helper</id>
+      <goals>
+        <goal>gen</goal>
+      </goals>
+      <configuration>
+        <file>C:\Program Files\Adobe\Acrobat 7.0\ActiveX\AcroIEHelper.dll</file>
+        <package>com.mycompany.com4j.adobe.acrobat.iehelper</package>
+      </configuration>
+    </execution>
+    <!-- add more executions here -->
+    
+  </executions>
+</plugin>
++------------------------------------------------------------------------+
+
+

@@ -1,0 +1,50 @@
+ -----
+ Usage
+ -----
+ -----
+ -----
+
+Usage
+
+	This plugin is bound to the "generate-sources" phase by default.  It will run whenever the generate-sources phase runs as:
+
++------------------------------------------------------------------------+
+mvn generate-sources
++------------------------------------------------------------------------+
+
+	It will naturally run when you compile all of your classes as well:
+	
++------------------------------------------------------------------------+
+mvn compile
++------------------------------------------------------------------------+
+
+	Direct invocation is also possible.  However, this the <configuration> must live at the top level of the plugin, so only one COM target can be handled this way within the plugin definition.
+	
++------------------------------------------------------------------------+
+mvn com4j:gen
++------------------------------------------------------------------------+
+
+	Notice where the <configuration> was moved to in the pom.xml:
+
++------------------------------------------------------------------------+
+<plugin>
+  <groupId>org.jvnet.com4j</groupId>
+  <artifactId>maven-com4j-plugin</artifactId>
+
+  <configuration>
+    <file>C:\Program Files\iTunes\iTunes.exe</file>
+    <package>com.mycompany.com4j.itunes</package>
+  </configuration>
+
+  <executions>
+    <execution>
+      <id>iTunes</id>
+      <goals>
+        <goal>gen</goal>
+      </goals>
+    </execution>
+  </executions>
+</plugin>
++------------------------------------------------------------------------+
+
+
