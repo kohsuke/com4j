@@ -1,4 +1,4 @@
-package com.yakindu.com4j.plugin;
+package com.github.com4j.plugin;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;

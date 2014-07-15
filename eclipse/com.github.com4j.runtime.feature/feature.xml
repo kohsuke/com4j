@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="com.github.com4j.feature"
-      label="Com4j Library"
+      id="com.github.com4j.runtime.feature"
+      label="Com4j Runtime Library"
       version="2.2.0.qualifier"
 >
 
    <description url="">
-      The COM4J library encapsulated in an Eclipse plugin.
+      The COM4J runtime library encapsulated in an Eclipse plugin.
    </description>
 
    <plugin
