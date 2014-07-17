@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="com.github.com4j.runtime.feature"
+      label="Com4j Runtime Library"
+      version="2.2.0.qualifier"
+>
+
+   <description url="">
+      The COM4J runtime library encapsulated in an Eclipse plugin.
+   </description>
+
+   <plugin
+         id="com.github.com4j.runtime"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>

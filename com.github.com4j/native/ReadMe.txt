@@ -1,0 +1,1 @@
+The C++ cmpiler must be on the command line path for the nar-maven-plugin to be able to pick it up and use it.

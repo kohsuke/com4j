@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Com4j Library
+Bundle-SymbolicName: com.github.com4j.runtime;singleton:=true
+Bundle-Version: 2.2.0.qualifier
+Export-Package: com4j,
+ com4j.stdole,
+ com4j.util
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: com.github.com4j.plugin.Com4JActivator
+Require-Bundle: org.eclipse.osgi
