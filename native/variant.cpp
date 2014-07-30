@@ -133,7 +133,7 @@ class NoopVariantHandlerImpl : public VariantHandler {
 public:
 	VARIANT* set( JNIEnv* env, jobject src ) {
 		VARIANT* pv = new VARIANT();
-		VariantClear(pv);
+		VariantInit(pv);
 		VariantCopy(pv, com4jVariantToVARIANT(env,src));
 		return pv;
 	}
@@ -148,7 +148,7 @@ class ComEnumHandlerImpl : public VariantHandler {
 public:
 	VARIANT* set( JNIEnv* env, jobject src ) {
 		VARIANT* pv = new VARIANT();
-		VariantClear(pv);
+		VariantInit(pv);
 		pv->vt = VT_I4;
 		pv->intVal = com4j_ComEnum_comEnumValue(env,src);
 		return pv;
@@ -166,7 +166,7 @@ public:
 	VARIANT* set( JNIEnv* env, jobject src ) {
 		jdouble d = com4j_Variant_fromDate(env,src);
 		VARIANT* pv = new VARIANT();
-		VariantClear(pv);
+		VariantInit(pv);
 		pv->vt = VT_DATE;
 		pv->date = d;
 		return pv;
@@ -182,7 +182,7 @@ class DecimalHandlerImpl : public VariantHandler {
 public:
 	VARIANT* set( JNIEnv* env, jobject src ) {
 		VARIANT* pv = new VARIANT();
-		VariantClear(pv);
+		VariantInit(pv);
 		pv->vt = VT_DECIMAL;
 
 		jstring s = javaMathBigDecimal_toString(env,src);
@@ -264,7 +264,8 @@ VARIANT* convertToVariant( JNIEnv* env, jobject o ) {
 	// consider a conversion to SAFEARRAY
 	pair<SAFEARRAY*,VARTYPE> sa = safearray::SafeArrayXducer::toNative2(env,static_cast<jarray>(o));
 	if(sa.first!=NULL) {
-		_variant_t* v = new _variant_t();
+		VARIANT* v = new VARIANT();
+		VariantInit(v);
 		v->vt = VT_ARRAY|sa.second;
 		v->parray = sa.first;
 		return v;

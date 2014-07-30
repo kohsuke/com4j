@@ -14,7 +14,8 @@ namespace xducer {
 		typedef jobject JavaType;
 
 		static inline NativeType toNative( JNIEnv* env, JavaType value ) {
-			return *convertToVariant(env,value);
+			std::auto_ptr<VARIANT> v(convertToVariant(env,value)); // need to be deleted after copy as return value
+			return *v;
 		}
 
 		static inline JavaType toJava( JNIEnv* env, NativeType value ) {
