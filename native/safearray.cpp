@@ -47,6 +47,14 @@ pair<SafeArrayXducer::NativeType,VARTYPE> SafeArrayXducer::toNative2(
 		if(env->IsSameObject(clz,*(e->clazz)))
 			return pair<SAFEARRAY*,VARTYPE>( (e->toNative)(env,a), e->vt );
 	}
+
+	// Try as multi dimensinal array
+	if (env->IsInstanceOf(a, objectArray)) { 
+		return pair<SAFEARRAY*,VARTYPE>(
+			MultiDimArrayXducer<xducer::VariantXducer>::toNative(env, a),
+			VT_VARIANT);
+	}
+
 	return pair<SAFEARRAY*,VARTYPE>(NULL,VT_EMPTY);
 }
 
