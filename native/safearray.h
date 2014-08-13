@@ -112,30 +112,30 @@ namespace safearray {
 		}
 
 		JavaType getJava() {
-			return toJavaRec(pSrc, dim - 1);
+			return toJavaRec(pSrc, dim);
 		}
 
 	private:
 
 		JavaType toJavaRec(typename XDUCER::NativeType* &pSrc, int curDim) {
-			if (curDim == 0) {
-				JARRAY::ARRAY a = JARRAY::newArray(env, dimSizes[curDim]);
+			if (curDim == 1) {
+				JARRAY::ARRAY a = JARRAY::newArray(env, dimSizes[curDim - 1]);
 				XDUCER::JavaType* const pDst = JARRAY::lock(env, a);
 
-				for( int i=0; i < dimSizes[curDim]; i++ ) {
+				for( int i=0; i < dimSizes[0]; i++ ) {
 					pDst[i] = XDUCER::toJava(env, *(pSrc++));
 				}
 				JARRAY::unlock(env, a, pDst);
 				return a;
 			}
 			else {
-				jobjectArray a = array::Array<jobject>::newArray(env, dimSizes[curDim]);
-				jobject* const pDst = array::Array<jobject>::lock(env, a);
+				jobjectArray a = array::ArrayND::newArray(env, dimSizes[curDim - 1], curDim);
+				jobject* const pDst = array::ArrayND::lock(env, a);
 
-				for( int i = 0; i < dimSizes[curDim]; i++ ) {
+				for( int i = 0; i < dimSizes[curDim - 1]; i++ ) {
 					pDst[i] = toJavaRec(pSrc, curDim - 1);
 				}
-				array::Array<jobject>::unlock(env, a, pDst);
+				array::ArrayND::unlock(env, a, pDst);
 				return a;
 			}
 

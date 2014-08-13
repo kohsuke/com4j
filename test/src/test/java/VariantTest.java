@@ -6,8 +6,6 @@ import junit.framework.TestCase;
 
 import java.math.BigInteger;
 import java.math.BigDecimal;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.Arrays;
 
 /**
@@ -78,84 +76,130 @@ public class VariantTest extends TestCase {
     }
 
     public void testEmptyArray() throws Exception {
-        ITestObject t = ClassFactory.createTestObject();
-        Object[] a = {};
-        Object[] b = (Object[]) t.testVariant(Variant.getMissing(), a);
-        assertTrue(Arrays.deepEquals(a, b));
+        testArray2(new Object[]{});
     }
 
     public void testEmpty2DArray() throws Exception {
-        ITestObject t = ClassFactory.createTestObject();
-        Object[][] a = {{},{},{}};
-        Object[] b = (Object[]) t.testVariant(Variant.getMissing(), a);
-        assertTrue(Arrays.deepEquals(a, b));
+        testArray2(new Object[][]{{}, {}, {}});
     }
 
     /**
      * Tests the currency type conversion.
      */
     public void testArray() throws Exception {
-        ITestObject t = ClassFactory.createTestObject();
-        Object[] a = {"a1", "a2", "a3"};
-        Object[] b = (Object[]) t.testVariant(Variant.getMissing(), a);
-        assertTrue(Arrays.deepEquals(a, b));
+        testArray2(new Object[]{"a1", "a2", "a3"});
     }
 
     public void test2DArrays() throws Exception {
-        ITestObject t = ClassFactory.createTestObject();
-
-        Object[][] a = {
+        testArray2(new Object[][] {
                 {"a11","a12"},
                 {"a21","a22"},
                 {"a31","a32"}
-        };
-
-        Object[] b = (Object[]) t.testVariant(Variant.getMissing(), a);
-
-        assertTrue(Arrays.deepEquals(a, b));
-
+        });
     }
 
     public void test3DArrays() throws Exception {
-        ITestObject t = ClassFactory.createTestObject();
-        Object[][][] a = {
+        testArray2(new Object[][][] {
                 {{"a111", "a112"},
                         {"a121", "a122"}},
                 {{"a211", "a212"},
                         {"a221", "a222"}},
                 {{"a311", "a312"},
                         {"a321", "a322"}}
-        };
-
-        Object b = t.testVariant(Variant.getMissing(), a);
-        assertTrue(b instanceof Object[]);
-        assertTrue(Arrays.deepEquals(a, (Object[])b));
+        });
     }
 
     public void testDoubleArrays() throws Exception {
-        ITestObject t = ClassFactory.createTestObject();
-
-        Object[][] a = {
-                {1.1,1.2},
-                {2.1,2.2},
-                {3.1,3.2}
-        };
-
-        Object[] b = (Object[]) t.testVariant(Variant.getMissing(), a);
-        assertTrue(Arrays.deepEquals(a, b));
+        testArray2(new Object[][]{
+                {1.1, 1.2},
+                {2.1, 2.2},
+                {3.1, 3.2}
+        });
     }
 
     public void testPrimitiveArrays() throws Exception {
-        ITestObject t = ClassFactory.createTestObject();
-
-        double[][] a = {
+        testArray2(new double[][] {
                 {1.1,1.2},
                 {2.1,2.2},
                 {3.1,3.2}
+        });
+    }
+
+
+    public void test2DLongArray() throws Exception {
+        testArray2(new Object[][]{
+                {"a11", "a12", "a13", "a14", "a15"},
+                {"a21", "a22", "a23", "a24", "a25"}
+        });
+    }
+
+
+    public void test2DArrayWithsubArray() throws Exception {
+        Object[][] a = {
+                {"a11", "a12", "a13", "a14", "a15"},
+                {"a21", "a22", "a23", "a24", "a25"}
         };
 
-        Object[] b = (Object[]) t.testVariant(Variant.getMissing(), a);
-        assertTrue(Arrays.deepEquals(a, b));
+        a[1][4] = new Object[][] {
+                {"s11", "s12"},
+                {"s21", "s22"},
+                {"s31", "s32"},
+                {"s41", "s42"},
+                {"s51", "s52"}
+        };
+
+        testArray2(a);
+    }
+
+    public void testNullArrays() throws Exception {
+        testArray2(new Object[]{"a1", "a2", null, "a4", "a15"});
+    }
+
+    public void testVeryBigDimArray() throws Exception {
+        Object[][] a1 = new Object[][]{
+                {"a11", "a12"},
+                {"a21", "a22"}
+        };
+
+        testArray2(a1);
+
+        Object[][][][][][][][][][][][] a2 = new Object[][][][][][][][][][][][]{{{{{{{{{{{{"a1"}}}}}}}}}}}};
+        testArray2(a2);
+    }
+
+    private void testArray2(Object[] orig) {
+        //Object[] a = (Object[])deepCopy(orig);
+
+        Object[] r = getAsReturnValue(orig);
+        assertTrue(Arrays.deepEquals(orig, r));
+
+        Object[] r2 = getAsReturnValue(r);
+        assertTrue(Arrays.deepEquals(orig, r2));
+
+
+        //a = (Object[])deepCopy(orig);
+        r = getAsRefValue(orig);
+        assertTrue(Arrays.deepEquals(orig, r));
+
+        r2 = getAsRefValue(r);
+        assertTrue(Arrays.deepEquals(orig, r2));
+    }
+
+
+    private Object[] getAsReturnValue(Object[] a) {
+        ITestObject t = ClassFactory.createTestObject();
+
+        Object[] c = (Object[])t.testVariant(Variant.getMissing(), a); // return copy of a, test return value conversion
+        return c;
+    }
+
+    private Object[] getAsRefValue(Object[] a) {
+        ITestObject t = ClassFactory.createTestObject();
+
+        Variant bv = Variant.getMissing();
+
+        t.testVariant(a, bv); // copy a -> b, test internal conversion
+        return bv.convertTo(Object[].class);
     }
 
 
