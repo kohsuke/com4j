@@ -109,229 +109,312 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 	ffi_values[0] = &pComObject;
 
 	int ffi_arg_count = 1;
-	for(int i=0; i <= paramLen; i++ ) {
+
+	int javaParamIndex = 0;
+	int comParamIndex = 0;
+
+	for(comParamIndex = 0; comParamIndex <= paramLen; comParamIndex++ ) {
 		unm = NULL;
 		jobject arg = NULL;
-		if(i < paramLen) {
-			ffi_arg_count++;
-			arg = env->GetObjectArrayElement(args,i);
-			switch( convs[i] ) {
+
+		if( comParamIndex == retIndex && !retIsInOut) {
+			switch(retConv) {
 			case cvBSTR:
-				c_args[i].v_ptr = toBSTR((jstring)arg);
-				ffi_types[i + 1] = &ffi_type_pointer;
-				ffi_values[i + 1] = &c_args[i].v_ptr;
+				retUnm = new BSTRUnmarshaller(NULL);
 				break;
-
-			case cvBSTR_byRef:
-				if(arg==NULL) {
-					c_args[i].v_ptr = NULL;
-				} else {
-					unm = new BSTRUnmarshaller(toBSTR((jstring)jholder(arg)->get(env)));
-					add( new OutParamHandler( jholder(arg), unm ) );
-					c_args[i].v_ptr = unm->addr();
-				}
-				ffi_types[i + 1] = &ffi_type_pointer;
-				ffi_values[i + 1] = &c_args[i].v_ptr;
-				break;
-
-			case cvLPCWSTR:
-				c_args[i].v_ptr = (void*)toLPCWSTR((jstring)arg);
-				ffi_types[i + 1] = &ffi_type_pointer;
-				ffi_values[i + 1] = &c_args[i].v_ptr;
-				break;
-
-			case cvLPCSTR:
-				c_args[i].v_ptr = (void*)toLPCSTR((jstring)arg);
-				ffi_types[i + 1] = &ffi_type_pointer;
-				ffi_values[i + 1] = &c_args[i].v_ptr;
-				break;
-
-			case cvINT8:
-				c_args[i].v_int8 = javaLangNumber_byteValue(env,arg);
-				ffi_types[i + 1] = &ffi_type_sint8;
-				ffi_values[i + 1] = &c_args[i].v_int8;
-				break;
-
-			case cvINT8_byRef:
-				if(arg==NULL) {
-					c_args[i].v_ptr = NULL;
-				} else {
-					unm = new ByteUnmarshaller(env,jholder(arg)->get(env));
-					add(new OutParamHandler( jholder(arg), unm ) );
-					c_args[i].v_ptr = unm->addr();
-				}
-				ffi_types[i + 1] = &ffi_type_pointer;
-				ffi_values[i + 1] = &c_args[i].v_ptr;
-				break;
-
-			case cvINT16:
-				_ASSERT( sizeof(INT16)==sizeof(jshort) );
-				c_args[i].v_int16 = javaLangNumber_shortValue(env,arg);
-				ffi_types[i + 1] = &ffi_type_sint16;
-				ffi_values[i + 1] = &c_args[i].v_int16;
-				break;
-
-			case cvINT16_byRef:
-				if(arg==NULL) {
-					c_args[i].v_ptr = NULL;
-				} else {
-					unm = new ShortUnmarshaller(env,jholder(arg)->get(env));
-					add(new OutParamHandler( jholder(arg), unm ) );
-					c_args[i].v_ptr = unm->addr();
-				}
-				ffi_types[i + 1] = &ffi_type_pointer;
-				ffi_values[i + 1] = &c_args[i].v_ptr;
-				break;
-
-			case cvINT32:
-				c_args[i].v_int32 = javaLangNumber_intValue(env,arg);
-				ffi_types[i + 1] = &ffi_type_sint32;
-				ffi_values[i + 1] = &c_args[i].v_int32;
+			
+			case cvHRESULT:
+				// this is a special case which we handle later
+				// It must be retIndex==-1 when retConv==cvHRESULT .
+				// So we should not be here.
+				// But if it happened, try to fix it to the correct way.
+				retIndex = -1;
+				comParamIndex--;
+				continue;
 				break;
 
 			case cvComObject:
 			case cvDISPATCH:
-				c_args[i].v_ptr = (void *)javaLangNumber_longValue(env,arg);
-				ffi_types[i + 1] = &ffi_type_pointer;
-				ffi_values[i + 1] = &c_args[i].v_ptr;
+				retUnm = new ComObjectUnmarshaller();
+				break;
+
+			case cvINT8:
+				retUnm = new ByteUnmarshaller(env,NULL);
+				break;
+
+			case cvINT16:
+				retUnm = new ShortUnmarshaller(env,NULL);
+				break;
+
+			case cvINT32:
+				retUnm = new IntUnmarshaller(env,NULL);
 				break;
 
 			case cvINT64:
-				c_args[i].v_int64 = javaLangNumber_longValue(env,arg);
-				ffi_types[i + 1] = &ffi_type_sint64;
-				ffi_values[i + 1] = &c_args[i].v_int64;
+				retUnm = new LongUnmarshaller(env,NULL);
+				break;
+
+			case cvBool:
+			case cvVariantBool:
+				retUnm = new BoolUnmarshaller(env,NULL);
+				break;
+
+			case cvFloat:
+				retUnm = new FloatUnmarshaller(env,NULL);
+				break;
+
+			case cvDouble:
+			case cvDATE:
+				retUnm = new DoubleUnmarshaller(env,NULL);
+				break;
+
+			case cvCURRENCY:
+				retUnm = new CurrencyUnmarshaller();
+				break;
+
+			case cvGUID:
+				retUnm = new GUIDUnmarshaller();
+				break;
+
+			case cvVARIANT:
+				retUnm = new VariantUnmarshaller();
+				break;
+
+			case cvSAFEARRAY:
+				retUnm = new SafeArrayUnmarshaller<safearray::SafeArrayXducer>(env,NULL);
+				break;
+
+			default:
+				error(env,__FILE__,__LINE__,"unexpected conversion type: %d",retConv);
+				return NULL;
+			}
+
+			if(retUnm!=NULL) {
+				ffi_arg_count++;
+				c_args[comParamIndex].v_ptr = retUnm->addr();
+				ffi_types[comParamIndex + 1] = &ffi_type_pointer;
+				ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_ptr;
+			}
+		}else if(javaParamIndex < paramLen) {
+			ffi_arg_count++;
+			arg = env->GetObjectArrayElement(args,javaParamIndex);
+			switch( convs[javaParamIndex] ) {
+			case cvBSTR:
+				c_args[comParamIndex].v_ptr = toBSTR((jstring)arg);
+				ffi_types[comParamIndex + 1] = &ffi_type_pointer;
+				ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_ptr;
+				break;
+
+			case cvBSTR_byRef:
+				if(arg==NULL) {
+					c_args[comParamIndex].v_ptr = NULL;
+				} else {
+					unm = new BSTRUnmarshaller(toBSTR((jstring)jholder(arg)->get(env)));
+					add( new OutParamHandler( jholder(arg), unm ) );
+					c_args[comParamIndex].v_ptr = unm->addr();
+				}
+				ffi_types[comParamIndex + 1] = &ffi_type_pointer;
+				ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_ptr;
+				break;
+
+			case cvLPCWSTR:
+				c_args[comParamIndex].v_ptr = (void*)toLPCWSTR((jstring)arg);
+				ffi_types[comParamIndex + 1] = &ffi_type_pointer;
+				ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_ptr;
+				break;
+
+			case cvLPCSTR:
+				c_args[comParamIndex].v_ptr = (void*)toLPCSTR((jstring)arg);
+				ffi_types[comParamIndex + 1] = &ffi_type_pointer;
+				ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_ptr;
+				break;
+
+			case cvINT8:
+				c_args[comParamIndex].v_int8 = javaLangNumber_byteValue(env,arg);
+				ffi_types[comParamIndex + 1] = &ffi_type_sint8;
+				ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_int8;
+				break;
+
+			case cvINT8_byRef:
+				if(arg==NULL) {
+					c_args[comParamIndex].v_ptr = NULL;
+				} else {
+					unm = new ByteUnmarshaller(env,jholder(arg)->get(env));
+					add(new OutParamHandler( jholder(arg), unm ) );
+					c_args[comParamIndex].v_ptr = unm->addr();
+				}
+				ffi_types[comParamIndex + 1] = &ffi_type_pointer;
+				ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_ptr;
+				break;
+
+			case cvINT16:
+				_ASSERT( sizeof(INT16)==sizeof(jshort) );
+				c_args[comParamIndex].v_int16 = javaLangNumber_shortValue(env,arg);
+				ffi_types[comParamIndex + 1] = &ffi_type_sint16;
+				ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_int16;
+				break;
+
+			case cvINT16_byRef:
+				if(arg==NULL) {
+					c_args[comParamIndex].v_ptr = NULL;
+				} else {
+					unm = new ShortUnmarshaller(env,jholder(arg)->get(env));
+					add(new OutParamHandler( jholder(arg), unm ) );
+					c_args[comParamIndex].v_ptr = unm->addr();
+				}
+				ffi_types[comParamIndex + 1] = &ffi_type_pointer;
+				ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_ptr;
+				break;
+
+			case cvINT32:
+				c_args[comParamIndex].v_int32 = javaLangNumber_intValue(env,arg);
+				ffi_types[comParamIndex + 1] = &ffi_type_sint32;
+				ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_int32;
+				break;
+
+			case cvComObject:
+			case cvDISPATCH:
+				c_args[comParamIndex].v_ptr = (void *)javaLangNumber_longValue(env,arg);
+				ffi_types[comParamIndex + 1] = &ffi_type_pointer;
+				ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_ptr;
+				break;
+
+			case cvINT64:
+				c_args[comParamIndex].v_int64 = javaLangNumber_longValue(env,arg);
+				ffi_types[comParamIndex + 1] = &ffi_type_sint64;
+				ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_int64;
 				break;
 
 			case cvPVOID:
 				if(arg==NULL)
-					c_args[i].v_ptr = NULL;
+					c_args[comParamIndex].v_ptr = NULL;
 				else
-					c_args[i].v_ptr = env->GetDirectBufferAddress(arg);
-				if(c_args[i].v_ptr==NULL) {
+					c_args[comParamIndex].v_ptr = env->GetDirectBufferAddress(arg);
+				if(c_args[comParamIndex].v_ptr==NULL) {
 					error(env,__FILE__,__LINE__,"the given Buffer object is not a direct buffer");
 					return NULL;
 				}
-				ffi_types[i + 1] = &ffi_type_pointer;
-				ffi_values[i + 1] = &c_args[i].v_ptr;
+				ffi_types[comParamIndex + 1] = &ffi_type_pointer;
+				ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_ptr;
 				break;
 
 			case cvINT32_byRef:
 				if(arg==NULL) {
-					c_args[i].v_ptr = NULL;
+					c_args[comParamIndex].v_ptr = NULL;
 				} else {
 					unm = new IntUnmarshaller(env,jholder(arg)->get(env));
 					add( new OutParamHandler( jholder(arg), unm ) );
-					c_args[i].v_ptr = unm->addr();
+					c_args[comParamIndex].v_ptr = unm->addr();
 				}
-				ffi_types[i + 1] = &ffi_type_pointer;
-				ffi_values[i + 1] = &c_args[i].v_ptr;
+				ffi_types[comParamIndex + 1] = &ffi_type_pointer;
+				ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_ptr;
 				break;
 
 			case cvDATE:
 			case cvDouble:
 				// TODO: check if this is correct
-				c_args[i].v_double = javaLangNumber_doubleValue(env,arg);
-				ffi_types[i + 1] = &ffi_type_double;
-				ffi_values[i + 1] = &c_args[i].v_double;
+				c_args[comParamIndex].v_double = javaLangNumber_doubleValue(env,arg);
+				ffi_types[comParamIndex + 1] = &ffi_type_double;
+				ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_double;
 				break;
 
 			case cvDouble_byRef:
 				if(arg==NULL) {
-					c_args[i].v_ptr = NULL;
+					c_args[comParamIndex].v_ptr = NULL;
 				} else {
 					unm = new DoubleUnmarshaller(env,jholder(arg)->get(env));
 					add(new OutParamHandler( jholder(arg), unm ));
-					c_args[i].v_ptr = unm->addr();
+					c_args[comParamIndex].v_ptr = unm->addr();
 				}
-				ffi_types[i + 1] = &ffi_type_pointer;
-				ffi_values[i + 1] = &c_args[i].v_ptr;
+				ffi_types[comParamIndex + 1] = &ffi_type_pointer;
+				ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_ptr;
 				break;
 
 			case cvFloat:
-				c_args[i].v_float = javaLangNumber_floatValue(env,arg);
-				ffi_types[i + 1] = &ffi_type_float;
-				ffi_values[i + 1] = &c_args[i].v_float;
+				c_args[comParamIndex].v_float = javaLangNumber_floatValue(env,arg);
+				ffi_types[comParamIndex + 1] = &ffi_type_float;
+				ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_float;
 				break;
 
 			case cvFloat_byRef:
 				if(arg==NULL) {
-					c_args[i].v_ptr = NULL;
+					c_args[comParamIndex].v_ptr = NULL;
 				} else {
 					unm = new FloatUnmarshaller(env,jholder(arg)->get(env));
 					add(new OutParamHandler( jholder(arg), unm ));
-					c_args[i].v_ptr = unm->addr();
+					c_args[comParamIndex].v_ptr = unm->addr();
 				}
-				ffi_types[i + 1] = &ffi_type_pointer;
-				ffi_values[i + 1] = &c_args[i].v_ptr;
+				ffi_types[comParamIndex + 1] = &ffi_type_pointer;
+				ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_ptr;
 				break;
 
 			case cvBool:
 				if(javaLangBoolean_booleanValue(env,arg)) {
-					c_args[i].v_int32 = TRUE;
+					c_args[comParamIndex].v_int32 = TRUE;
 				} else {
-					c_args[i].v_int32 = FALSE;
+					c_args[comParamIndex].v_int32 = FALSE;
 				}
-				ffi_types[i + 1] = &ffi_type_sint;
-				ffi_values[i + 1] = &c_args[i].v_int32;
+				ffi_types[comParamIndex + 1] = &ffi_type_sint;
+				ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_int32;
 				break;
 
 			case cvVariantBool:
 				if(javaLangBoolean_booleanValue(env,arg)) {
-					c_args[i].v_int32 = VARIANT_TRUE;
+					c_args[comParamIndex].v_int32 = VARIANT_TRUE;
 				} else {
-					c_args[i].v_int32 = VARIANT_FALSE;
+					c_args[comParamIndex].v_int32 = VARIANT_FALSE;
 				}
-				ffi_types[i + 1] = &ffi_type_sint;
-				ffi_values[i + 1] = &c_args[i].v_int32;
+				ffi_types[comParamIndex + 1] = &ffi_type_sint;
+				ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_int32;
 				break;
 
 			case cvVariantBool_byRef:
 				if(arg==NULL) {
-					c_args[i].v_ptr = NULL;
+					c_args[comParamIndex].v_ptr = NULL;
 				} else {
 					unm = new VariantBoolUnmarshaller(env,jholder(arg)->get(env));
 					add( new OutParamHandler( jholder(arg), unm ) );
-					c_args[i].v_ptr = unm->addr();
+					c_args[comParamIndex].v_ptr = unm->addr();
 				}
-				ffi_types[i + 1] = &ffi_type_pointer;
-				ffi_values[i + 1] = &c_args[i].v_ptr;
+				ffi_types[comParamIndex + 1] = &ffi_type_pointer;
+				ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_ptr;
 				break;
 
 			case cvGUID:
 				_ASSERT( sizeof(GUID)==sizeof(jlong)*2 );
-				c_args[i].v_ptr = env->GetLongArrayElements( (jlongArray)arg, NULL );
-				add(new LongArrayCleanUp((jlongArray)arg,c_args[i].v_ptr));
-				ffi_types[i + 1] = &ffi_type_pointer;
-				ffi_values[i + 1] = &c_args[i].v_ptr;
+				c_args[comParamIndex].v_ptr = env->GetLongArrayElements( (jlongArray)arg, NULL );
+				add(new LongArrayCleanUp((jlongArray)arg,c_args[comParamIndex].v_ptr));
+				ffi_types[comParamIndex + 1] = &ffi_type_pointer;
+				ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_ptr;
 				break;
 
 			case cvCURRENCY:
 				if(arg==NULL) {
-					c_args[i].v_int64 = 0;
-					ffi_types[i + 1] = &ffi_type_sint64;
-					ffi_values[i + 1] = &c_args[i].v_int16;
+					c_args[comParamIndex].v_int64 = 0;
+					ffi_types[comParamIndex + 1] = &ffi_type_sint64;
+					ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_int16;
 				} else {
 					jstring strRep = javaMathBigDecimal_toString(env,arg);
 					CComCurrency cy((LPCSTR)JString(env,strRep));
-					c_args[i].v_int64 = cy.m_currency.int64;
-					ffi_types[i + 1] = &ffi_type_sint64;
-					ffi_values[i + 1] = &c_args[i].v_int64;
+					c_args[comParamIndex].v_int64 = cy.m_currency.int64;
+					ffi_types[comParamIndex + 1] = &ffi_type_sint64;
+					ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_int64;
 				}
 				break;
 
 			case cvCURRENCY_byRef:
 				if(arg==NULL) {
-					c_args[i].v_ptr = NULL;
+					c_args[comParamIndex].v_ptr = NULL;
 				} else {
 					jstring strRep = javaMathBigDecimal_toString(env,jholder(arg)->get(env));
 					CComCurrency cy((LPCSTR)JString(env,strRep));
 					
 					unm = new CurrencyUnmarshaller(cy);
 					add(new OutParamHandler( jholder(arg), unm ));
-					c_args[i].v_ptr = unm->addr();
+					c_args[comParamIndex].v_ptr = unm->addr();
 				}
-				ffi_types[i + 1] = &ffi_type_pointer;
-				ffi_values[i + 1] = &c_args[i].v_ptr;
+				ffi_types[comParamIndex + 1] = &ffi_type_pointer;
+				ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_ptr;
 				break;
 
 			case cvVARIANT:
@@ -346,8 +429,8 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 					}
 					add(new VARIANTCleanUp(pvar));
 				}
-				ffi_types[i + 1] = &ffi_type_variant;
-				ffi_values[i + 1] = pvar;
+				ffi_types[comParamIndex + 1] = &ffi_type_variant;
+				ffi_values[comParamIndex + 1] = pvar;
 				break;
 
 			case cvVARIANT_byRef:
@@ -377,9 +460,9 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 					pvar = convertToVariant(env,arg);
 					add(new VARIANTCleanUp(pvar));
 				}
-				c_args[i].v_ptr = pvar;
-				ffi_types[i + 1] = &ffi_type_pointer;
-				ffi_values[i + 1] = &c_args[i].v_ptr;
+				c_args[comParamIndex].v_ptr = pvar;
+				ffi_types[comParamIndex + 1] = &ffi_type_pointer;
+				ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_ptr;
 				break;
 
 			case cvSAFEARRAY:
@@ -389,94 +472,46 @@ jobject Environment::invoke( void* pComObject, ComMethod method, jobjectArray ar
 					return NULL;
 				}
 				add( new SAFEARRAYCleanUp(psa) );
-				c_args[i].v_ptr = psa;
-				ffi_types[i + 1] = &ffi_type_pointer;
-				ffi_values[i + 1] = &c_args[i].v_ptr;
+				c_args[comParamIndex].v_ptr = psa;
+				ffi_types[comParamIndex + 1] = &ffi_type_pointer;
+				ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_ptr;
 				break;
-				
+
+			case cvSAFEARRAY_byRef:
+				if(arg==NULL) {
+					c_args[comParamIndex].v_ptr = NULL;
+				} else if(env->IsSameObject(env->GetObjectClass(arg),com4j_Holder)) {
+					// if it's a holder, convert its value, and prepare the unmarshaller
+					// we don't know the inner type of array,
+					// if we know that by add a paramemnt to the function, we could use
+					// umn = new SafeArrayUnmarshaller<safearray::BasicArrayXducer<short>>(env, NULL);
+					jobject o = jholder(arg)->get(env);
+					unm = new SafeArrayUnmarshaller<safearray::SafeArrayXducer>(env, static_cast<jarray>(o));
+					add( new OutParamHandler( jholder(arg), unm ) );	// after the method call unmarshal it back to SAFEARRAY
+					SAFEARRAY** ppsa = static_cast<SAFEARRAY**>(unm->addr());
+					c_args[comParamIndex].v_ptr = ppsa;
+				} else {
+					error(env,__FILE__,__LINE__,"unable to convert the given object to SAFEARRAY*");
+					return NULL;
+				}
+				ffi_types[comParamIndex + 1] = &ffi_type_pointer;
+				ffi_values[comParamIndex + 1] = &c_args[comParamIndex].v_ptr;
+				break;
 
 			default:
-				error(env,__FILE__,__LINE__,"unexpected conversion type: %d",convs[i]);
+				error(env,__FILE__,__LINE__,"unexpected conversion type: %d",convs[javaParamIndex]);
 				return NULL;
 			}
-		}
 
-		if(i==retIndex) {
-			if(retIsInOut) {
+			javaParamIndex++;
+
+			if( comParamIndex == retIndex && retIsInOut) {
 				// reuse the current unmarshaller
 				if(unm==NULL) {
 					error(env,__FILE__,__LINE__,"in/out return value must be passed by ref");
 					return NULL;
 				}
 				retUnm = unm;
-			} else {
-				switch(retConv) {
-				case cvBSTR:
-					retUnm = new BSTRUnmarshaller(NULL);
-					break;
-				
-				case cvHRESULT:
-					// this is a special case which we handle later
-					break;
-
-				case cvComObject:
-				case cvDISPATCH:
-					retUnm = new ComObjectUnmarshaller();
-					break;
-
-				case cvINT8:
-					retUnm = new ByteUnmarshaller(env,NULL);
-					break;
-
-				case cvINT16:
-					retUnm = new ShortUnmarshaller(env,NULL);
-					break;
-
-				case cvINT32:
-					retUnm = new IntUnmarshaller(env,NULL);
-					break;
-
-				case cvINT64:
-					retUnm = new LongUnmarshaller(env,NULL);
-					break;
-
-				case cvBool:
-				case cvVariantBool:
-					retUnm = new BoolUnmarshaller(env,NULL);
-					break;
-
-				case cvFloat:
-					retUnm = new FloatUnmarshaller(env,NULL);
-					break;
-
-				case cvDouble:
-				case cvDATE:
-					retUnm = new DoubleUnmarshaller(env,NULL);
-					break;
-
-				case cvCURRENCY:
-					retUnm = new CurrencyUnmarshaller();
-					break;
-
-				case cvGUID:
-					retUnm = new GUIDUnmarshaller();
-					break;
-
-				case cvVARIANT:
-					retUnm = new VariantUnmarshaller();
-					break;
-
-				default:
-					error(env,__FILE__,__LINE__,"unexpected conversion type: %d",retConv);
-					return NULL;
-				}
-
-				if(retUnm!=NULL) {
-					ffi_arg_count++;
-					c_args[i].v_ptr = retUnm->addr();
-					ffi_types[i + 1] = &ffi_type_pointer;
-					ffi_values[i + 1] = &c_args[i].v_ptr;
-				}
 			}
 		}
 	}
