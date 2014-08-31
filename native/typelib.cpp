@@ -79,7 +79,7 @@ CMethod::~CMethod() {
 
 	for( int i=0; i<m_nameCount; i++ )
 		SysFreeString(m_pNames[i]);
-	delete m_pNames;
+	delete[] m_pNames;
 }
 
 

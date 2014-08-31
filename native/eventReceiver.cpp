@@ -72,6 +72,7 @@ STDMETHODIMP CEventReceiver::Invoke( DISPID dispid, REFIID riid, LCID lcid, WORD
 		VARIANT* pSrc = convertToVariant(pEnv,r);
 		::VariantCopy(pResult,pSrc);
 		::VariantClear(pSrc);
+		delete pSrc;
 	}
 
 	return S_OK;
