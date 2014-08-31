@@ -8,6 +8,7 @@ import java.math.BigInteger;
 import java.math.BigDecimal;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -75,4 +76,87 @@ public class VariantTest extends TestCase {
         bd = new BigDecimal("1.99");
         assertTrue(bd.compareTo(t.testCurrency(new Holder<BigDecimal>(bd),const199))==0);
     }
+
+    public void testEmptyArray() throws Exception {
+        ITestObject t = ClassFactory.createTestObject();
+        Object[] a = {};
+        Object[] b = (Object[]) t.testVariant(Variant.getMissing(), a);
+        assertTrue(Arrays.deepEquals(a, b));
+    }
+
+    public void testEmpty2DArray() throws Exception {
+        ITestObject t = ClassFactory.createTestObject();
+        Object[][] a = {{},{},{}};
+        Object[] b = (Object[]) t.testVariant(Variant.getMissing(), a);
+        assertTrue(Arrays.deepEquals(a, b));
+    }
+
+    /**
+     * Tests the currency type conversion.
+     */
+    public void testArray() throws Exception {
+        ITestObject t = ClassFactory.createTestObject();
+        Object[] a = {"a1", "a2", "a3"};
+        Object[] b = (Object[]) t.testVariant(Variant.getMissing(), a);
+        assertTrue(Arrays.deepEquals(a, b));
+    }
+
+    public void test2DArrays() throws Exception {
+        ITestObject t = ClassFactory.createTestObject();
+
+        Object[][] a = {
+                {"a11","a12"},
+                {"a21","a22"},
+                {"a31","a32"}
+        };
+
+        Object[] b = (Object[]) t.testVariant(Variant.getMissing(), a);
+
+        assertTrue(Arrays.deepEquals(a, b));
+
+    }
+
+    public void test3DArrays() throws Exception {
+        ITestObject t = ClassFactory.createTestObject();
+        Object[][][] a = {
+                {{"a111", "a112"},
+                        {"a121", "a122"}},
+                {{"a211", "a212"},
+                        {"a221", "a222"}},
+                {{"a311", "a312"},
+                        {"a321", "a322"}}
+        };
+
+        Object b = t.testVariant(Variant.getMissing(), a);
+        assertTrue(b instanceof Object[]);
+        assertTrue(Arrays.deepEquals(a, (Object[])b));
+    }
+
+    public void testDoubleArrays() throws Exception {
+        ITestObject t = ClassFactory.createTestObject();
+
+        Object[][] a = {
+                {1.1,1.2},
+                {2.1,2.2},
+                {3.1,3.2}
+        };
+
+        Object[] b = (Object[]) t.testVariant(Variant.getMissing(), a);
+        assertTrue(Arrays.deepEquals(a, b));
+    }
+
+    public void testPrimitiveArrays() throws Exception {
+        ITestObject t = ClassFactory.createTestObject();
+
+        double[][] a = {
+                {1.1,1.2},
+                {2.1,2.2},
+                {3.1,3.2}
+        };
+
+        Object[] b = (Object[]) t.testVariant(Variant.getMissing(), a);
+        assertTrue(Arrays.deepEquals(a, b));
+    }
+
+
 }
