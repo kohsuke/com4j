@@ -125,15 +125,6 @@ public class VariantTest extends TestCase {
         });
     }
 
-
-    public void test2DLongArray() throws Exception {
-        testArray2(new Object[][]{
-                {"a11", "a12", "a13", "a14", "a15"},
-                {"a21", "a22", "a23", "a24", "a25"}
-        });
-    }
-
-
     public void test2DArrayWithsubArray() throws Exception {
         Object[][] a = {
                 {"a11", "a12", "a13", "a14", "a15"},
