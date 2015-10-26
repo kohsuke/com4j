@@ -545,7 +545,7 @@ public abstract class COM4J {
         final String fileName = "com4j-" + System.getProperty("os.arch") + ".dll";
 
         // try loading com4j.dll in the same directory as com4j.jar
-        URL res = COM4J.class.getClassLoader().getResource("com4j/COM4J.class");
+        URL res = COM4J.class.getResource("/com4j/COM4J.class");
         String url = res.toExternalForm();
         if(url.startsWith("jar:")) {
             int idx = url.lastIndexOf('!');
