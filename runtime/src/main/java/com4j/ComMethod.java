@@ -242,6 +242,8 @@ abstract class ComMethod {
                     return NativeType.VariantBool_ByRef;
                   if(Buffer.class.isAssignableFrom(c))
                     return NativeType.PVOID_ByRef;
+                  if(Double.class.isAssignableFrom(c))
+                    return NativeType.Double_ByRef;
                   if(c.isArray())
                     return NativeType.SafeArray_ByRef;
                 }
