@@ -37,7 +37,7 @@ namespace safearray {
 
 		static NativeType toNative( JNIEnv* env, JavaType javaArray ) {
 
-			const int length = env->GetArrayLength(javaArray);
+			const size_t length = env->GetArrayLength(javaArray);
 
 			// allocate SAFEARRAY
 			SAFEARRAYBOUND bounds;
@@ -46,11 +46,11 @@ namespace safearray {
 			SAFEARRAY* psa = SafeArrayCreate(itemType,1,&bounds);
 
 
-			XDUCER::JavaType* pSrc = JARRAY::lock(env,static_cast<JARRAY::ARRAY>(javaArray));
+			const XDUCER::JavaType* pSrc = JARRAY::lock(env,static_cast<JARRAY::ARRAY>(javaArray));
 			XDUCER::NativeType* pDst;
 			SafeArrayAccessData( psa, reinterpret_cast<void**>(&pDst) );
 
-			for( int i=0; i<length; i++ )
+			for( size_t i=0; i<length; i++ )
 				pDst[i] = XDUCER::toNative(env,pSrc[i]);
 
 			JARRAY::unlock(env,static_cast<JARRAY::ARRAY>(javaArray),pSrc);
@@ -88,8 +88,8 @@ namespace safearray {
 		JNIEnv* env;
 		NativeType psa;
 		JavaType javaArray;
-		int dim;
-		int* dimSizes;
+		size_t dim;
+		size_t* dimSizes;
 		typename XDUCER::NativeType* pSrc;
 
 	public:
@@ -101,7 +101,7 @@ namespace safearray {
 			, pSrc(NULL)
 		{
 			dim = SafeArrayGetDim(psa);
-			dimSizes = new int[dim];
+			dimSizes = new size_t[dim];
 			fillDimSizes(psa, dim, dimSizes);
 			SafeArrayAccessData( psa, reinterpret_cast<void**>(&pSrc) );
 		}
@@ -112,42 +112,43 @@ namespace safearray {
 		}
 
 		JavaType getJava() {
-			return toJavaRec(pSrc, dim - 1);
+			return toJavaRec(pSrc, dim, 0, 1);
 		}
 
 	private:
 
-		JavaType toJavaRec(typename XDUCER::NativeType* &pSrc, int curDim) {
-			if (curDim == 0) {
-				JARRAY::ARRAY a = JARRAY::newArray(env, dimSizes[curDim]);
+		JavaType toJavaRec(typename XDUCER::NativeType* &pSrc, size_t curDim, size_t offset, size_t delta) {
+			if (curDim == 1) {
+				JARRAY::ARRAY a = JARRAY::newArray(env, dimSizes[curDim - 1]);
 				XDUCER::JavaType* const pDst = JARRAY::lock(env, a);
 
-				for( int i=0; i < dimSizes[curDim]; i++ ) {
-					pDst[i] = XDUCER::toJava(env, *(pSrc++));
+				for( size_t i=0; i < dimSizes[0]; i++ ) {
+					pDst[i] = XDUCER::toJava(env, *(pSrc + offset + i*delta));
 				}
 				JARRAY::unlock(env, a, pDst);
 				return a;
 			}
 			else {
-				jobjectArray a = array::Array<jobject>::newArray(env, dimSizes[curDim]);
-				jobject* const pDst = array::Array<jobject>::lock(env, a);
+				jobjectArray a = array::ArrayND::newArray(env, dimSizes[curDim - 1], curDim);
+				jobject* const pDst = array::ArrayND::lock(env, a);
 
-				for( int i = 0; i < dimSizes[curDim]; i++ ) {
-					pDst[i] = toJavaRec(pSrc, curDim - 1);
+				size_t newDelta = delta * dimSizes[curDim - 1];
+				for( size_t i = 0; i < dimSizes[curDim - 1]; i++ ) {
+					pDst[i] = toJavaRec(pSrc, curDim - 1, offset + i*delta, newDelta);
 				}
-				array::Array<jobject>::unlock(env, a, pDst);
+				array::ArrayND::unlock(env, a, pDst);
 				return a;
 			}
 
 		}
 
-		static void fillDimSizes(NativeType psa, int dim, int *dimSizes) {
-			for (int i = 1; i <= dim; ++i) {
+		static void fillDimSizes(NativeType psa, size_t dim, size_t *dimSizes) {
+			for (size_t i = 1; i <= dim; ++i) {
 				long lbound,ubound;
 				SafeArrayGetLBound(psa,i,&lbound);
 				SafeArrayGetUBound(psa,i,&ubound);
 				// sometimes SafeArrayGetUBound returns -1 with S_OK. I haven't figured out what that means
-				dimSizes[i-1] = max(0,ubound-lbound+1);	// the range of index is [lbound,ubound]
+				dimSizes[dim-i] = max(0,ubound-lbound+1);	// the range of index is [lbound,ubound]
 			}
 		}
 
@@ -190,7 +191,7 @@ namespace safearray {
 	private:
 		JNIEnv* env;
 		JavaType javaArray;
-		int dim;
+		size_t dim;
 		SAFEARRAYBOUND* bounds;
 		SAFEARRAY* psa;
 		typename XDUCER::NativeType* pDst;
@@ -217,35 +218,37 @@ namespace safearray {
 		}
 
 		SAFEARRAY* getNative() {
-			toNativeRec(javaArray, dim - 1);
+			toNativeRec(javaArray, dim - 1, 0, 1);
 			return psa;
 		}
 
 	private:
-		void toNativeRec(JavaType _array, int curDim) {
+		void toNativeRec(JavaType _array, size_t curDim, size_t offset, size_t delta) {
 
 			if (curDim == 0) {
-				XDUCER::JavaType* pSrc = JARRAY::lock(env,static_cast<JARRAY::ARRAY>(_array));
+				const XDUCER::JavaType* pSrc = JARRAY::lock(env,static_cast<JARRAY::ARRAY>(_array));
 
-				for(size_t i = 0; i < bounds[curDim].cElements; i++)
-					*(pDst++) = XDUCER::toNative(env, pSrc[i]);
+				for(size_t i = 0; i < bounds[dim - 1].cElements; i++)
+					*(pDst + offset + i*delta) = XDUCER::toNative(env, pSrc[i]);
 
 				JARRAY::unlock(env,static_cast<JARRAY::ARRAY>(_array), pSrc);
 
 			}
 			else {
-				JavaType* pSrc = array::Array<JavaType>::lock(env, static_cast<JARRAY::ARRAY>(_array));
+				const JavaType* pSrc = array::Array<JavaType>::lock(env, static_cast<JARRAY::ARRAY>(_array));
+				
+				size_t newDelta = delta * bounds[dim - curDim - 1].cElements;
 
-				for(size_t i = 0; i < bounds[curDim].cElements; i++)
-					toNativeRec(pSrc[i], curDim - 1);
+				for(size_t i = 0; i < bounds[dim - curDim - 1].cElements; i++)
+					toNativeRec(pSrc[i], curDim - 1, offset + i*delta, newDelta);
 
 				array::Array<JavaType>::unlock(env,static_cast<JARRAY::ARRAY>(_array), pSrc);
 			}
 		}
 
 		// gets dimensions of java multi index array
-		static int getArrayDimension(JNIEnv* env, jobject a ) {
-			int dim = 0;
+		static size_t getArrayDimension(JNIEnv* env, jobject a ) {
+			size_t dim = 0;
 			while(env->IsInstanceOf(a, objectArray)) {
 				dim++;
 
@@ -258,18 +261,17 @@ namespace safearray {
 			return dim;
 		}
 
-		// fills SAFEARRAYBOUND structure base on java array
-		static void fillBounds(JNIEnv* env, jobject a, int n, SAFEARRAYBOUND* bounds) {
-			int i = n - 1;
+		static void fillBounds(JNIEnv* env, jobject a, size_t n, SAFEARRAYBOUND* bounds) {
+			size_t i = 0;
 			while(true) {
 				bounds[i].lLbound = 0;
 				bounds[i].cElements = env->GetArrayLength(static_cast<jobjectArray>(a));
 
-				if (i <= 0)
+				if (i >= n - 1)
 					break;
 
 				a = env->GetObjectArrayElement(static_cast<jobjectArray>(a), 0);
-				i--;
+				i++;
 			}
 		}
 
