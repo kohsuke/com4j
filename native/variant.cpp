@@ -244,6 +244,7 @@ static SetterEntry setters[] = {
 	{ &javaLangShort,	VT_UI1,			new VariantHandlerImpl<VT_I2,		xducer::BoxedShortXducer>() }, // use VT_I2 for VariantHandlerImpl since that's what BoxedShortXducer expect
 	{ &javaLangInteger,	VT_UI2,			new VariantHandlerImpl<VT_I4,		xducer::BoxedIntXducer>() },
 	{ &javaLangLong,	VT_UI4,			new VariantHandlerImpl<VT_I8,		xducer::BoxedLongXducer>() },
+	{ &javaLangLong,	VT_UINT,		new VariantHandlerImpl<VT_I8,		xducer::BoxedLongXducer>() },
 	{ &javaMathBigInteger,VT_UI8,		new VariantHandlerImpl<VT_UI8,		xducer::BigIntegerXducer>() },
 	// TODO: Holder support
 	{ NULL, 0, NULL }
