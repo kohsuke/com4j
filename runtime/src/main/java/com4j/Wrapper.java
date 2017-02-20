@@ -284,7 +284,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
 
                 return proxy;
             }
-        }.execute();
+        }.execute(thread);
     }
 
     @Override
