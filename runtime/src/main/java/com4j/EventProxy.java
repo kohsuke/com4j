@@ -25,6 +25,7 @@ final class EventProxy<T> implements EventCookie {
 
     private final EventInterfaceDescriptor<T> descriptor;
     private final T javaObject;
+    private final ComThread thread;
 
     /**
      * Pointer to the native proxy.
@@ -35,9 +36,10 @@ final class EventProxy<T> implements EventCookie {
      * Creates a new event proxy that implements the event interface {@code intf}
      * and delivers events to {@code javaObject}.
      */
-    EventProxy(Class<T> intf, T javaObject) {
+    EventProxy(Class<T> intf, T javaObject, ComThread thread) {
         this.descriptor = getDescriptor(intf);
         this.javaObject = javaObject;
+        this.thread = thread;
     }
 
     /**
@@ -50,7 +52,7 @@ final class EventProxy<T> implements EventCookie {
                     Native.unadvise(nativeProxy);
                     return null;
                 }
-            }.execute();
+            }.execute(thread);
             nativeProxy = 0;
         }
     }

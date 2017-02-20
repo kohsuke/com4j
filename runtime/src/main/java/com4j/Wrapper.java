@@ -275,7 +275,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
                     throw new ComException("This object doesn't have event source",-1);
                 GUID iid = COM4J.getIID(eventInterface);
                 Com4jObject cp = cpc.FindConnectionPoint(iid);
-                EventProxy<T> proxy = new EventProxy<T>(eventInterface, object);
+                EventProxy<T> proxy = new EventProxy<T>(eventInterface, object, thread);
                 proxy.nativeProxy = Native.advise(cp.getPointer(), proxy,iid.v[0], iid.v[1]);
 
                 // clean up resources to be nice
@@ -284,7 +284,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
 
                 return proxy;
             }
-        }.execute();
+        }.execute(thread);
     }
 
     @Override
