@@ -4,7 +4,7 @@ package com4j;
  * Represents a Win32 Event lock.
  *
  * <p>
- * We can't use Java synchronization for {@link ComThread},
+ * We can't use Java synchronization for {@link ComThreadMulti},
  * as it blocks incoming method dispatching requests.
  * We need to use this instead.
  *

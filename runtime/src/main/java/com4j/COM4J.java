@@ -143,6 +143,33 @@ public abstract class COM4J {
     }
 
     /**
+     * Wraps an externally obtained single-threaded apartment interface pointer from the current
+     * thread into a COM wrapper object.
+     * <p>
+     * This method must be called by the same thread that the COM object belongs to.
+     * Object wrappers created with this method can only be accessed from that thread.
+     * <p>
+     * This method doesn't call addRef on the given interface pointer. Instead, this method
+     * takes over the ownership of the given pointer.
+     * </p>
+     *
+     * @param primaryInterface
+     *      The interface type to wrap the pointer into.
+     * @param ptr
+     *      The rar interface pointer value.
+     */
+    public static<T extends Com4jObject>
+    T wrapSta( final Class<T> primaryInterface, final long ptr ) throws ComException {
+        ComThread thread = ComThreadSingle.get();
+        return new Task<T>() {
+            @Override
+            public T call() {
+                return Wrapper.create(primaryInterface,ptr);
+            }
+        }.execute(thread);
+    }
+
+    /**
      * Gets an already running object from the running object table.
      *
      * @param <T> the type of the return value and the type parameter of the class object of primaryInterface
@@ -387,7 +414,8 @@ public abstract class COM4J {
      * @see #removeListener(ComObjectListener)
      */
     public static void addListener( ComObjectListener listener ) {
-        ComThread.get().addListener(listener);
+        ComThreadMulti.get().addListener(listener);
+        ComThreadSingle.get().addListener(listener);
     }
 
     /**
@@ -400,7 +428,8 @@ public abstract class COM4J {
      * @see #addListener(ComObjectListener)
      */
     public static void removeListener( ComObjectListener listener ) {
-        ComThread.get().removeListener(listener);
+        ComThreadMulti.get().removeListener(listener);
+        ComThreadSingle.get().removeListener(listener);
     }
 
     /**
@@ -416,7 +445,8 @@ public abstract class COM4J {
      * After this method is invoked, a thread can still go use other COM resources.
      */
     public static void cleanUp() {
-        ComThread.detach();
+        ComThreadMulti.detach();
+        ComThreadSingle.detach();
     }
 
     /**

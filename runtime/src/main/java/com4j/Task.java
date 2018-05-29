@@ -12,18 +12,22 @@ abstract class Task<T> implements Callable<T> {
 	private volatile boolean done = false;
     public abstract T call();
 
+    private static ThreadLocal<ComThread> comThread = new ThreadLocal<ComThread>();
+
+    /**
+     * Returns the current ComThread the task is running in.
+     * Only valid while running a Task.
+     */
+    public static ComThread getComThread() {
+        return null == comThread ? null : comThread.get();
+    }
 
     /**
      * Executes the task in a {@link ComThread}
      * @return the return value of the Task execution (returned by {@link #call()}).
      */
     public final T execute() {
-        if( ComThread.isComThread() )
-            // if invoked from within ComThread, execute it at once
-            return call();
-        else
-            // otherwise schedule the execution and block
-            return ComThread.get().execute(this);
+        return execute(ComThreadMulti.get());
     }
 
     /**
@@ -32,12 +36,23 @@ abstract class Task<T> implements Callable<T> {
      * @return the return value of the Task execution (returned by {@link #call()}).
      */
     public final T execute(ComThread t) {
-        if(Thread.currentThread()==t)
-            // if invoked from within ComThread, execute it at once
-            return call();
-        else
-            // otherwise schedule the execution and block
-            return t.execute(this);
+        comThread.set(t);
+        try {
+            T result;
+            if(Thread.currentThread()==t)
+                // if invoked from within ComThread, execute it at once
+                result = call();
+            else
+                // otherwise schedule the execution and block
+                result = t.execute(this);
+
+            comThread.set(null);
+            return result;
+        }
+        catch (RuntimeException e) {
+            comThread.set(null);
+            throw e;
+        }
     }
 
     /**
