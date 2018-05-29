@@ -82,6 +82,11 @@ public final class Generator {
      */
     boolean generateDefaultMethodOverloads = true;
 
+    /**
+     * Default locale id for LCID parameters.
+     */
+    Integer defaultLcid = null;
+
     public Generator( CodeWriter writer, ReferenceResolver resolver, ErrorListener el, Locale locale ) {
         this.el = el;
         this.writer = writer;
@@ -99,6 +104,10 @@ public final class Generator {
 
     public void setGenerateDefaultMethodOverloads(boolean v) {
         this.generateDefaultMethodOverloads  = v;
+    }
+
+    public void setDefaultLcid(int lcid) {
+        this.defaultLcid = lcid;
     }
 
     /**

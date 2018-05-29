@@ -151,7 +151,7 @@ abstract class MethodBinder
   private Parameter[] generateDefaults(){
     Parameter[] defParam = new Parameter[params.length];
     for (int i = 0; i < params.length; i++) {
-      if(params[i].isOptional()){
+      if(params[i].isOptional() || (params[i].isLCID() && g.defaultLcid != null)){
         TypeBinding vb;
         try {
           vb = TypeBinding.bind(g, params[i].getType(), params[i].getName());
@@ -161,6 +161,10 @@ abstract class MethodBinder
         }
         defParam[i] = new Parameter();
         Variant defValue = params[i].getDefaultValue();
+        if (defValue == null && params[i].isLCID() && null != g.defaultLcid) {
+          defValue = new Variant(Variant.Type.VT_I4);
+          defValue.set(g.defaultLcid);
+        }
         defParam[i].nativeType = vb.nativeType;
         defParam[i].javaTypeName = vb.javaType;
         if(defValue != null) {
