@@ -49,6 +49,9 @@ public class Main implements ErrorListener {
     @Option(name="-alwaysUseComEnums",usage="Always use ComEnum for generating enums")
     public boolean alwaysUseComEnums = false;
 
+    @Option(name="-generateDefaultMethodOverloads",usage="Generate default method overloads")
+    public boolean generateDefaultMethodOverloads = false;
+
     @Argument
     private List<String> files = new ArrayList<String>();
 
@@ -125,6 +128,7 @@ public class Main implements ErrorListener {
 
         driver.alwaysUseComEnums = alwaysUseComEnums;
         driver.renameGetterAndSetters = javaGetterSetterName;
+        driver.generateDefaultMethodOverloads = generateDefaultMethodOverloads;
 
         try {
             if(locale!=null)
