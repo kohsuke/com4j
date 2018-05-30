@@ -1,6 +1,8 @@
 package com4j;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * {@link ComMethod} that invokes through {@code IDispatch.Invoke}.
@@ -13,7 +15,6 @@ final class DispatchComMethod extends ComMethod {
     final int flag;
     final Class<?> retType;
 
-
     DispatchComMethod( Method m ) {
         super(m);
 
@@ -24,7 +25,10 @@ final class DispatchComMethod extends ComMethod {
 
         flag = getFlag();
 
-        retType = m.getReturnType();
+        Class retType = m.getReturnType();
+        if (retType.isPrimitive() && boxTypeMap.containsKey(retType))
+            retType = boxTypeMap.get(retType);
+        this.retType = retType;
     }
 
     private int getFlag() {
@@ -58,4 +62,17 @@ final class DispatchComMethod extends ComMethod {
     private static final int DISPATCH_PROPERTYPUT    = 0x4;
     @SuppressWarnings("unused")
     private static final int DISPATCH_PROPERTYPUTREF = 0x8;
+
+    private static final Map<Class,Class> boxTypeMap = new HashMap<Class,Class>();
+
+    static {
+        boxTypeMap.put(byte.class,Byte.class);
+        boxTypeMap.put(short.class,Short.class);
+        boxTypeMap.put(int.class,Integer.class);
+        boxTypeMap.put(long.class,Long.class);
+        boxTypeMap.put(float.class,Float.class);
+        boxTypeMap.put(double.class,Double.class);
+        boxTypeMap.put(boolean.class,Boolean.class);
+        boxTypeMap.put(char.class,Character.class);
+    }
 }
