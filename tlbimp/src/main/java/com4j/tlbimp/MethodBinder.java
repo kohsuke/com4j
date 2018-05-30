@@ -547,9 +547,10 @@ abstract class MethodBinder
       TypeBinding retBinding = TypeBinding.bind(g, returnType, null);
 
       // add @ReturnValue if necessary
-      if ((!retBinding.isDefault && needsMarshalAs()) || (retParam != -1 && (params[retParam].isIn() || retParam != params.length - 1))
-          || intermediates != null
-          || usesDefaltValues) {
+      if (((!retBinding.isDefault && needsMarshalAs()) || (retParam != -1 && (params[retParam].isIn() || retParam != params.length - 1))
+           || intermediates != null
+           || usesDefaltValues)
+          && !retBinding.javaType.equals("void")) {
         o.print("@ReturnValue(");
         o.beginCommaMode();
         if (!retBinding.isDefault && needsMarshalAs()) {
