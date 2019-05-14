@@ -360,10 +360,10 @@ public final class Variant extends Number {
      * Creates an empty {@link Variant}.
      */
     public Variant() {
-        image = ByteBuffer.allocateDirect(16);
+        image = ByteBuffer.allocateDirect(24);
         image.order(ByteOrder.LITTLE_ENDIAN);
         // The initial content of a buffer is, in general, undefined. See the documentation of java.nio.Buffer.
-        byte[] b = new byte[16]; // this initializes the array with zeros
+        byte[] b = new byte[24]; // this initializes the array with zeros
         image.put(b); // this prints the zeros to the buffer to guarantee, that the buffer is initialized with zeros.
         image.position(0);
     }
