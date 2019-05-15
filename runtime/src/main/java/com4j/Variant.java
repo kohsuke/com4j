@@ -357,13 +357,29 @@ public final class Variant extends Number {
     }
 
     /**
+     * Determine the correct size of {@link Variant}.
+     *
+     * The size of the variant depends on whether this is
+     * a 32 or 64 bit system due to pointers in the structure
+     * definition.  See https://docs.microsoft.com/en-gb/windows/desktop/api/oaidl/ns-oaidl-tagvariant
+     */
+    private static int variantSize() {
+        String model = System.getProperty("sun.arch.data.model");
+        if (model.equals("64")) {
+            return 24;
+        }
+        return 16;
+    }
+
+    /**
      * Creates an empty {@link Variant}.
      */
     public Variant() {
-        image = ByteBuffer.allocateDirect(24);
+        final int variantSize = variantSize();
+        image = ByteBuffer.allocateDirect(variantSize);
         image.order(ByteOrder.LITTLE_ENDIAN);
         // The initial content of a buffer is, in general, undefined. See the documentation of java.nio.Buffer.
-        byte[] b = new byte[24]; // this initializes the array with zeros
+        byte[] b = new byte[variantSize]; // this initializes the array with zeros
         image.put(b); // this prints the zeros to the buffer to guarantee, that the buffer is initialized with zeros.
         image.position(0);
     }
