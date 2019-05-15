@@ -364,18 +364,20 @@ public final class Variant extends Number {
      * definition.  See https://docs.microsoft.com/en-gb/windows/desktop/api/oaidl/ns-oaidl-tagvariant
      */
     private static int variantSize() {
-        String model = System.getProperty("sun.arch.data.model");
-        if (model.equals("64")) {
+	/* Typical os.arch values: `x86_64`, `amd64` */
+        String model = System.getProperty("os.arch");
+        if (model.indexOf("64") != -1) {
             return 24;
         }
         return 16;
     }
 
+    private static final int variantSize = variantSize();
+
     /**
      * Creates an empty {@link Variant}.
      */
     public Variant() {
-        final int variantSize = variantSize();
         image = ByteBuffer.allocateDirect(variantSize);
         image.order(ByteOrder.LITTLE_ENDIAN);
         // The initial content of a buffer is, in general, undefined. See the documentation of java.nio.Buffer.
