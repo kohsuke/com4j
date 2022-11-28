@@ -38,8 +38,10 @@ JNIEXPORT void JNICALL Java_com4j_Variant_changeType0(JNIEnv* env, jclass, jint 
 JNIEXPORT jobject JNICALL Java_com4j_Variant_convertTo(JNIEnv* env, jobject instance, jclass target) {
 	try {
 		VARIANT* v = com4jVariantToVARIANT(env,instance);
-		while(v->vt & VT_BYREF) // unpeel VT_BYREF to get to the nested VARIANT
+		while(v != NULL && v->vt & VT_BYREF) // unpeel VT_BYREF to get to the nested VARIANT
 			v = reinterpret_cast<VARIANT*>(v->byref);
+		if(v == NULL)
+			return NULL;
 		jobject r = variantToObject(env,target,*v);
 		if(r==reinterpret_cast<jobject>(-1)) {
 			jstring name = javaLangClass_getName(env,target);
@@ -295,7 +297,7 @@ jobject variantToObject( JNIEnv* env, jclass retType, VARIANT& v ) {
 	}
 
 	// consider a conversion from SAFEARRAY
-	if((v.vt&VT_ARRAY)!=0) {
+	if((v.vt&VT_ARRAY)!=0 && v.parray != NULL) {
 		return safearray::SafeArrayXducer::toJava(env,v.parray);
 	}
 
