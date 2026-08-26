@@ -82,6 +82,8 @@ JNIEXPORT jobject JNICALL Java_com4j_Native_invokeDispatch( JNIEnv* env, jclass 
 		error(env,__FILE__,__LINE__,hr,"Invocation failed: %s",(LPCSTR)_bstr_t(excepInfo.bstrDescription));
 	}
 
+	for(unsigned int i=0; i<params.cArgs; i++ )
+		VariantClear(&p[i]);
 	delete[] p;
 
 	return retVal;
