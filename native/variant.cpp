@@ -110,7 +110,10 @@ class ComObjectVariandHandlerImpl : public VariantHandlerImpl<VT_DISPATCH,xducer
 			addr(v)->Release();
 			addr(v) = pDisp;
 			v->vt = VT_DISPATCH;
-		} // otherwise use VT_UNKNOWN. See java.net issue 2.
+		} else {
+			// otherwise use VT_UNKNOWN. See java.net issue 2.
+			v->vt = VT_UNKNOWN;
+		}
 		return v;
 	}
 	jobject get( JNIEnv* env, VARIANT* v, jclass retType ) {
