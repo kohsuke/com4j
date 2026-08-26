@@ -47,10 +47,14 @@ final class DispatchComMethod extends ComMethod {
         if(v==null)
             return null;
 
-        if(retType==void.class)
-            return null;
+        try {
+            if(retType==void.class)
+                return null;
 
-        return v.convertTo(retType);
+            return v.convertTo(retType);
+        } finally {
+            v.clear();
+        }
     }
 
     private static final int DISPATCH_METHOD         = 0x1;
