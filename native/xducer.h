@@ -112,13 +112,13 @@ namespace xducer {
 				return 0;
 
 			ULONGLONG val = 0;
-			sscanf(JString(env,javaMathBigInteger_toString(env,value)),"%Lu",&val);
+			sscanf(JString(env,javaMathBigInteger_toString(env,value)),"%llu",&val);
 			return val;
 		}
 
 		static inline JavaType toJava( JNIEnv* env, NativeType value ) {
 			char w[128];
-			sprintf(w,"%Lu",value);
+			sprintf(w,"%llu",value);
 			return javaMathBigInteger_new(env,env->NewStringUTF(w));
 		}
 	};

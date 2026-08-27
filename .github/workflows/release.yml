@@ -1,0 +1,55 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-upload:
+    runs-on: windows-2022
+
+    steps:
+      - name: Check out repository (with submodules) at the release tag
+        uses: actions/checkout@v7
+        with:
+          submodules: recursive
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      # Sets the version to the release tag
+      - name: Set version to release tag
+        shell: pwsh
+        run: mvn -B versions:set "-DnewVersion=${{ github.event.release.tag_name }}" -DgenerateBackupPoms=false
+
+      # Rebuilds native/com4j.dll (Release, x86+x64) from source rather than
+      # trusting whatever's committed, so the uploaded jar always reflects
+      # the exact code at this tag.
+      - name: Build native (Release) and package
+        shell: pwsh
+        run: mvn -B -pl "!test" package -DbuildNative=true -Dmode=Release
+
+      # Uploads all modules' built artifacts as release assets
+      - name: Upload build artifacts to the release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          function Latest($pattern) {
+            (Get-ChildItem $pattern | Sort-Object LastWriteTime -Descending | Select-Object -First 1).FullName
+          }
+          $files = @(
+            Latest "runtime/target/com4j-*.jar"
+            Latest "tlbimp/target/tlbimp-*.jar"
+            Latest "maven-com4j-plugin/target/maven-com4j-plugin-*.jar"
+            Latest "distribution/target/com4j-dist-*-all.zip"
+          )
+          gh release upload "${{ github.event.release.tag_name }}" $files --repo ${{ github.repository }} --clobber

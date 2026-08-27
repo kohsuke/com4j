@@ -20,5 +20,5 @@ public interface ITestObject2 extends Com4jObject {
         @MarshalAs(NativeType.VARIANT_ByRef) Holder<Integer> v2);
 
     @VTID(8)
-    int outByteBuf( String s, Holder<Integer> size );
+    long outByteBuf( String s, Holder<Integer> size );
 }

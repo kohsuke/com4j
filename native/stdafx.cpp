@@ -1,35 +1,33 @@
 #include "stdafx.h"
 
-CComModule _Module;
+CTestObjectModule _Module;
 JNIModule jniModule;
 
-BOOL APIENTRY DllMain( HINSTANCE hModule, 
-                       DWORD  dwReason, 
+BOOL APIENTRY DllMain( HINSTANCE hModule,
+                       DWORD  dwReason,
                        LPVOID lpReserved
 					 )
 {
-	_Module.DllMain(hModule, dwReason, lpReserved, NULL, NULL );
-//    _Module.Init(ObjectMap, m_hInstance, &LIBID_LIB2USRLib);
 	AtlAxWinInit();
-	return TRUE;
+	return _Module.DllMain(dwReason, lpReserved);
 }
 
 STDAPI DllCanUnloadNow(void)
 {
-  return (_Module.GetLockCount()==0) ? S_OK :S_FALSE;
+  return _Module.DllCanUnloadNow();
 }
 
 STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
 {
-  return _Module.GetClassObject(rclsid, riid, ppv);
+  return _Module.DllGetClassObject(rclsid, riid, ppv);
 }
 
 STDAPI DllRegisterServer(void)
 {
-  return _Module.RegisterServer(TRUE);
+  return _Module.DllRegisterServer();
 }
 
 STDAPI DllUnregisterServer(void)
 {
-  return _Module.UnregisterServer(TRUE);
+  return _Module.DllUnregisterServer();
 }

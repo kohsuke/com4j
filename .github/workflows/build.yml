@@ -1,0 +1,63 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    # windows-2022 ships Visual Studio 2022 (with the C++ ATL and MFC
+    # components the native build needs) and CMake preinstalled.
+    runs-on: windows-2022
+
+    steps:
+      - name: Check out repository (with submodules)
+        uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Show build tool versions
+        shell: pwsh
+        run: |
+          cmake --version
+          java -version
+
+      # -DbuildNative=true forces a real rebuild instead of packaging the
+      # committed bin/ DLLs (JitPack's only option, since it can't run
+      # MSVC). package-only, run first, just to catch Release-only compile
+      # regressions before the Debug build below becomes the installed jar.
+      - name: Build native (Release)
+        shell: pwsh
+        run: mvn -B -pl "!test" package -DbuildNative=true -Dmode=Release
+
+      # TestObject (needed by tests) only compiles into Debug builds.
+      # install, not package, so "Run tests" below can resolve com4j from
+      # the local repo without rebuilding or needing -am.
+      - name: Build native (Debug)
+        shell: pwsh
+        run: mvn -B -pl "!test" install -DbuildNative=true -Dmode=Debug
+
+      # Registers com4j.dll as TestObject's COM server. Plain regsvr32
+      # works unelevated: GitHub's Windows runners run as Administrator
+      # with UAC disabled (actions/runner-images discussion #6557).
+      - name: Register COM test object
+        shell: pwsh
+        run: |
+          $dll = Resolve-Path "bin\x64\Debug\com4j.dll"
+          $p = Start-Process -FilePath "$env:SystemRoot\System32\regsvr32.exe" -ArgumentList "/s", "$dll" -Wait -PassThru -NoNewWindow
+          if ($p.ExitCode -ne 0) {
+            throw "regsvr32 failed with exit code $($p.ExitCode)"
+          }
+
+      - name: Run tests
+        shell: pwsh
+        run: mvn -B test -pl test

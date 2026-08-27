@@ -21,8 +21,15 @@
             <phase>generate-resources</phase>
             <configuration>
               <target>
-                <copy file="../native/${mode}/com4j.dll" tofile="target/classes/com4j/com4j-x86.dll" />
-                <copy file="../native/x64/${mode}/com4j.dll" tofile="target/classes/com4j/com4j-amd64.dll" />
+                <!--
+                  overwrite="true": Ant's default copy behavior is a timestamp check, not a content check.
+                  Without it, a target/ directory left over from an earlier build with a different -Dmode
+                  (e.g. Debug, whose bin/ output can have a newer timestamp) silently keeps serving that
+                  stale DLL here even after bin/ is rebuilt for this mode - with no
+                  error or warning that anything is wrong.
+                -->
+                <copy file="../bin/x86/${mode}/com4j.dll" tofile="target/classes/com4j/com4j-x86.dll" overwrite="true" />
+                <copy file="../bin/x64/${mode}/com4j.dll" tofile="target/classes/com4j/com4j-amd64.dll" overwrite="true" />
               </target>
             </configuration>
             <goals>

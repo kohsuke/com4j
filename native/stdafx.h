@@ -14,7 +14,12 @@
 
 #include <atlcore.h>
 #include <atlbase.h>
-extern CComModule _Module;
+// CAtlDllModuleT (not the old CComModule) is required for OBJECT_ENTRY_AUTO
+// (used by TestObject.h) to actually register its class - CComModule only
+// knows about the old BEGIN_OBJECT_MAP/_Module.Init() style object map.
+class CTestObjectModule : public CAtlDllModuleT<CTestObjectModule> {
+};
+extern CTestObjectModule _Module;
 #include <atlcom.h>
 #include <atlwin.h>
 #include <atlcur.h>

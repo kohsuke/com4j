@@ -40,6 +40,9 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!-- Debug or Release; which native build gets copied into the com4j jar -->
+    <mode>Release</mode>
+    <cmake.generator>Visual Studio 17 2022</cmake.generator>
   </properties>
 
   <dependencies>
@@ -91,8 +94,8 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
+          <source>1.8</source>
+          <target>1.8</target>
         </configuration>
       </plugin>
     </plugins>
@@ -109,6 +112,122 @@
       <modules>
         <module>test</module>
       </modules>
+      <build>
+        <plugins>
+          <!--
+            Rebuilds com4j.dll for both architectures via CMake and drops the
+            result into the committed, canonical locations that
+            runtime/pom.xml's resource-copy step reads from:
+            bin/{x86,x64}/${mode}/com4j.dll.
+
+            This is opt-in (-DbuildNative=true) rather than something that
+            runs on every build: the DLLs themselves are committed to git
+            (they always have been - see the "we commit *.dll..." note
+            below), and most builds - including JitPack's, which builds
+            this project from source on a Linux server with no path to a
+            Windows/MSVC toolchain at all - are expected to just use those
+            checked-in binaries rather than rebuild them. Pass
+            -DbuildNative=true when you've actually changed native/ code
+            and want to refresh the committed DLLs (then git add/commit the
+            result). Requires cmake, a Visual Studio C++/ATL/MFC toolset,
+            and the JDK running this Maven build to have JNI headers
+            (include/, include/win32) - i.e. a real JDK, not a JRE.
+
+            Re-running is fairly fast even though CMake reconfigures every
+            time (it's a quick no-op once a build directory already matches
+            the requested settings), since the actual compile step only
+            recompiles what changed.
+          -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <version>1.7</version>
+            <executions>
+              <execution>
+                <id>build-native</id>
+                <phase>generate-resources</phase>
+                <inherited>false</inherited>
+                <configuration>
+                  <target if="buildNative">
+                    <!--
+                      Locate a JDK root with include/jni.h. The JAVA_HOME env var
+                      is the conventional way to point at one and, unlike it,
+                      Maven's own ${java.home} isn't reliable for this on JDK 8
+                      (it resolves to the bundled .../jre subfolder there, which
+                      has no include/ - only JDK 9+ removed that split). Falls
+                      back to ${java.home} if JAVA_HOME isn't set.
+                    -->
+                    <property environment="env" />
+                    <condition property="jdk.home" value="${env.JAVA_HOME}">
+                      <isset property="env.JAVA_HOME" />
+                    </condition>
+                    <property name="jdk.home" value="${java.home}" />
+                    <!--
+                      CMake's FindJNI.cmake does its own semicolon-list/string
+                      parsing on this path internally, where a backslash is an
+                      escape character - a plain Windows path (e.g. one with
+                      "\Hotspot_jdk\" in it) can trip that with errors like
+                      "Invalid character escape '\H'". Forward slashes avoid it
+                      and work fine as a Windows path too.
+                    -->
+                    <pathconvert property="jdk.home.cmake" targetos="unix">
+                      <path path="${jdk.home}" />
+                    </pathconvert>
+
+                    <mkdir dir="${basedir}/native/cmake-build-x64" />
+                    <mkdir dir="${basedir}/native/cmake-build-x86" />
+
+                    <exec executable="cmake" dir="${basedir}" failonerror="true">
+                      <arg value="-G" />
+                      <arg value="${cmake.generator}" />
+                      <arg value="-A" />
+                      <arg value="x64" />
+                      <arg value="-S" />
+                      <arg value="native" />
+                      <arg value="-B" />
+                      <arg value="native/cmake-build-x64" />
+                      <arg value="-DJAVA_HOME=${jdk.home.cmake}" />
+                    </exec>
+                    <exec executable="cmake" dir="${basedir}" failonerror="true">
+                      <arg value="--build" />
+                      <arg value="native/cmake-build-x64" />
+                      <arg value="--config" />
+                      <arg value="${mode}" />
+                    </exec>
+                    <mkdir dir="${basedir}/bin/x64/${mode}" />
+                    <copy file="${basedir}/native/cmake-build-x64/${mode}/com4j.dll" todir="${basedir}/bin/x64/${mode}" overwrite="true" />
+                    <copy file="${basedir}/native/cmake-build-x64/${mode}/com4j.pdb" todir="${basedir}/bin/x64/${mode}" overwrite="true" failonerror="false" />
+
+                    <exec executable="cmake" dir="${basedir}" failonerror="true">
+                      <arg value="-G" />
+                      <arg value="${cmake.generator}" />
+                      <arg value="-A" />
+                      <arg value="Win32" />
+                      <arg value="-S" />
+                      <arg value="native" />
+                      <arg value="-B" />
+                      <arg value="native/cmake-build-x86" />
+                      <arg value="-DJAVA_HOME=${jdk.home.cmake}" />
+                    </exec>
+                    <exec executable="cmake" dir="${basedir}" failonerror="true">
+                      <arg value="--build" />
+                      <arg value="native/cmake-build-x86" />
+                      <arg value="--config" />
+                      <arg value="${mode}" />
+                    </exec>
+                    <mkdir dir="${basedir}/bin/x86/${mode}" />
+                    <copy file="${basedir}/native/cmake-build-x86/${mode}/com4j.dll" todir="${basedir}/bin/x86/${mode}" overwrite="true" />
+                    <copy file="${basedir}/native/cmake-build-x86/${mode}/com4j.pdb" todir="${basedir}/bin/x86/${mode}" overwrite="true" failonerror="false" />
+                  </target>
+                </configuration>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 

@@ -1,5 +1,6 @@
 // com4j specific transducers
 #pragma once
+#include <memory>
 #include "xducer.h"
 #include "com4j.h"
 #include "java_id.h"
@@ -14,7 +15,7 @@ namespace xducer {
 		typedef jobject JavaType;
 
 		static inline NativeType toNative( JNIEnv* env, JavaType value ) {
-			std::auto_ptr<VARIANT> v(convertToVariant(env,value)); // need to be deleted after copy as return value
+			std::unique_ptr<VARIANT> v(convertToVariant(env,value)); // need to be deleted after copy as return value
 			return *v;
 		}
 

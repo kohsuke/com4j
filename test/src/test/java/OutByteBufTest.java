@@ -12,7 +12,7 @@ public class OutByteBufTest extends TestCase {
     public void test1() throws Exception {
         ITestObject2 t = ClassFactory.createTestObject().queryInterface(ITestObject2.class);
         Holder<Integer> sz = new Holder<Integer>();
-        int ptr = t.outByteBuf("Test",sz);
+        long ptr = t.outByteBuf("Test",sz);
         ByteBuffer buf = COM4J.createBuffer(ptr, sz.value);
 
         byte[] tmp = new byte[13];

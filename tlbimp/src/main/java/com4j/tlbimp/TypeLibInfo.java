@@ -108,9 +108,13 @@ public final class TypeLibInfo {
 
         String fileName;
         try {
-            fileName = Native.readRegKey(verKey+"\\"+lcid+"\\win32");
-        } catch( ComException e ) {
-            throw new BindingException(Messages.NO_WIN32_TYPELIB.format(libid,version),e);
+            fileName = Native.readRegKey(verKey+"\\"+lcid+"\\win64");
+        } catch( ComException e64 ) {
+            try {
+                fileName = Native.readRegKey(verKey+"\\"+lcid+"\\win32");
+            } catch( ComException e32 ) {
+                throw new BindingException(Messages.NO_WIN32_TYPELIB.format(libid,version),e32);
+            }
         }
 
         return new TypeLibInfo( libName, new File(fileName), new Version(version), lcid );

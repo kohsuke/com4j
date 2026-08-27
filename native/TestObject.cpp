@@ -31,8 +31,15 @@ STDMETHODIMP CTestObject::raw_TestVariant(VARIANT v1, VARIANT* v2, VARIANT* v3)
 
 STDMETHODIMP CTestObject::raw_outByteBuf(BSTR bstrEncodedData, long* plSize, unsigned char** ppbData)
 {
-	*plSize = 30;
-	*ppbData = (BYTE*)"Hello, World!";
+	static const char text[] = "Hello, World!";
+	const long len = sizeof(text)-1; // exclude the terminating '\0'
+
+	*ppbData = (BYTE*)CoTaskMemAlloc(len);
+	if(*ppbData==NULL)
+		return E_OUTOFMEMORY;
+
+	memcpy(*ppbData, text, len);
+	*plSize = len;
 
 	return S_OK;
 }

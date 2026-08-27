@@ -31,7 +31,7 @@ namespace safearray {
 	template < VARTYPE itemType, class XDUCER >
 	class BasicArrayXducer {
 	public:
-		typedef array::Array<typename XDUCER::JavaType> JARRAY;
+		typedef jnitl::array::Array<typename XDUCER::JavaType> JARRAY;
 		typedef SAFEARRAY* NativeType;
 		typedef jarray JavaType;
 
@@ -79,7 +79,7 @@ namespace safearray {
 	// XDUCER : converter for each array item
 	template < VARTYPE itemType, class XDUCER >
 	class ToJavaMultiDimlArrayMarshaller {
-		typedef array::Array<typename XDUCER::JavaType> JARRAY;
+		typedef jnitl::array::Array<typename XDUCER::JavaType> JARRAY;
 		typedef SAFEARRAY* NativeType;
 		typedef jarray JavaType;
 
@@ -129,13 +129,13 @@ namespace safearray {
 				return a;
 			}
 			else {
-				jobjectArray a = array::Array<jobject>::newArray(env, dimSizes[curDim]);
-				jobject* const pDst = array::Array<jobject>::lock(env, a);
+				jobjectArray a = jnitl::array::Array<jobject>::newArray(env, dimSizes[curDim]);
+				jobject* const pDst = jnitl::array::Array<jobject>::lock(env, a);
 
 				for( int i = 0; i < dimSizes[curDim]; i++ ) {
 					pDst[i] = toJavaRec(pSrc, curDim - 1);
 				}
-				array::Array<jobject>::unlock(env, a, pDst);
+				jnitl::array::Array<jobject>::unlock(env, a, pDst);
 				return a;
 			}
 
@@ -182,7 +182,7 @@ namespace safearray {
 	// XDUCER : converter for each array item
 	template < VARTYPE itemType, class XDUCER >
 	class ToNativeMultiDimlArrayMarshaller {
-		typedef array::Array<typename XDUCER::JavaType> JARRAY;
+		typedef jnitl::array::Array<typename XDUCER::JavaType> JARRAY;
 		typedef SAFEARRAY* NativeType;
 		typedef jarray JavaType;
 
@@ -234,12 +234,12 @@ namespace safearray {
 
 			}
 			else {
-				JavaType* pSrc = array::Array<JavaType>::lock(env, static_cast<JARRAY::ARRAY>(_array));
+				JavaType* pSrc = jnitl::array::Array<JavaType>::lock(env, static_cast<JARRAY::ARRAY>(_array));
 
 				for(size_t i = 0; i < bounds[curDim].cElements; i++)
 					toNativeRec(pSrc[i], curDim - 1);
 
-				array::Array<JavaType>::unlock(env,static_cast<JARRAY::ARRAY>(_array), pSrc);
+				jnitl::array::Array<JavaType>::unlock(env,static_cast<JARRAY::ARRAY>(_array), pSrc);
 			}
 		}
 

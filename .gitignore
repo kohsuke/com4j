@@ -10,3 +10,8 @@
 *.tli
 vc90.idb
 vc90.pdb
+native/cmake-build*/
+
+# bin/ holds the prebuilt com4j.dll (x86 and x64, Release and Debug) that the
+# Java build packages by default and that JitPack relies on, since it can't
+# build native/ itself - these are intentionally committed, do not ignore.
