@@ -3,7 +3,6 @@ package com4j;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -96,11 +95,7 @@ final class Wrapper implements InvocationHandler, Com4jObject {
     static <T extends Com4jObject>
     T create( Class<T> primaryInterface, long ptr ) {
         Wrapper w = new Wrapper(ptr);
-        T r = primaryInterface.cast(Proxy.newProxyInstance(
-            primaryInterface.getClassLoader(),
-            new Class<?>[]{primaryInterface},
-                w));
-        return r;
+        return ProxyFactory.create(primaryInterface, w);
     }
 
     /**

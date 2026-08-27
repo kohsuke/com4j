@@ -10,3 +10,6 @@
 *.tli
 vc90.idb
 vc90.pdb
+# written by maven-shade-plugin next to runtime/pom.xml during package
+runtime/dependency-reduced-pom.xml
+

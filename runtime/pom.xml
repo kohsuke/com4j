@@ -31,10 +31,50 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.5.1</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <relocations>
+                <relocation>
+                  <pattern>org.objectweb.asm</pattern>
+                  <shadedPattern>com4j.internal.asm</shadedPattern>
+                </relocation>
+              </relocations>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
   <properties>
     <mode>Release</mode><!-- set to Debug to bundle debug builds of the DLL -->
   </properties>
+
+  <dependencies>
+    <!--
+      Used by ProxyFactory to generate COM interface proxy classes at runtime, replacing
+      java.lang.reflect.Proxy (see ProxyFactory javadoc for why). Shaded and relocated into
+      com4j.jar below so consumers don't need it on their classpath, and so it can't collide
+      with a different ASM version something else on their classpath might bring in.
+    -->
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm</artifactId>
+      <version>9.10.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm-commons</artifactId>
+      <version>9.10.1</version>
+    </dependency>
+  </dependencies>
 </project>
